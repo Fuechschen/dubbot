@@ -1,0 +1,34 @@
+
+{
+    "name": "dubbot",
+    "description": "Prototype of a Dubtrack-Bot",
+    "version": "0.0.1",
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git://git.fuechschen.org/Fuechschen/dubbot.git"
+    },
+    "author": "Fuechschen <info@fuechschen.org>",
+    "main": "bot.js",
+    "directories": {
+        "commands": "commands"
+    },
+    "engines": {
+        "node": ">= 0.6.0"
+    },
+    "dependencies": {
+        "dubtrackapi": "git://github.com/Fuechschen/dubtrackapi.git",
+        "bluebird": "*",
+        "mysql": "*",
+        "node-datatable": "git://github.com/jpravetz/node-datatable.git",
+        "request": "*",
+        "sequelize": "*",
+        "string": "*",
+        "underscore": "*",
+		"ws": "*"
+    },
+    "devDependencies": {
+        "sequelize-fixtures": "*"
+    },
+    "optionalDependencies": {}
+}
