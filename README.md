@@ -1,2 +1,2 @@
 # dubbot
-Prototype of an bot fpr dubtrack
+Prototype of an bot for dubtrack
