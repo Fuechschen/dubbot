@@ -13,7 +13,7 @@ This bot requires node.js and phantomjs in version 2.0 or higher for dubtrackapi
 
 You will need an account at dubtrack with at least VIP-Permission in your room and E-Mail as login method.
 
-Just to complete the requirements: dubtrackapi in my own, modified version is needed.
+Just to complete the requirements: [dubtrackapi](https://github.com/Fuechschen/dubtrackapi) in my own, modified version is needed.
 
 
 ### Installation
