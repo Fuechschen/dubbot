@@ -172,7 +172,7 @@ function loadCommands(){
         matchStart: true,
         handler: function(data) {
             getRole(data.user.userInfo.userid, function (role){
-                if(role > 1){
+                if(role > 2){
                     bot.getTrack(function (track){
                         Track.update({blacklisted: true}, {where: {fkid: track.songInfo.fkid}});
                         bot.chat(data.user.username + ' blacklisted ' + track.songInfo.name);
