@@ -39,6 +39,8 @@ If you want to let the bot autostart with the server running it, follow these st
 
 Feel free to add features your own or to request them. If you are submiting a pull request, be sure it's only containing one or two commits. You can submit more pull request anytime.
 
+Since this project is still under developement, there are maybe some dependencies in package.json that are currently not needed.
+
 
 ### Credits
 
