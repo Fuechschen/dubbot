@@ -40,6 +40,7 @@ If you are using your own file, remember to update it when updating the bot.
 I'm suggesting to use pm2 to run this bot. Install it with ```npm install pm2```, then run the bot with ```pm2 start bot.js```.
 
 If you want to let the bot autostart with the server running it, follow these steps:
+
 1. ```pm2 autostart``` to configure autostart for pm2
 2. Then start your bot (if its not already running) with ```pm2 start bot.js```
 3. Now run ```pm2 save``` to save the process.
