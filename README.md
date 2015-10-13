@@ -21,9 +21,11 @@ Just to complete the requirements: [dubtrackapi](https://github.com/Fuechschen/d
 1. Make sure you have [phantomjs](http://phantomjs.org/) installed.
 2. Clone this repo.
 3. Run ```npm install``` in the folder of this repo.
-4. Create a MySql-Database and run install.sql found in the install folder for this database.
+4. Create a MySql-Database and run install.sql or install_with_predefined_ct.sql (only run one of them)* found in the install folder for this database.
 5. Copy config.json.example from the install folder to the root folder of this repo (the folder bot.js can be found in) and fill it with your data
 6. Run bot.js with ```node bot.js```
+
+* install_with_predefined_ct.sql adds .bot and .commands as customtexts
 
 ### PM2
 
