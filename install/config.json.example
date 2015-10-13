@@ -11,5 +11,6 @@
 		"host": "db.fuechschen.org",
 		"port": "3306"
 	},
-  "customtext_trigger": "." 
+  "customtext_trigger": ".",
+  "language_file": "en"
 }

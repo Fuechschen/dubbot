@@ -27,6 +27,14 @@ Just to complete the requirements: [dubtrackapi](https://github.com/Fuechschen/d
 
 `*` install_with_predefined_ct.sql adds .bot and .commands as customtexts
 
+#### Language
+
+DubBot's messages can be easily modified by providing a language file in the config.json. Fill in ```en``` for the default english language file or ```de``` for the default german language file. You can also provide your own language by just filling in a url which delivers a json-file looking like this: https://cdn.dubbot.net/files/language/english.json
+
+If you don't want to host it, you can use the file given in files/english.json. Just insert an invalid url in config,json at the language_file-option.
+
+If you are using your own file, remember to update it when updating the bot.
+
 ### PM2
 
 I'm suggesting to use pm2 to run this bot. Install it with ```npm install pm2```, then run the bot with ```pm2 start bot.js```.

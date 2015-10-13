@@ -10,6 +10,10 @@ path = require('path');
 var commands = [];
 var config = require(path.resolve(__dirname, 'config.json'));
 
+var langfile;
+
+loadlanguagefile();
+
 loadCommands();
 
 sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
@@ -56,7 +60,7 @@ bot.on('room_playlist-update', function(data) {
 
     Track.find({where: {fkid: data.songInfo.fkid}}).then(function (row) {
         if(row !== undefined && row.blacklisted === true){
-            bot.chat('This song is blacklisted!');
+            bot.chat(S(langfile.messages.blacklist.is_blacklisted).replaceAll('&{track}', data.songInfo.name).s);
             bot.skip();
             return;
         }
@@ -160,13 +164,27 @@ function loadCommands(){
     });
 
     commands.push({
+        names: ['!ping'],
+        handler: function(data){
+            getRole(data.user.userInfo.userid, function (role){
+                if(role > 1){
+                    bot.chat(langfile.messages.ping);
+                }
+            });
+        },
+        hidden: true,
+        enabled: true,
+        matchStart: true
+    });
+
+    commands.push({
         names: ['!reloadcommands'],
         handler: function(data){
             getRole(data.user.userInfo.userid, function (role){
                 if(role > 3){
                     commands = [];
-                    loadCommands;
-                    bot.chat('Reloaded commands!');
+                    loadCommands();
+                    bot.chat(langfile.messages.commands_reloaded);
                 }
             });
         },
@@ -202,7 +220,7 @@ function loadCommands(){
                 if(role > 2){
                     bot.getTrack(function (track){
                         Track.update({blacklisted: true}, {where: {fkid: track.songInfo.fkid}});
-                        bot.chat(data.user.username + ' blacklisted ' + track.songInfo.name);
+                        bot.chat(S(S(langfile.messages.blacklisted.blacklisted_by).replaceAll('&{track}', track.songInfo.name).s).replaceAll('&{username}', data.user.username).s);
                         bot.skip();
                     });
                 }
@@ -226,6 +244,35 @@ function loadCommands(){
         console.error('Unable to load command: ', e);
     }
 };
+
+function loadlanguagefile() {
+  var url;
+  if(config.language_file === 'de'){
+    url = 'https://cdn.dubbot.net/files/language/german.json';
+  } else if(config.language_file === 'en'){
+    url = 'https://cdn.dubbot.net/files/language/english.json';
+  } else {
+    url = config.language_file;
+  }
+
+  request.get(url, function(error, response, body){
+    if(!error && response.statusCode == 200){
+      langfile = JSON.parse(body);
+    }
+
+    if(langfile && langfile.status !== 'ok'){
+      console.log('[LANGFILE] LangFile invalid. Using default instead!');
+      langfile = require(path.resolve(__dirname, 'files/english.json'));
+      return;
+    }
+    if(!langfile){
+      console.log('[LANGFILE] LangFile could not be found. Using default...' + error);
+      langfile = require(path.resolve(__dirname, 'files/english.json'));
+      return;
+    }
+    console.log('[LANGFILE] Successfully loaded langfile!');
+  });
+}
 
 function getRole(id, callback) {
     bot.getUsers(function (users){

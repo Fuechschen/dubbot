@@ -1,0 +1,12 @@
+{
+  "langfile": "en",
+  "status": "ok",
+  "messages": {
+    "blacklist": {
+      "blacklisted_by": "&{username} blacklisted &{track}",
+      "is_blacklisted": "The track &{track} is blacklisted!"
+    },
+    "commands_reloaded": "Reloaded commands!",
+    "ping": "Pong!"
+  }
+}
