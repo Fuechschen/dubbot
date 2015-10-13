@@ -82,7 +82,7 @@ bot.on('room_playlist-update', function(data) {
         room: config.room
     };
 
-    fs.writeFile("/home/node/node_modules/dubbot/stats.json", JSON.stringify(stats, null, 2), 'utf-8', function (err) {if (err) {return console.log(err);}});
+    fs.writeFile(__dirname + "/stats.json", JSON.stringify(stats, null, 2), 'utf-8', function (err) {if (err) {return console.log(err);}});
 
 
 });
