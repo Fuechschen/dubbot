@@ -183,7 +183,7 @@ function loadCommands(){
       handler: function(data) {
           getRole(data.user.userInfo.userid, function (role){
               if(role > 3){
-                  var texts = data.message.split(':');
+                  var texts = data.message.split(':/:');
                   var newtrigger = S(texts[1].trim()).chompLeft(config.customtext_trigger).s;
                   var newresponse = texts[2].trim();
                   CustomText.findOrCreate({where: {trigger: newtrigger}, defaults: {trigger: newtrigger, response: newresponse}}).spread(function(customtext){customtext.updateAttributes({trigger: newtrigger, response: newresponse})});
