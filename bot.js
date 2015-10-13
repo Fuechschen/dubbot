@@ -103,6 +103,10 @@ bot.on('user-join', function(data){
     };
 
     User.findOrCreate({where: {userid: userdata.userid}, defaults : userdata}).spread(function(user){user.updateAttributes(userdata);});
+
+    if(data.user.username !== config.login.username && config.welcome_users === true){
+      bot.chat(S(langfile.messages.welcome_users).replaceAll('&{username}', data.user.username).s)
+    }
 });
 
 bot.on('user-leave', function(data){

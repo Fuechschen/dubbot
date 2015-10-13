@@ -1,16 +1,17 @@
 {
   "login": {
-      "username": "fuchsbot",
-      "password": "Maxplanck2011"
+      "username": "putloginhere",
+      "password": "putpasswordhere"
   },
-  "room": "nullcraft",
+  "room": "putroomhere",
 	"db": {
-		"database": "fuchsbot",
-		"username": "fuchsbot",
-		"password": "WOyItIGIYIcI",
-		"host": "db.fuechschen.org",
+		"database": "db",
+		"username": "dbuser",
+		"password": "dbpass",
+		"host": "dbserver",
 		"port": "3306"
 	},
   "customtext_trigger": ".",
-  "language_file": "en"
+  "language_file": "en",
+  "welcome_users": true
 }
