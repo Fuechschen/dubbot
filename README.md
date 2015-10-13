@@ -5,7 +5,7 @@ Prototype of an bot for dubtrack
 
 Since this is currently only a prototype, there aren't much features now, but they will be added soon when a full documented api dubtrack is out. Currently, the bot is capable of blacklisting and skipping songs.
 
-A full list of commands can be found here: https://fuechschen.info/fuchsbot/
+A full list of commands can be found here: https://dubbot.net/commands/
 
 ### Requirements
 
