@@ -1,0 +1,15 @@
+{
+  "login": {
+      "username": "fuchsbot",
+      "password": "Maxplanck2011"
+  },
+  "room": "nullcraft",
+	"db": {
+		"database": "fuchsbot",
+		"username": "fuchsbot",
+		"password": "WOyItIGIYIcI",
+		"host": "db.fuechschen.org",
+		"port": "3306"
+	},
+  "customtext_trigger": "." 
+}

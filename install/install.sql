@@ -24,3 +24,13 @@ CREATE TABLE IF NOT EXISTS `users` (
   `updated_at` datetime DEFAULT NULL,
   KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `custom_texts` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`trigger` VARCHAR(50) NOT NULL,
+	`response` TEXT NULL,
+	`created_at` DATETIME NULL DEFAULT NULL,
+	`updated_at` DATETIME NULL DEFAULT NULL,
+	UNIQUE INDEX `trigger` (`trigger`),
+	INDEX `id` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

@@ -27,10 +27,12 @@ sequelize.authenticate().then(function (err) {
     }
 });
 
-var models = ['Track', 'User'];
+var models = ['Track', 'User', 'CustomText'];
     models.forEach(function (model) {
         this[model] = sequelize.import(__dirname + '/models/' + model);
-    });
+});
+
+sequelize.sync();
 
 
 var bot = new DubtrackAPI(config.login);
@@ -132,6 +134,14 @@ function handleCommand(data){
         command.handler(data, bot);
         console.log('[COMMAND] Executed command ' + command.names[0] + ' (' + data.message + ')');
     }
+
+    if(S(data.message).startsWith(config.customtext_trigger) === true){
+      CustomText.find({where: {trigger: S(data.message).chompLeft(config.customtext_trigger).s}}).then(function(row){
+        if(row !== undefined){
+          bot.chat(row.response);
+        }
+      });
+    }
 }
 
 function loadCommands(){
@@ -166,13 +176,30 @@ function loadCommands(){
     });
 
     commands.push({
+      names: ['!addcustomtext', '!addct'],
+      hidden: true,
+      enabled: true,
+      matchStart: true,
+      handler: function(data) {
+          getRole(data.user.userInfo.userid, function (role){
+              if(role > 1){
+                  var texts = data.message.split(':');
+                  var newtrigger = S(texts[1].trim()).chompLeft(config.customtext_trigger).s;
+                  var newresponse = texts[2].trim();
+                  CustomText.findOrCreate({where: {trigger: newtrigger}, defaults: {trigger: newtrigger, response: newresponse}}).spread(function(customtext){customtext.updateAttributes({trigger: newtrigger, response: newresponse})});
+              }
+          });
+      }
+    })
+
+    commands.push({
         names: ['!bl', '!blacklist'],
         hidden: true,
         enabled: true,
         matchStart: true,
         handler: function(data) {
             getRole(data.user.userInfo.userid, function (role){
-                if(role > 1){
+                if(role > 2){
                     bot.getTrack(function (track){
                         Track.update({blacklisted: true}, {where: {fkid: track.songInfo.fkid}});
                         bot.chat(data.user.username + ' blacklisted ' + track.songInfo.name);
