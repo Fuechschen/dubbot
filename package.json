@@ -3,7 +3,7 @@
     "name": "dubbot",
     "description": "Prototype of a Dubtrack-Bot",
     "version": "0.0.1",
-    "keywords": [],
+    "keywords": ["plug", "bot", "dubbot", "dubtrack", "dubraft.fm", "bot"],
     "repository": {
         "type": "git",
         "url": "git://git.fuechschen.org/Fuechschen/dubbot.git"
