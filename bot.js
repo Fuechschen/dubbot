@@ -220,7 +220,7 @@ function loadCommands(){
                 if(role > 2){
                     bot.getTrack(function (track){
                         Track.update({blacklisted: true}, {where: {fkid: track.songInfo.fkid}});
-                        bot.chat(S(S(langfile.messages.blacklisted.blacklisted_by).replaceAll('&{track}', track.songInfo.name).s).replaceAll('&{username}', data.user.username).s);
+                        bot.chat(S(S(langfile.messages.blacklist.blacklisted_by).replaceAll('&{track}', track.songInfo.name).s).replaceAll('&{username}', data.user.username).s);
                         bot.skip();
                     });
                 }
