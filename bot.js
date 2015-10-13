@@ -182,7 +182,7 @@ function loadCommands(){
       matchStart: true,
       handler: function(data) {
           getRole(data.user.userInfo.userid, function (role){
-              if(role > 1){
+              if(role > 3){
                   var texts = data.message.split(':');
                   var newtrigger = S(texts[1].trim()).chompLeft(config.customtext_trigger).s;
                   var newresponse = texts[2].trim();
