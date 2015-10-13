@@ -52,6 +52,6 @@ I would like to thank the following people for their inspirations to this projec
 
 ### Disclaimer
 
-This software is provided "as is". You are free to use it as the license allows is, but every use is at your own risk. I am not liable for any claim, damage or anything other this software is causing.
+This software is provided "as is". You are free to use it as the license allows it, but every use is at your own risk. I am not liable for any claim, damage or anything other this software is causing.
 
 I'm trying to deliver the best support i can for this, but since i'm only a human, answering may take a while.
