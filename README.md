@@ -25,7 +25,7 @@ Just to complete the requirements: [dubtrackapi](https://github.com/Fuechschen/d
 5. Copy config.json.example from the install folder to the root folder of this repo (the folder bot.js can be found in) and fill it with your data
 6. Run bot.js with ```node bot.js```
 
-* install_with_predefined_ct.sql adds .bot and .commands as customtexts
+`*` install_with_predefined_ct.sql adds .bot and .commands as customtexts
 
 ### PM2
 
