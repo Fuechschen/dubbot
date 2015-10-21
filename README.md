@@ -1,6 +1,10 @@
 # dubbot
 Prototype of an bot for dubtrack
 
+## IMPORTANT
+
+With this commit, bubbot does not longer require dubtrackapi (and phantomjs) since it's runned with DubAPI by anjanms. Be sure to run ```npm install``` before you start it after updating!
+
 ### Functionality
 
 Since this is currently only a prototype, there aren't much features now, but they will be added soon when a full documented api dubtrack is out. Currently, the bot is capable of blacklisting and skipping songs.
@@ -9,21 +13,19 @@ A full list of commands can be found here: https://dubbot.net/commands/
 
 ### Requirements
 
-This bot requires node.js and phantomjs in version 2.0 or higher for dubtrackapi. The easiest way to install node on debian/ubuntu is to just run ```apt-get install node``` as root. For phantomjs, there is currently no precompiled package available. Follow the instructions [here](http://phantomjs.org/build.html) to install it on your system.
+THis bot requires node.js. Install it on Ubuntu/Debian with ```apt-get install node```
 
 You will need an account at dubtrack with at least VIP-Permission in your room and E-Mail as login method.
 
-Just to complete the requirements: [dubtrackapi](https://github.com/Fuechschen/dubtrackapi) in my own, modified version is needed.
 
 
 ### Installation
 
-1. Make sure you have [phantomjs](http://phantomjs.org/) installed.
-2. Clone this repo.
-3. Run ```npm install``` in the folder of this repo.
-4. Create a MySql-Database and run install.sql or install_with_predefined_ct.sql (only run one of them)* found in the install folder for this database.
-5. Copy config.json.example from the install folder to the root folder of this repo (the folder bot.js can be found in) and fill it with your data
-6. Run bot.js with ```node bot.js```
+1. Clone this repo.
+2. Run ```npm install``` in the folder of this repo.
+3. Create a MySql-Database and run install.sql or install_with_predefined_ct.sql (only run one of them)* found in the install folder for this database.
+4. Copy config.json.example from the install folder to the root folder of this repo (the folder bot.js can be found in), rename it to config,json and fill it with your data
+5. Run bot.js with ```node bot.js```
 
 `*` install_with_predefined_ct.sql adds .bot and .commands as customtexts
 
@@ -59,7 +61,7 @@ Since this project is still under developement, there are maybe some dependencie
 I would like to thank the following people for their inspirations to this project:
 
 1. [avatarkava](https://github.com/avatarkava) and his beavisBot for being the main inspiration.
-2. [atomjack](https://github.com/atomjack) for developing dubtrackapi.
+2. [anjanms](https://github.com/anjanms) for developing DubAPI.
 
 
 ### Disclaimer

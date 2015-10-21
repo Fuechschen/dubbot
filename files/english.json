@@ -8,6 +8,7 @@
     },
     "commands_reloaded": "Reloaded commands!",
     "ping": "Pong!",
-    "welcome_users": "Welcome &{username}"
+    "welcome_users": "Welcome &{username}",
+    "timelimit": "This song is too long!"
   }
 }

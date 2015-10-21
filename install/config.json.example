@@ -14,4 +14,6 @@
   "customtext_trigger": ".",
   "language_file": "en",
   "welcome_users": true
+  "timelimitenabled": false, 
+  "timelimit": 600
 }
