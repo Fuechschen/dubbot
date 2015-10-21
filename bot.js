@@ -56,36 +56,38 @@ new DubAPI(config.login, function(err, botg){
   bot.on('room_playlist-update', function(data) {
       console.log('[ADVANCE]', data);
 
-      Track.find({where: {fkid: data.media.fkid}}).then(function (row) {
-          if(row !== undefined && row.blacklisted === true){
-              bot.sendChat(S(langfile.messages.blacklist.is_blacklisted).replaceAll('&{track}', data.songInfo.name).s);
-              bot.moderateSkip();
-              return;
-          }
-      });
+      if(data.media !== undefined && data.media !== null){
+        Track.find({where: {fkid: data.media.fkid}}).then(function (row) {
+            if(row !== undefined && row.blacklisted === true){
+                bot.sendChat(S(langfile.messages.blacklist.is_blacklisted).replaceAll('&{track}', data.songInfo.name).s);
+                bot.moderateSkip();
+                return;
+            }
+        });
 
-      var songdata = {
-          name: data.media.name,
-          fkid: data.media.fkid,
-          thumbnail: data.media.images.thumbnail,
-          type: data.media.type,
-          songLength: data.media.songLength
-      };
+        var songdata = {
+            name: data.media.name,
+            fkid: data.media.fkid,
+            thumbnail: data.media.images.thumbnail,
+            type: data.media.type,
+            songLength: data.media.songLength
+        };
 
-      Track.findOrCreate({where: {fkid: songdata.fkid}, defaults : songdata}).spread(function(song){song.updateAttributes(songdata);});
+        Track.findOrCreate({where: {fkid: songdata.fkid}, defaults : songdata}).spread(function(song){song.updateAttributes(songdata);});
 
-      var stats = {
-          name: data.media.name,
-          type: data.media.type,
-          room: config.room
-      };
+        var stats = {
+            name: data.media.name,
+            type: data.media.type,
+            room: config.room
+        };
 
-      fs.writeFile(__dirname + "/stats.json", JSON.stringify(stats, null, 2), 'utf-8', function (err) {if (err) {return console.log(err);}});
+        fs.writeFile(__dirname + "/stats.json", JSON.stringify(stats, null, 2), 'utf-8', function (err) {if (err) {return console.log(err);}});
 
-      // if(config.timelimitenabled == true && data.songInfo.songLength > config.timelimit){
-      //   bot.sendChat(langfile.messages.timelimit);
-      //   bot.moderateSkip();
-      // }
+        if(config.timelimitenabled === true && data.media.songLength > config.timelimit * 1000){
+          bot.sendChat(langfile.messages.timelimit);
+          bot.moderateSkip();
+        }
+      }
 
   });
 
