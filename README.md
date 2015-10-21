@@ -3,7 +3,7 @@ Prototype of an bot for dubtrack
 
 ## IMPORTANT
 
-With this commit, bubbot does not longer require dubtrackapi (and phantomjs) since it's runned with DubAPI by anjanms. Be sure to run ```npm install``` before you start it after updating!
+With this commit, dubbot does not longer require dubtrackapi (and phantomjs) since it's runned with DubAPI by anjanms. Be sure to run ```npm install``` before you start it after updating!
 
 ### Functionality
 
