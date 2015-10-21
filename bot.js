@@ -161,7 +161,7 @@ function loadCommands(){
         names: ['!fs', '!skip'],
         handler: function(data){
             getRole(data.user.id, function (role){
-                if(role > 3){
+                if(role > 1){
                   bot.moderateSkip();
                 }
             });
