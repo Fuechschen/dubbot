@@ -51,6 +51,8 @@ new DubAPI(config.login, function(err, botg){
   bot.on('chat-message', function(data) {
       console.log('[CHAT]', data);
       handleCommand(data);
+
+      User.update({last_active: new Date()}, {where: {userid: data.user.id}})
   });
 
   bot.on('room_playlist-update', function(data) {
@@ -101,10 +103,9 @@ new DubAPI(config.login, function(err, botg){
 
       var userdata = {
           username: data.user.username,
-          userid: data.user.userInfo.userid,
-          roleid: data.user.roleid,
-          dubs: data.roomUser.dubs,
-          status: data.user.status
+          userid: data.user.id,
+          dubs: data.user.dubs,
+          last_active: new Date()
       };
 
       User.findOrCreate({where: {userid: userdata.userid}, defaults : userdata}).spread(function(user){user.updateAttributes(userdata);});
