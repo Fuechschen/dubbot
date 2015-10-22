@@ -14,6 +14,9 @@
   "customtext_trigger": ".",
   "language_file": "en",
   "welcome_users": true
-  "timelimitenabled": false, 
-  "timelimit": 600
+  "timelimitenabled": false,
+  "timelimit": 600,
+  "afkremoval": false,
+  "afktimeout": 3600,
+  "http_port": 3000
 }

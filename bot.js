@@ -5,6 +5,7 @@ var S = require('string');
 var request = require('request');
 var Sequelize = require('sequelize');
 var Promise = require('bluebird');
+var moment = require('moment');
 path = require('path');
 
 var commands = [];
@@ -39,20 +40,19 @@ new DubAPI(config.login, function(err, botg){
   bot = botg;
   console.log('Using DubApi ' + bot.version);
   loadlanguagefile();
-
   loadCommands();
 
   bot.connect(config.room);
-
   bot.on('connected', function(data){
       console.log('Connected: ', data);
   });
 
   bot.on('chat-message', function(data) {
       console.log('[CHAT]', data);
-      handleCommand(data);
-
-      //User.update({last_active: new Date()}, {where: {userid: data.user.id}});
+      if(data.user.username !== bot.getSelf().username){
+        handleCommand(data);
+        User.update({last_active: new Date(), afk: false, warned_for_afk: false}, {where: {userid: data.user.id}});
+      }
   });
 
   bot.on('room_playlist-update', function(data) {
@@ -104,7 +104,9 @@ new DubAPI(config.login, function(err, botg){
           username: data.user.username,
           userid: data.user.id,
           dubs: data.user.dubs,
-          last_active: new Date()
+          last_active: new Date(),
+          afk: false,
+          warned_for_afk: false
       };
 
       User.findOrCreate({where: {userid: userdata.userid}, defaults : userdata}).spread(function(user){user.updateAttributes(userdata);});
@@ -218,7 +220,52 @@ function loadCommands(){
               }
           });
       }
-    })
+    });
+
+    commands.push({
+        names: ['!unbl', '!unblacklist'],
+        hidden: true,
+        enabled: true,
+        matchStart: true,
+        handler: function(data) {
+            getRole(data.user.id, function (role){
+                if(role > 4){
+                    var msg = data.message.split(' ');
+                    var trackid = parseInt(msg[1]);
+                    console.log(msg);
+                    console.log(trackid);
+                    Track.find({where: {id: trackid}}).then(function(row){
+                      Track.update({blacklisted: false}, {where:{id: trackid}});
+                      bot.sendChat(S(S(langfile.messages.blacklist.unblacklisted).replaceAll('&{track}', row.name).s).replaceAll('&{username}', data.user.username).s)
+                    });
+                }
+            });
+        }
+    });
+
+    commands.push({
+      names: ['!afkcheck'],
+      hidden: true,
+      enabled: true,
+      matchStart: false,
+      handler: function(data) {
+          getRole(data.user.id, function (role){
+              if(role > 3){
+                  afkcheck();
+                  User.findAll({where: {afk: true}}).then(function(rows){
+                    var afks = '';
+                    rows.forEach(function(user, index, array){
+                      afks += user.dataValues.username;
+                      if(index !== rows.length -1){
+                        afks += ', ';
+                      }
+                    });
+                    bot.sendChat('Currently AFK: ' + afks);
+                  });
+              }
+          });
+      }
+    });
 
     commands.push({
         names: ['!bl', '!blacklist'],
@@ -310,4 +357,45 @@ function getRole(id, callback) {
             callback(role);
         }
         return role;
+}
+
+function afkcheck(){
+  var now = moment.utc();
+  request.get('https://api.dubtrack.fm/room/' + config.room, function(error1, response1, body1){
+    if(response1.statusCode === 200){
+      var room = JSON.parse(body1);
+      if(room.code === 200){
+        request.get('https://api.dubtrack.fm/room/' + room.data._id + '/playlist', function(error, response, body){
+          if(response.statusCode === 200){
+            var queueobject = JSON.parse(body);
+            if(queueobject.code === 200){
+              var queue = queueobject.data;
+              queue.forEach(function(user, index, array){
+                User.find({where: {userid: user.userid}}).then(function(row){
+                  if(row !== undefined && row !== null){
+                    if(now.diff(row.last_active, 'seconds') > config.afktimeout){
+                      User.update({afk: true}, {where: {userid: user.userid}});
+                    }
+                  }
+                });
+              });
+            }
+          }
+        });
+      }
+    }
+  });
+}
+
+function warnafk(){
+  User.findAll({where: {afk: true}}).then(function(rows){
+    var afks = '';
+    rows.forEach(function(user, index, array){
+      afks += '@' + user.dataValues.username + ' ';
+      User.update({warned_for_afk: true}, {where: {userid: user.dataValues.userid}});
+    });
+    if(rows.length !== 0){
+      bot.sendChat(afks + langfile.messages.afkwarning);
+    }
+  });
 }

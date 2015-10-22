@@ -6,7 +6,9 @@ module.exports = function (sequelize, Sequelize) {
         roleid: {type: Sequelize.INTEGER.UNSIGNED, defaultValue: 0},
         dubs: {type: Sequelize.INTEGER.UNSIGNED, defaultValue: 0},
         status: {type: Sequelize.INTEGER.UNSIGNED, defaultValue: 0},
-        last_active: {type: Sequelize.DATE, defaultValue: Sequelize.NOW}
+        last_active: {type: Sequelize.DATE, defaultValue: Sequelize.NOW},
+        afk: {type: Sequelize.BOOLEAN, defaultValue: false},
+        warned_for_afk: {type: Sequelize.BOOLEAN, defaultValue: false}
     }, {
         underscored: true,
         tableName: 'users'
