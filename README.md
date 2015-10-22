@@ -26,6 +26,7 @@ You will need an account at dubtrack with at least VIP-Permission in your room a
 3. Create a MySql-Database and run install.sql or install_with_predefined_ct.sql (only run one of them)* found in the install folder for this database.
 4. Copy config.json.example from the install folder to the root folder of this repo (the folder bot.js can be found in), rename it to config,json and fill it with your data
 5. Run bot.js with ```node bot.js```
+6. If you want to see your blacklists, also run web.js with ```node web.js```, The vier is now available under ```http://localhost:3000/blacklist```.
 
 `*` install_with_predefined_ct.sql adds .bot and .commands as customtexts
 
