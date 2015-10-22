@@ -13,7 +13,7 @@ A full list of commands can be found here: https://dubbot.net/commands/
 
 ### Requirements
 
-THis bot requires node.js. Install it on Ubuntu/Debian with ```apt-get install node```
+This bot requires node.js. Install it on Ubuntu/Debian with ```apt-get install node```
 
 You will need an account at dubtrack with at least VIP-Permission in your room and E-Mail as login method.
 
