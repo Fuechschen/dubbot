@@ -52,21 +52,13 @@ new DubAPI(config.login, function(err, botg){
       console.log('[CHAT]', data);
       handleCommand(data);
 
-      User.update({last_active: new Date()}, {where: {userid: data.user.id}})
+      //User.update({last_active: new Date()}, {where: {userid: data.user.id}});
   });
 
   bot.on('room_playlist-update', function(data) {
       console.log('[ADVANCE]', data);
 
       if(data.media !== undefined && data.media !== null){
-        Track.find({where: {fkid: data.media.fkid}}).then(function (row) {
-            if(row !== undefined && row.blacklisted === true){
-                bot.sendChat(S(langfile.messages.blacklist.is_blacklisted).replaceAll('&{track}', data.songInfo.name).s);
-                bot.moderateSkip();
-                return;
-            }
-        });
-
         var songdata = {
             name: data.media.name,
             fkid: data.media.fkid,
@@ -75,7 +67,14 @@ new DubAPI(config.login, function(err, botg){
             songLength: data.media.songLength
         };
 
-        Track.findOrCreate({where: {fkid: songdata.fkid}, defaults : songdata}).spread(function(song){song.updateAttributes(songdata);});
+        Track.findOrCreate({where: {fkid: songdata.fkid}, defaults : songdata}).spread(function(song){
+          song.updateAttributes(songdata);
+          if(song.blacklisted === true){
+            bot.sendChat(S(langfile.messages.blacklist.is_blacklisted).replaceAll('&{track}', data.media.name).s);
+            bot.moderateSkip();
+            return;
+          }
+        });
 
         var stats = {
             name: data.media.name,
@@ -95,7 +94,7 @@ new DubAPI(config.login, function(err, botg){
 
   bot.on('error', function(err) {
       console.log('[ERROR]', err);
-      bot.connect(config.room);
+      bot.reconnect();
   });
 
   bot.on('user-join', function(data){
@@ -152,7 +151,7 @@ function handleCommand(data){
 
     if(S(data.message).startsWith(config.customtext_trigger) === true){
       CustomText.find({where: {trigger: S(data.message).chompLeft(config.customtext_trigger).s}}).then(function(row){
-        if(row !== undefined){
+        if(row !== undefined && row !== null){
           bot.sendChat(row.response);
         }
       });
@@ -287,46 +286,26 @@ function loadlanguagefile() {
 
 function getRole(id, callback) {
         var user = bot.getUser(id);
-        console.log(user);
         var role = 0;
-        if(user.role === null){
-            console.log('[ROLE] resolved ' + id + ' as 0');
-            role = 0;
-            if (typeof callback === 'function'){
-                callback(role);
-            }
-            return;
+        if(bot.isCreator(user) === true){
+          role = 6;
         }
-        switch(user.role.type){
-            case "resident-dj":
-                console.log('[ROLE] resolved ' + id + ' as 1');
-                role = 1;
-                break;
-            case "vip":
-                console.log('[ROLE] resolved ' + id + ' as 2');
-                role = 2;
-                break;
-            case "mod":
-                console.log('[ROLE] resolved ' + id + ' as 3');
-                role = 3;
-                break;
-            case "manager":
-                console.log('[ROLE] resolved ' + id + ' as 4');
-                role = 4;
-                break;
-            case "co-owner":
-                console.log('[ROLE] resolved ' + id + ' as 5');
-                role = 5;
-                break;
-            case "owner":
-                console.log('[ROLE] resolved ' + id + ' as 6');
-                role = 6;
-                break;
-            default:
-                console.log('[ROLE] resolved ' + id + ' as 0');
-                role = 0;
-                break;
+        if(bot.isOwner(user) === true){
+          role = 5;
         }
+        if(bot.isManager(user) === true){
+          role = 4;
+        }
+        if(bot.isMod(user) === true){
+          role = 3;
+        }
+        if(bot.isVIP(user) === true){
+          role = 2;
+        }
+        if(bot.isResidentDJ(user) === true){
+          role = 1;
+        }
+        console.log('resolved ' + id + ' as ' + role);
         if (typeof callback === 'function'){
             callback(role);
         }
