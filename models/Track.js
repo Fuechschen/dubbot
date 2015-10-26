@@ -1,6 +1,6 @@
 module.exports = function (sequelize, Sequelize) {
     return sequelize.define('Track', {
-        id: {type: Sequelize.INTEGER.UNSIGNED, allowNull: false, primaryKey: true},
+        id: {type: Sequelize.INTEGER.UNSIGNED, allowNull: false, primaryKey: true, autoIncrement: true},
         name: {type: Sequelize.STRING, allowNull: false},
         fkid: {type: Sequelize.STRING, allowNull: false},
         thumbnail: {type: Sequelize.STRING, allowNull: true},
