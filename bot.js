@@ -51,7 +51,7 @@ new DubAPI(config.login, function(err, botg){
       console.log('[CHAT]', data);
       if(data.user.username !== bot.getSelf().username){
         handleCommand(data);
-        //User.update({last_active: new Date(), afk: false, warned_for_afk: false}, {where: {userid: data.user.id}});
+        User.update({last_active: new Date(), afk: false, warned_for_afk: false}, {where: {userid: data.user.id}});
       }
   });
 
