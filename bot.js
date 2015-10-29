@@ -51,7 +51,7 @@ new DubAPI(config.login, function(err, botg){
       console.log('[CHAT]', data);
       if(data.user.username !== bot.getSelf().username){
         handleCommand(data);
-        User.update({last_active: new Date(), afk: false, warned_for_afk: false}, {where: {userid: data.user.id}});
+        //User.update({last_active: new Date(), afk: false, warned_for_afk: false}, {where: {userid: data.user.id}});
       }
   });
 
@@ -260,7 +260,9 @@ function loadCommands(){
                         afks += ', ';
                       }
                     });
-                    bot.sendChat('Currently AFK: ' + afks);
+                    if(afks !== undefined){
+                      bot.sendChat('Currently AFK: ' + afks);
+                    }
                   });
               }
           });
@@ -284,6 +286,7 @@ function loadCommands(){
             });
         }
     });
+
 
     try {
         fs.readdirSync(path.resolve(__dirname, 'commands')).forEach(function (file) {
@@ -397,5 +400,16 @@ function warnafk(){
     if(rows.length !== 0){
       bot.sendChat(afks + langfile.messages.afkwarning);
     }
+  });
+}
+
+function removeafk(){
+  User.findAll({where: {warned_for_afk: true}}).then(function(rows){
+    var message = '';
+    rows.forEach(function(user, index, array){
+      message += '@' + user.dataValues.username + langfile.messages.;
+      bot.moderateRemoveUserfromQueue(user.dataValues.userid);
+    });
+    bot.sendChat(message + langfile.messages.afkremove);
   });
 }
