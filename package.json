@@ -1,7 +1,7 @@
 {
   "name": "dubbot",
   "description": "Prototype of a Dubtrack-Bot",
-  "version": "0.0.1",
+  "version": "0.2.1",
   "keywords": [],
   "repository": {
     "type": "git",
