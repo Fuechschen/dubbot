@@ -12,6 +12,7 @@ var commands = [];
 var config = require(path.resolve(__dirname, 'config.json'));
 var bot;
 var langfile;
+var afkremovetimeout;
 
 sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
     dialect: 'mysql',
@@ -45,13 +46,17 @@ new DubAPI(config.login, function(err, botg){
   bot.connect(config.room);
   bot.on('connected', function(data){
       console.log('Connected: ', data);
+
+      afkremovetimeout = setTimeout(function () {
+        performafkcheck();
+      }, _.random(2, 6) * 60 * 1000);
   });
 
   bot.on('chat-message', function(data) {
       console.log('[CHAT]', data);
       if(data.user.username !== bot.getSelf().username){
         handleCommand(data);
-        //User.update({last_active: new Date(), afk: false, warned_for_afk: false}, {where: {userid: data.user.id}});
+        User.update({last_active: new Date(), afk: false, warned_for_afk: false}, {where: {userid: data.user.id}});
       }
   });
 
@@ -94,6 +99,7 @@ new DubAPI(config.login, function(err, botg){
 
   bot.on('error', function(err) {
       console.log('[ERROR]', err);
+      clearTimeout(afkremovetimeout);
       bot.reconnect();
   });
 
@@ -362,6 +368,17 @@ function getRole(id, callback) {
         return role;
 }
 
+function performafkcheck(){
+  if(config.afkremoval === true){
+    afkcheck();
+    warnafk();
+    removeafk();
+    afkremovetimeout = setTimeout(function () {
+      performafkcheck();
+    }, _.random(2, 6) * 60 * 1000);
+  }
+}
+
 function afkcheck(){
   var now = moment.utc();
   request.get('https://api.dubtrack.fm/room/' + config.room, function(error1, response1, body1){
@@ -407,7 +424,7 @@ function removeafk(){
   User.findAll({where: {warned_for_afk: true}}).then(function(rows){
     var message = '';
     rows.forEach(function(user, index, array){
-      message += '@' + user.dataValues.username + langfile.messages.;
+      message += '@' + user.dataValues.username + langfile.messages.afkremove;
       bot.moderateRemoveUserfromQueue(user.dataValues.userid);
     });
     bot.sendChat(message + langfile.messages.afkremove);
