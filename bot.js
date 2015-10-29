@@ -256,7 +256,7 @@ function loadCommands(){
       matchStart: false,
       handler: function(data) {
           getRole(data.user.id, function (role){
-              if(role > 3){
+              if(role > 1){
                   afkcheck();
                   User.findAll({where: {afk: true}}).then(function(rows){
                     var afks = '';
