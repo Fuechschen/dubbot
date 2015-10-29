@@ -425,7 +425,7 @@ function removeafk(){
     var message = '';
     rows.forEach(function(user, index, array){
       message += '@' + user.dataValues.username + langfile.messages.afkremove;
-      bot.moderateRemoveUserfromQueue(user.dataValues.userid);
+      bot.moderateRemoveDJ(user.dataValues.userid);
     });
     bot.sendChat(message + langfile.messages.afkremove);
   });
