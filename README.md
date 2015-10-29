@@ -7,9 +7,15 @@ With this commit, dubbot does not longer require dubtrackapi (and phantomjs) sin
 
 ### Functionality
 
-Since this is currently only a prototype, there aren't much features now, but they will be added soon when a full documented api dubtrack is out. Currently, the bot is capable of blacklisting and skipping songs.
+Since dubbot is still under development, there will be features added in future. The current funktion are:
 
-A full list of commands can be found here: https://dubbot.net/commands/
+* Skipping
+* Blacklisting
+* Logging chat
+* Custom Text Chat Triggers
+* Afk-Removal
+
+A full list of commands can be found here: https://dubbot.net/commands
 
 ### Requirements
 

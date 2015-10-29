@@ -14,6 +14,8 @@ var bot;
 var langfile;
 var afkremovetimeout;
 
+var skipable = true;
+
 sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
     dialect: 'mysql',
     host: config.db.host,
@@ -171,8 +173,12 @@ function loadCommands(){
         names: ['!fs', '!skip'],
         handler: function(data){
             getRole(data.user.id, function (role){
-                if(role > 1){
+                if(role > 1 && skipable === true){
                   bot.moderateSkip();
+                  skipable = false;
+                  setTimeout(function () {
+                    skipable = true;
+                  }, 3 * 1000);
                 }
             });
         },
@@ -282,12 +288,15 @@ function loadCommands(){
         matchStart: true,
         handler: function(data) {
             getRole(data.user.id, function (role){
-                if(role > 2){
+                if(role > 2 && skipable === true){
                     var track = bot.getMedia();
-                    console.log(track);
-                        Track.update({blacklisted: true}, {where: {fkid: track.fkid}});
-                        bot.sendChat(S(S(langfile.messages.blacklist.blacklisted_by).replaceAll('&{track}', track.name).s).replaceAll('&{username}', data.user.username).s);
-                        bot.moderateSkip();
+                    Track.update({blacklisted: true}, {where: {fkid: track.fkid}});
+                    bot.sendChat(S(S(langfile.messages.blacklist.blacklisted_by).replaceAll('&{track}', track.name).s).replaceAll('&{username}', data.user.username).s);
+                    bot.moderateSkip();
+                    skipable = false
+                    setTimeout(function () {
+                      skipable = true;
+                    }, 3 * 1000);
                 }
             });
         }
