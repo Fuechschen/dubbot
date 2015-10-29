@@ -262,7 +262,7 @@ function loadCommands(){
       matchStart: false,
       handler: function(data) {
           getRole(data.user.id, function (role){
-              if(role > 3){
+              if(role > 1){
                   afkcheck();
                   User.findAll({where: {afk: true}}).then(function(rows){
                     var afks = '';
@@ -434,7 +434,7 @@ function removeafk(){
     var message = '';
     rows.forEach(function(user, index, array){
       message += '@' + user.dataValues.username + langfile.messages.afkremove;
-      bot.moderateRemoveUserfromQueue(user.dataValues.userid);
+      bot.moderateRemoveDJ(user.dataValues.userid);
     });
     bot.sendChat(message + langfile.messages.afkremove);
   });
