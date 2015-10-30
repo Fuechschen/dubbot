@@ -15,6 +15,7 @@ var langfile;
 var afkremovetimeout;
 
 var skipable = true;
+var helptimeout = false;
 
 sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
     dialect: 'mysql',
@@ -195,6 +196,26 @@ function loadCommands(){
                     bot.sendChat(langfile.messages.ping);
                 }
             });
+        },
+        hidden: true,
+        enabled: true,
+        matchStart: true
+    });
+
+    commands.push({
+        names: ['!help'],
+        handler: function(data){
+            if(helptimeout === false){
+              var mods = '';
+              bot.getStaff().forEach(function(mod, index, array){
+                if(mod.id !== bot.getSelf().id){
+                  mods += '@' + mod.username + ' '
+                }
+              });
+              bot.sendChat(S(langfile.messages.help).replaceAll('&{mods}', mods).s);
+              helptimeout = true;
+              setTimeout(function(){helptimeout = false}, 10 * 1000);
+            }
         },
         hidden: true,
         enabled: true,
