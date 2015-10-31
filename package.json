@@ -1,7 +1,7 @@
 {
   "name": "dubbot",
   "description": "Prototype of a Dubtrack-Bot",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "keywords": [],
   "repository": {
     "type": "git",
@@ -25,7 +25,8 @@
     "request": "*",
     "sequelize": "*",
     "string": "*",
-    "underscore": "*"
+    "underscore": "*",
+    "cleverbot-node": "git://github.com/AvatarKava/cleverbot-node.git"
   },
   "devDependencies": {
     "sequelize-fixtures": "*"

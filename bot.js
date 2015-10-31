@@ -6,6 +6,7 @@ var request = require('request');
 var Sequelize = require('sequelize');
 var Promise = require('bluebird');
 var moment = require('moment');
+var Cleverbot = require('cleverbot-node');
 path = require('path');
 
 var commands = [];
@@ -20,7 +21,8 @@ var helptimeout = false;
 sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
     dialect: 'mysql',
     host: config.db.host,
-    port: config.db.port
+    port: config.db.port,
+    logging: false
 });
 
 sequelize.authenticate().then(function (err) {
@@ -39,6 +41,9 @@ var models = ['Track', 'User', 'CustomText'];
 
 sequelize.sync();
 
+var cleverbot = new Cleverbot;
+cleverbot.prepare();
+
 new DubAPI(config.login, function(err, botg){
   if(err){return console.error(err);}
   bot = botg;
@@ -46,25 +51,32 @@ new DubAPI(config.login, function(err, botg){
   loadlanguagefile();
   loadCommands();
 
-  bot.connect(config.room);
+  bot.connect(config.options.room);
   bot.on('connected', function(data){
       console.log('Connected: ', data);
 
       afkremovetimeout = setTimeout(function () {
         performafkcheck();
       }, _.random(2, 6) * 60 * 1000);
+      performafkcheck();
   });
 
   bot.on('chat-message', function(data) {
-      console.log('[CHAT]', data);
+      console.log('[CHAT]', data.user.username, ':', data.message);
       if(data.user.username !== bot.getSelf().username){
         handleCommand(data);
-        User.update({last_active: new Date(), afk: false, warned_for_afk: false}, {where: {userid: data.user.id}});
+        User.update({last_active: new Date(), afk: false, warned_for_afk: false, removed_for_afk: false}, {where: {userid: data.user.id}});
+
+        if(config.cleverbot.enabled === true && S(data.message).contains('@' + bot.getSelf().username === true)){
+          cleverbot.write(S(data.message).replaceAll('@' + bot.getSelf().username, '').s, function(res){
+            bot.sendChat('@' + data.user.username + ' ' + res.message);
+          });
+        }
       }
   });
 
   bot.on('room_playlist-update', function(data) {
-      console.log('[ADVANCE]', data);
+      console.log('[ADVANCE]', data.user.username, ': [', data.media.name, '|', data.media.fkid, '|', data.media.type, '|', data.media.songLength, ']');
 
       if(data.media !== undefined && data.media !== null){
         var songdata = {
@@ -87,12 +99,12 @@ new DubAPI(config.login, function(err, botg){
         var stats = {
             name: data.media.name,
             type: data.media.type,
-            room: config.room
+            room: config.options.room
         };
 
         fs.writeFile(__dirname + "/stats.json", JSON.stringify(stats, null, 2), 'utf-8', function (err) {if (err) {return console.log(err);}});
 
-        if(config.timelimitenabled === true && data.media.songLength > config.timelimit * 1000){
+        if(config.timelimit.enabled === true && data.media.songLength > config.timelimit.limit * 1000){
           bot.sendChat(langfile.messages.timelimit);
           bot.moderateSkip();
         }
@@ -101,13 +113,13 @@ new DubAPI(config.login, function(err, botg){
   });
 
   bot.on('error', function(err) {
-      console.log('[ERROR]', err);
+      console.log('[ERROR]', error1);
       clearTimeout(afkremovetimeout);
       bot.reconnect();
   });
 
   bot.on('user-join', function(data){
-      console.log('[JOIN]', data);
+      console.log('[JOIN]', '[', data.user.username, '|', data.user.id, '|', data.user.dubs, ']');
 
       var userdata = {
           username: data.user.username,
@@ -115,18 +127,20 @@ new DubAPI(config.login, function(err, botg){
           dubs: data.user.dubs,
           last_active: new Date(),
           afk: false,
-          warned_for_afk: false
+          warned_for_afk: false,
+          removed_for_afk: false
       };
 
       User.findOrCreate({where: {userid: userdata.userid}, defaults : userdata}).spread(function(user){user.updateAttributes(userdata);});
 
-      if(data.user.username !== config.login.username && config.welcome_users === true){
+      if(data.user.username !== config.login.username && config.options.welcome_users === true){
         bot.sendChat(S(langfile.messages.welcome_users).replaceAll('&{username}', data.user.username).s)
       }
   });
 
   bot.on('user-leave', function(data){
-      console.log('[LEAVE]', data);
+      console.log('[LEAVE]', '[', data.user.username, '|', data.user.id, '|', data.user.dubs, ']');
+      User.update({last_active: new Date(), afk: false, warned_for_afk: false, removed_for_afk: false}, {where: {userid: data.user.id}});
   });
 
   bot.on('room-update', function(data){
@@ -153,15 +167,12 @@ function handleCommand(data){
         return found;
     })[0];
     if (command && command.enabled) {
-        if (config.verboseLogging) {
-            logger.info('[COMMAND]', JSON.stringify(data, null, 2));
-        }
         command.handler(data, bot);
         console.log('[COMMAND] Executed command ' + command.names[0] + ' (' + data.message + ')');
     }
 
-    if(S(data.message).startsWith(config.customtext_trigger) === true){
-      CustomText.find({where: {trigger: S(data.message).chompLeft(config.customtext_trigger).s}}).then(function(row){
+    if(S(data.message).startsWith(config.options.customtext_trigger) === true){
+      CustomText.find({where: {trigger: S(data.message).chompLeft(config.options.customtext_trigger).s}}).then(function(row){
         if(row !== undefined && row !== null){
           bot.sendChat(row.response);
         }
@@ -247,9 +258,10 @@ function loadCommands(){
           getRole(data.user.id, function (role){
               if(role > 3){
                   var texts = data.message.split('/:');
-                  var newtrigger = S(texts[1].trim()).chompLeft(config.customtext_trigger).s;
+                  var newtrigger = S(texts[1].trim()).chompLeft(config.options.customtext_trigger).s;
                   var newresponse = texts[2].trim();
                   CustomText.findOrCreate({where: {trigger: newtrigger}, defaults: {trigger: newtrigger, response: newresponse}}).spread(function(customtext){customtext.updateAttributes({trigger: newtrigger, response: newresponse})});
+                  console.log('[CUSTOMTEXT]', data.user.username, ': [', texts[1], '|', texts[2], ']');
               }
           });
       }
@@ -265,11 +277,10 @@ function loadCommands(){
                 if(role > 4){
                     var msg = data.message.split(' ');
                     var trackid = parseInt(msg[1]);
-                    console.log(msg);
-                    console.log(trackid);
                     Track.find({where: {id: trackid}}).then(function(row){
                       Track.update({blacklisted: false}, {where:{id: trackid}});
                       bot.sendChat(S(S(langfile.messages.blacklist.unblacklisted).replaceAll('&{track}', row.name).s).replaceAll('&{username}', data.user.username).s)
+                      console.log('[UNBLACKLIST]', data.user.username, ': [', row.name, '|', row.fkid, ']');
                     });
                 }
             });
@@ -292,10 +303,11 @@ function loadCommands(){
                       if(index !== rows.length -1){
                         afks += ', ';
                       }
+                      if(afks.length > 2){
+                        bot.sendChat('Currently AFK: ' + afks);
+                      }
                     });
-                    if(afks !== undefined){
-                      bot.sendChat('Currently AFK: ' + afks);
-                    }
+
                   });
               }
           });
@@ -318,6 +330,7 @@ function loadCommands(){
                     setTimeout(function () {
                       skipable = true;
                     }, 3 * 1000);
+                    console.log('[BLACKLIST]', data.user.username, ': [', track.name, '|', track.fkid, ']');
                 }
             });
         }
@@ -343,12 +356,12 @@ function loadCommands(){
 
 function loadlanguagefile() {
   var url;
-  if(config.language_file === 'de'){
+  if(config.options.language_file === 'de'){
     url = 'https://cdn.dubbot.net/files/language/german.json';
-  } else if(config.language_file === 'en'){
+  } else if(config.options.language_file === 'en'){
     url = 'https://cdn.dubbot.net/files/language/english.json';
   } else {
-    url = config.language_file;
+    url = config.options.language_file;
   }
 
   request.get(url, function(error, response, body){
@@ -399,19 +412,24 @@ function getRole(id, callback) {
 }
 
 function performafkcheck(){
-  if(config.afkremoval === true){
+  if(config.afkremoval.enabled === true){
     afkcheck();
+    if(config.afkremoval.kick === true){
+      kickforafk();
+    }
     warnafk();
     removeafk();
+    var minutes = _.random(2, 6);
     afkremovetimeout = setTimeout(function () {
       performafkcheck();
-    }, _.random(2, 6) * 60 * 1000);
+    }, minutes * 60 * 1000);
+    console.log('Performing AFK-Check, Next check in ' + minutes + ' minutes');
   }
 }
 
 function afkcheck(){
   var now = moment.utc();
-  request.get('https://api.dubtrack.fm/room/' + config.room, function(error1, response1, body1){
+  request.get('https://api.dubtrack.fm/room/' + config.options.room, function(error1, response1, body1){
     if(response1.statusCode === 200){
       var room = JSON.parse(body1);
       if(room.code === 200){
@@ -423,7 +441,7 @@ function afkcheck(){
               queue.forEach(function(user, index, array){
                 User.find({where: {userid: user.userid}}).then(function(row){
                   if(row !== undefined && row !== null){
-                    if(now.diff(row.last_active, 'seconds') > config.afktimeout){
+                    if(now.diff(row.last_active, 'seconds') > config.afkremoval.timeout){
                       User.update({afk: true}, {where: {userid: user.userid}});
                     }
                   }
@@ -438,7 +456,7 @@ function afkcheck(){
 }
 
 function warnafk(){
-  User.findAll({where: {afk: true}}).then(function(rows){
+  User.findAll({where: {afk: true, warned_for_afk: false}}).then(function(rows){
     var afks = '';
     rows.forEach(function(user, index, array){
       afks += '@' + user.dataValues.username + ' ';
@@ -454,9 +472,24 @@ function removeafk(){
   User.findAll({where: {warned_for_afk: true}}).then(function(rows){
     var message = '';
     rows.forEach(function(user, index, array){
-      message += '@' + user.dataValues.username + langfile.messages.afkremove;
+      message += '@' + user.dataValues.username + ' ';
       bot.moderateRemoveDJ(user.dataValues.userid);
     });
-    bot.sendChat(message + langfile.messages.afkremove);
+    if(message.length > 3){
+      bot.sendChat(message + langfile.messages.afkremove);
+    }
+  });
+}
+
+function kickforafk(){
+  User.findAll({where: {removed_for_afk: true}}).then(function(rows){
+    var message = '';
+    rows.forEach(function(user, index, arr){
+      message += '@' + user.dataValues.username + ' ';
+      bot.moderateKickUser(user.userid);
+    });
+    if(message.length > 0){
+      bot.sendChat(message + langfile.messages.afkkick);
+    }
   });
 }

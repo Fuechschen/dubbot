@@ -8,7 +8,8 @@ module.exports = function (sequelize, Sequelize) {
         status: {type: Sequelize.INTEGER.UNSIGNED, defaultValue: 0},
         last_active: {type: Sequelize.DATE, defaultValue: Sequelize.NOW},
         afk: {type: Sequelize.BOOLEAN, defaultValue: false},
-        warned_for_afk: {type: Sequelize.BOOLEAN, defaultValue: false}
+        warned_for_afk: {type: Sequelize.BOOLEAN, defaultValue: false},
+        removed_for_afk: {type: Sequelize.BOOLEAN, defaultValue: false}
     }, {
         underscored: true,
         tableName: 'users'

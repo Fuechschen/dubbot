@@ -12,6 +12,8 @@
     "welcome_users": "Welcome &{username}",
     "timelimit": "This song is too long!",
     "afkwarning": "Seems like you are AFK? Stay active in chat or you will be removed from the queue!",
-    "afkremove": "You have been afk for too long! You will now be removed from the queue. Remember to chat next time!"
+    "afkremove": "You have been afk for too long! You will now be removed from the queue. Remember to chat next time!",
+    "afkkick": "You have been removed from the queue for being AFK once. You will now be kicked out of the room!",
+    "help": "Need help? &{mods}"
   }
 }

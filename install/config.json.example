@@ -1,22 +1,32 @@
 {
   "login": {
-      "username": "putloginhere",
-      "password": "putpasswordhere"
+      "username": "",
+      "password": ""
   },
-  "room": "putroomhere",
+  "options":{
+    "room": "",
+    "language_file": "en",
+    "customtext_trigger": ".",
+    "welcome_users": true,
+    "http_port": 3000
+  },
 	"db": {
-		"database": "db",
-		"username": "dbuser",
-		"password": "dbpass",
-		"host": "dbserver",
+		"database": "",
+		"username": "",
+		"password": "",
+		"host": "",
 		"port": "3306"
 	},
-  "customtext_trigger": ".",
-  "language_file": "en",
-  "welcome_users": true
-  "timelimitenabled": false,
-  "timelimit": 600,
-  "afkremoval": false,
-  "afktimeout": 3600,
-  "http_port": 3000
+  "timelimit": {
+    "enabled": true,
+    "limit": 600
+  },
+  "afkremoval": {
+    "enabled": true,
+    "timeout": 3600,
+    "kick": true
+  },
+  "cleverbot": {
+    "enabled": true
+  }
 }
