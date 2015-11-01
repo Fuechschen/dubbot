@@ -7,13 +7,26 @@
       "is_blacklisted": "The track &{track} is blacklisted!",
       "unblacklisted": "&{username} unblacklisted &{track}"
     },
-    "commands_reloaded": "Reloaded commands!",
-    "ping": "Pong!",
-    "welcome_users": "Welcome &{username}",
-    "timelimit": "This song is too long!",
-    "afkwarning": "Seems like you are AFK? Stay active in chat or you will be removed from the queue!",
-    "afkremove": "You have been afk for too long! You will now be removed from the queue. Remember to chat next time!",
-    "afkkick": "You have been removed from the queue for being AFK once. You will now be kicked out of the room!",
-    "help": "Need help? &{mods}"
+    "commands_reloaded": {
+      "default": "Reloaded commands!"
+    },
+    "ping": {
+      "default": "Pong!"
+    },
+    "welcome_users": {
+      "default": "Welcome &{username}"
+    },
+    "timelimit": {
+      "default": "This song is too long!"
+    },
+    "afk": {
+      "warning": "Seems like you are AFK? Stay active in chat or you will be removed from the queue!",
+      "remove": "You have been afk for too long! You will now be removed from the queue. Remember to chat next time!",
+      "kick": "You have been removed from the queue for being AFK once. You will now be kicked out of the room!"
+    },
+    "help": {
+      "default": "Need help? &{mods}",
+      "no_one_here": "Unfortunately, there is no one who can help you.. Sorry"
+    }
   }
 }

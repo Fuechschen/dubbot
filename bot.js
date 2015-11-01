@@ -76,7 +76,11 @@ new DubAPI(config.login, function(err, botg){
   });
 
   bot.on('room_playlist-update', function(data) {
-      console.log('[ADVANCE]', data.user.username, ': [', data.media.name, '|', data.media.fkid, '|', data.media.type, '|', data.media.songLength, ']');
+      try{
+        console.log('[ADVANCE]', data.user.username, ': [', data.media.name, '|', data.media.fkid, '|', data.media.type, '|', data.media.songLength, ']');
+      } catch(e){
+
+      }
 
       if(data.media !== undefined && data.media !== null){
         var songdata = {
@@ -105,7 +109,7 @@ new DubAPI(config.login, function(err, botg){
         fs.writeFile(__dirname + "/stats.json", JSON.stringify(stats, null, 2), 'utf-8', function (err) {if (err) {return console.log(err);}});
 
         if(config.timelimit.enabled === true && data.media.songLength > config.timelimit.limit * 1000){
-          bot.sendChat(langfile.messages.timelimit);
+          bot.sendChat(langfile.messages.timelimit.default);
           bot.moderateSkip();
         }
       }
@@ -134,7 +138,7 @@ new DubAPI(config.login, function(err, botg){
       User.findOrCreate({where: {userid: userdata.userid}, defaults : userdata}).spread(function(user){user.updateAttributes(userdata);});
 
       if(data.user.username !== config.login.username && config.options.welcome_users === true){
-        bot.sendChat(S(langfile.messages.welcome_users).replaceAll('&{username}', data.user.username).s)
+        bot.sendChat(S(langfile.messages.welcome_users.default).replaceAll('&{username}', data.user.username).s)
       }
   });
 
@@ -204,7 +208,7 @@ function loadCommands(){
         handler: function(data){
             getRole(data.user.id, function (role){
                 if(role > 1){
-                    bot.sendChat(langfile.messages.ping);
+                    bot.sendChat(langfile.messages.ping.default);
                 }
             });
         },
@@ -223,7 +227,12 @@ function loadCommands(){
                   mods += '@' + mod.username + ' '
                 }
               });
-              bot.sendChat(S(langfile.messages.help).replaceAll('&{mods}', mods).s);
+              if(mods.length > 2){
+                bot.sendChat(S(langfile.messages.help.default).replaceAll('&{mods}', mods).s);
+              } else {
+                bot.sendChat(langfile.messages.help.no_one_here);
+              }
+
               helptimeout = true;
               setTimeout(function(){helptimeout = false}, 10 * 1000);
             }
@@ -240,7 +249,7 @@ function loadCommands(){
                 if(role > 3){
                     commands = [];
                     loadCommands();
-                    bot.sendChat(langfile.messages.commands_reloaded);
+                    bot.sendChat(langfile.messages.commands_reloaded.default);
                 }
             });
         },
@@ -463,7 +472,7 @@ function warnafk(){
       User.update({warned_for_afk: true}, {where: {userid: user.dataValues.userid}});
     });
     if(rows.length !== 0){
-      bot.sendChat(afks + langfile.messages.afkwarning);
+      bot.sendChat(afks + langfile.messages.afk.warning);
     }
   });
 }
@@ -476,7 +485,7 @@ function removeafk(){
       bot.moderateRemoveDJ(user.dataValues.userid);
     });
     if(message.length > 3){
-      bot.sendChat(message + langfile.messages.afkremove);
+      bot.sendChat(message + langfile.messages.afk.remove);
     }
   });
 }
@@ -489,7 +498,7 @@ function kickforafk(){
       bot.moderateKickUser(user.userid);
     });
     if(message.length > 0){
-      bot.sendChat(message + langfile.messages.afkkick);
+      bot.sendChat(message + langfile.messages.afk.kick);
     }
   });
 }
