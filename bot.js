@@ -313,7 +313,7 @@ function loadCommands(){
                         afks += ', ';
                       }
                       if(afks.length > 2){
-                        bot.sendChat('Currently AFK: ' + afks);
+                        bot.sendChat(S(langfile.messages.afk.check).replaceAll('&{afks}', afks).s);
                       }
                     });
 
