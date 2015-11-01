@@ -22,12 +22,15 @@
     "afk": {
       "warning": "Seems like you are AFK? Stay active in chat or you will be removed from the queue!",
       "remove": "You have been afk for too long! You will now be removed from the queue. Remember to chat next time!",
-      "kick": "You have been removed from the queue for being AFK once. You will now be kicked out of the room!",
-      "check": "Currently AFK: &{afks}"
+      "kick": "You have been removed from the queue for being AFK once. You will now be kicked out of the room!"
     },
     "help": {
       "default": "Need help? &{mods}",
       "no_one_here": "Unfortunately, there is no one who can help you.. Sorry"
+    },
+    "define":{
+      "no_definition_found": "No definition for &{word} found",
+      "definition_found": "[ &{word} ] &{definition}"
     }
   }
 }

@@ -230,9 +230,9 @@ function loadCommands(){
               if(mods.length > 2){
                 bot.sendChat(S(langfile.messages.help.default).replaceAll('&{mods}', mods).s);
               } else {
+                console.log(langfile.messages.help.no_one_here);
                 bot.sendChat(langfile.messages.help.no_one_here);
               }
-
               helptimeout = true;
               setTimeout(function(){helptimeout = false}, 10 * 1000);
             }
@@ -342,6 +342,30 @@ function loadCommands(){
                     console.log('[BLACKLIST]', data.user.username, ': [', track.name, '|', track.fkid, ']');
                 }
             });
+        }
+    });
+
+    commands.push({
+        names: ['!define'],
+        hidden: true,
+        enabled: true,
+        matchStart: true,
+        handler: function(data) {
+            var msg = _.rest(data.message.split(' '), 1).join(' ').trim();
+            if (msg.length > 0 && config.apiKeys.wordnik) {
+                var uri = "http://api.wordnik.com:80/v4/word.json/" + msg + "/definitions?limit=200&includeRelated=true&useCanonical=true&includeTags=false&api_key=" + config.apiKeys.wordnik;
+                request.get(uri, function (error, response, body) {
+                  if (!error && response.statusCode == 200) {
+                    var definition = JSON.parse(body);
+                    console.log(definition);
+                    if (definition.length === 0) {
+                      bot.sendChat(S(langfile.messages.define.no_definition_found).replaceAll('&{word}', msg).s);
+                    } else {
+                      bot.sendChat(S(S(langfile.messages.define.definition_found).replaceAll('&{word}', msg).s).replaceAll('&{definition}', definition[0].text).s);
+                    }
+                  }
+                });
+              }
         }
     });
 
