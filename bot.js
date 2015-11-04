@@ -59,13 +59,16 @@ new DubAPI(config.login, function(err, botg){
         performafkcheck();
       }, _.random(2, 6) * 60 * 1000);
       performafkcheck();
+      User.update({removed_for_afk: false, warned_for_afk: false}, {where: {status: 1}});
   });
 
   bot.on('chat-message', function(data) {
       console.log('[CHAT]', data.user.username, ':', data.message);
       if(data.user.username !== bot.getSelf().username){
         handleCommand(data);
-        User.update({last_active: new Date(), afk: false, warned_for_afk: false, removed_for_afk: false}, {where: {userid: data.user.id}});
+        if(S(data.message).contains('I am AFK at the moment.') === false){
+          User.update({last_active: new Date(), afk: false, warned_for_afk: false, removed_for_afk: false}, {where: {userid: data.user.id}});
+        }
 
         if(config.cleverbot.enabled === true && S(data.message).contains('@' + bot.getSelf().username === true)){
           cleverbot.write(S(data.message).replaceAll('@' + bot.getSelf().username, '').s, function(res){
@@ -113,11 +116,10 @@ new DubAPI(config.login, function(err, botg){
           bot.moderateSkip();
         }
       }
-
   });
 
   bot.on('error', function(err) {
-      console.log('[ERROR]', error1);
+      console.log('[ERROR]', err);
       clearTimeout(afkremovetimeout);
       bot.reconnect();
   });
@@ -130,6 +132,7 @@ new DubAPI(config.login, function(err, botg){
           userid: data.user.id,
           dubs: data.user.dubs,
           last_active: new Date(),
+          rank: getRole(data.user.id),
           afk: false,
           warned_for_afk: false,
           removed_for_afk: false
@@ -148,7 +151,14 @@ new DubAPI(config.login, function(err, botg){
   });
 
   bot.on('room-update', function(data){
-      console.log('[ROOM-UPDATE]', data);
+      console.log('[ROOM-UPDATE]');
+  });
+
+  bot.on('userSetRole', function(data){
+    console.log('[SETROLE]', data.mod.username, '|', data.user.username);
+    getRole(user.id, function(role){
+      User.update({rank: role}, {where: {userid: user.id}});
+    });
   });
 
 
@@ -218,6 +228,20 @@ function loadCommands(){
     });
 
     commands.push({
+        names: ['!test'],
+        handler: function(data){
+            getRole(data.user.id, function (role){
+                if(role > 1){
+                    queuecheck();
+                }
+            });
+        },
+        hidden: true,
+        enabled: true,
+        matchStart: true
+    });
+
+    commands.push({
         names: ['!help'],
         handler: function(data){
             if(helptimeout === false){
@@ -252,6 +276,34 @@ function loadCommands(){
                     bot.sendChat(langfile.messages.commands_reloaded.default);
                 }
             });
+        },
+        hidden: true,
+        enabled: true,
+        matchStart: true
+    });
+
+    commands.push({
+        names: ['!link'],
+        handler: function(data){
+            var media = bot.getMedia();
+            if(media === undefined){
+              bot.sendChat(langfile.messages.link.no_media);
+              return;
+            }
+            if(media.type === 'soundcloud'){
+              var uri = S(media.streamUrl).chompRight('/stream').s.trim() + '?client_id=d77e72464690eebf8501fd2b47bab662';
+              request.get(uri, function(error, response, body){
+                if(!error && response.statusCode === 200){
+                  var data = JSON.parse(body);
+                  bot.sendChat(S(langfile.messages.link.default).replaceAll('&{songlink}', data.permalink_url).s);
+                }
+              });
+            } else if(media.type === 'youtube'){
+              var split = media.images.thumbnail.split('/');
+              var link = 'https://youtu.be/' + split[4].trim();
+              bot.sendChat(S(langfile.messages.link.default).replaceAll('&{songlink}', link).s);
+            }
+
         },
         hidden: true,
         enabled: true,
@@ -437,7 +489,6 @@ function getRole(id, callback) {
         if(bot.isResidentDJ(user) === true){
           role = 1;
         }
-        console.log('resolved ' + id + ' as ' + role);
         if (typeof callback === 'function'){
             callback(role);
         }
@@ -452,11 +503,11 @@ function performafkcheck(){
     }
     warnafk();
     removeafk();
-    var minutes = _.random(2, 6);
+    var minutes = _.random(2, 10);
     afkremovetimeout = setTimeout(function () {
       performafkcheck();
     }, minutes * 60 * 1000);
-    console.log('Performing AFK-Check, Next check in ' + minutes + ' minutes');
+    console.log('[INFO]', 'Performing AFK-Check, Next check in', minutes, 'minutes');
   }
 }
 
@@ -507,6 +558,7 @@ function removeafk(){
     rows.forEach(function(user, index, array){
       message += '@' + user.dataValues.username + ' ';
       bot.moderateRemoveDJ(user.dataValues.userid);
+      User.update({removed_for_afk: true}, {where: {userid: user.dataValues.userid}});
     });
     if(message.length > 3){
       bot.sendChat(message + langfile.messages.afk.remove);
