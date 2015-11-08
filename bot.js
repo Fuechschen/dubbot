@@ -70,7 +70,7 @@ new DubAPI(config.login, function(err, botg){
           User.update({last_active: new Date(), afk: false, warned_for_afk: false, removed_for_afk: false}, {where: {userid: data.user.id}});
         }
 
-        if(config.cleverbot.enabled === true && S(data.message).contains('@' + bot.getSelf().username === true)){
+        if(config.cleverbot.enabled === true && S(data.message).contains('@' + bot.getSelf().username) === true){
           cleverbot.write(S(data.message).replaceAll('@' + bot.getSelf().username, '').s, function(res){
             bot.sendChat('@' + data.user.username + ' ' + res.message);
           });
@@ -200,11 +200,19 @@ function loadCommands(){
         handler: function(data){
             getRole(data.user.id, function (role){
                 if(role > 1 && skipable === true){
+                  var dj = bot.getDJ();
                   bot.moderateSkip();
                   skipable = false;
                   setTimeout(function () {
                     skipable = true;
                   }, 3 * 1000);
+                  var split = data.message.split(' ');
+                  if(split.length > 1 && dj !== undefined){
+                    var msg = split[1].trim();
+                    setTimeout(function(){
+                      bot.sendChat(S(_.findWhere(langfile.messages.skipreasons, {reason: msg}).msg).replaceAll('&{dj}', '@' + dj.username).s);
+                    }, 6 * 1000);
+                  }
                 }
             });
         },
@@ -409,7 +417,6 @@ function loadCommands(){
                 request.get(uri, function (error, response, body) {
                   if (!error && response.statusCode == 200) {
                     var definition = JSON.parse(body);
-                    console.log(definition);
                     if (definition.length === 0) {
                       bot.sendChat(S(langfile.messages.define.no_definition_found).replaceAll('&{word}', msg).s);
                     } else {

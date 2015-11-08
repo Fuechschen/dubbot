@@ -17,11 +17,10 @@
   },
   "dependencies": {
     "bluebird": "*",
-    "dubapi": "git://github.com/Fuechschen/DubAPI.git",
+    "dubapi": "git://github.com/anjanms/DubAPI.git",
     "express": "^4.13.3",
     "moment": "^2.10.6",
     "mysql": "*",
-    "node-datatable": "git://github.com/jpravetz/node-datatable.git",
     "request": "*",
     "sequelize": "*",
     "string": "*",
