@@ -31,5 +31,10 @@
   },
   "apiKeys": {
     "wordnik": ""
+  },
+  "chatfilter": {
+    "enabled": true,
+    "dubtrackroom": true,
+    "youtube": true
   }
 }

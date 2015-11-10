@@ -70,6 +70,21 @@ new DubAPI(config.login, function(err, botg){
           User.update({last_active: new Date(), afk: false, warned_for_afk: false, removed_for_afk: false}, {where: {userid: data.user.id}});
         }
 
+        if(config.chatfilter.enabled === true){
+          if(config.chatfilter.dubtrackroom === true){
+            if(S(data.message).contains('dubtrack.fm/join/') === true && getRole(data.user.id) < 2){
+              bot.moderateDeleteChat(data.id);
+              bot.sendChat(S(langfile.messages.chatfilter.dubtrackroom).replaceAll('&{username}', '@' + data.user.username).s);
+            }
+          }
+          if(config.chatfilter.youtube === true){
+            if(S(data.message).contains('youtu.be') === true || (S(data.message).contains('http') === true && S(data.message).contains('youtube.') === true) && getRole(data.user.id) < 1){
+              bot.moderateDeleteChat(data.id);
+              bot.sendChat(S(langfile.messages.chatfilter.youtube).replaceAll('&{username}', '@' + data.user.username).s);
+            }
+          }
+        }
+
         if(config.cleverbot.enabled === true && S(data.message).contains('@' + bot.getSelf().username) === true){
           cleverbot.write(S(data.message).replaceAll('@' + bot.getSelf().username, '').s, function(res){
             bot.sendChat('@' + data.user.username + ' ' + res.message);
@@ -295,7 +310,18 @@ function loadCommands(){
         handler: function(data){
             var media = bot.getMedia();
             if(media === undefined){
-              bot.sendChat(langfile.messages.link.no_media);
+              bot._.reqHandler.queue({url: 'https://api.dubtrack.fm/room/' + config.options.room, method: 'GET'}, function(code, body){
+                if(code !== 200){
+                  bot.sendChat(langfile.messages.link.no_media);
+                } else {
+                  if(body.data.roomType === 'iframe'){
+                    bot.sendChat(S(langfile.messages.link.iframe).replaceAll('&{link}', body.data.roomEmbed).s);
+                  } else {
+                    bot.sendChat(langfile.messages.link.no_media);
+                  }
+                }
+              });
+
               return;
             }
             if(media.type === 'soundcloud'){
