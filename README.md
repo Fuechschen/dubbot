@@ -1,10 +1,6 @@
 # dubbot
 Prototype of an bot for dubtrack
 
-## IMPORTANT
-
-With this commit, dubbot does not longer require dubtrackapi (and phantomjs) since it's runned with DubAPI by anjanms. Be sure to run ```npm install``` before you start it after updating!
-
 ### Functionality
 
 Since dubbot is still under development, there will be features added in future. The current funktion are:
