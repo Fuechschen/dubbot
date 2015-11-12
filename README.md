@@ -1,5 +1,5 @@
 # dubbot
-Prototype of an bot for dubtrack
+A (simple) bot for dubtrack running with node.js
 
 ### Functionality
 
