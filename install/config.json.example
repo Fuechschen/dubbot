@@ -8,7 +8,8 @@
     "language_file": "en",
     "customtext_trigger": ".",
     "welcome_users": true,
-    "http_port": 3000
+    "http_port": 3000,
+    "room_state_file": true
   },
 	"db": {
 		"database": "",
@@ -24,7 +25,8 @@
   "afkremoval": {
     "enabled": true,
     "timeout": 3600,
-    "kick": true
+    "kick": true,
+    "chat_ignore_phrase": "I am AFK at the moment"
   },
   "cleverbot": {
     "enabled": true
@@ -35,6 +37,10 @@
   "chatfilter": {
     "enabled": true,
     "dubtrackroom": true,
-    "youtube": true
+    "youtube": true,
+    "word_blacklist": {
+      "enabled": false,
+      "words": []
+    }
   }
 }
