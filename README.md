@@ -3,11 +3,11 @@ A (simple) bot for dubtrack running with node.js
 
 ### Functionality
 
-Since dubbot is still under development, there will be features added in future. The current funktion are:
+Since dubbot is still under development, there will be features added in future. The current functions are:
 
 * Skipping
 * Blacklisting
-* Logging chat
+* Chat Logging
 * Custom Text Chat Triggers
 * Afk-Removal
 
@@ -36,9 +36,13 @@ You will need an account at dubtrack with at least VIP-Permission in your room a
 
 DubBot's messages can be easily modified by providing a language file in the config.json. Fill in ```en``` for the default english language file or ```de``` for the default german language file. You can also provide your own language by just filling in a url which delivers a json-file looking like this: https://cdn.dubbot.net/files/language/english.json
 
-If you don't want to host it, you can use the file given in files/english.json. Just insert an invalid url in config,json at the language_file-option.
+If you don't want to host it, you can use the file given in files/language.json. Just insert an invalid url in config,json at the language_file-option.
 
 If you are using your own file, remember to update it when updating the bot.
+
+#### Labels
+
+Labels are an easy way to connect diffrent version of songs in groups. If one song in this group is blacklist, every song in this group will be skipped. You can add a label to the actual song with ```!slbl (label)``` or overide the label of the actual song with ```!olbl (label)```.
 
 ### PM2
 
@@ -50,13 +54,6 @@ If you want to let the bot autostart with the server running it, follow these st
 2. Then start your bot (if its not already running) with ```pm2 start bot.js```
 3. Now run ```pm2 save``` to save the process.
 4. Finished!
-
-
-### Info
-
-Feel free to add features your own or to request them. If you are submiting a pull request, be sure it's only containing one or two commits. You can submit more pull request anytime.
-
-Since this project is still under developement, there are maybe some dependencies in package.json that are currently not needed.
 
 
 ### Credits

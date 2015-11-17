@@ -129,18 +129,31 @@ new DubAPI(config.login, function(err, botg){
         };
 
         Track.findOrCreate({where: {fkid: songdata.fkid}, defaults : songdata}).spread(function(song){
-          song.updateAttributes(songdata);
-          if(song.blacklisted === true){
+          if(song.blacklisted === true && bot.getPlayID() === data.id){
             bot.sendChat(S(langfile.messages.blacklist.is_blacklisted).replaceAll('&{track}', data.media.name).s);
             bot.moderateSkip();
             return;
           }
+          if(config.timelimit.enabled === true && data.media.songLength > config.timelimit.limit * 1000 && bot.getPlayID() === data.id){
+            bot.sendChat(langfile.messages.timelimit.default);
+            bot.moderateSkip();
+            return;
+          }
+          if(song.label !== null && song.label !== undefined && bot.getPlayID() === data.id){
+            Track.findAll({where: {label: song.label}}).then(function(rows){
+              var songs = [];
+              rows.forEach(function(s){
+                songs.push(s.dataValues);
+              });
+              if(_.findWhere(songs, {blacklisted: true}) !== undefined && bot.getPlayID() === data.id){
+                bot.sendChat(S(langfile.messages.blacklist.is_blacklisted).replaceAll('&{track}', data.media.name).s);
+                bot.moderateSkip();
+                return;
+              }
+            });
+          }
+          song.updateAttributes(songdata);
         });
-
-        if(config.timelimit.enabled === true && data.media.songLength > config.timelimit.limit * 1000){
-          bot.sendChat(langfile.messages.timelimit.default);
-          bot.moderateSkip();
-        }
       }
 
       if(config.options.room_state_file === true){
@@ -324,7 +337,6 @@ function loadCommands(){
                   }
                 }
               });
-
               return;
             }
             if(media.type === 'soundcloud'){
@@ -382,6 +394,84 @@ function loadCommands(){
                     });
                 }
             });
+        }
+    });
+
+    commands.push({
+        names: ['!setlabel', '!slbl'],
+        hidden: true,
+        enabled: true,
+        matchStart: true,
+        handler: function(data) {
+            if(getRole(data.user.id) > 2){
+              var split = data.message.trim().split(' ');
+              if(split.length === 2){
+                var media = bot.getMedia();
+                var songid = media.fkid;
+                Track.find({where: {fkid: songid}}).then(function(song){
+                  if(song !== undefined){
+                    if(song.label === null){
+                      Track.update({label: split[1]}, {where: {fkid: songid}});
+                      bot.sendChat(S(langfile.messages.labels.default).replaceAll('&{track}', song.name).replaceAll('&{label}', split[1]).s);
+                      checksong(media);
+                    } else {
+                      bot.sendChat(S(langfile.messages.labels.existing_label).replaceAll('&{track}', song.name).replaceAll('&{label}', split[1]).replaceAll('&{id}', song.id).s);
+                    }
+                  }
+                });
+              } else if(split.length === 3){
+                try {
+                  var songid = parseInt(split[2]);
+                  Track.find({where: {id: songid}}).then(function(song){
+                    if(song.label === null){
+                      Track.update({label: split[1]}, {where: {id: songid}});
+                      bot.sendChat(S(langfile.messages.labels.default).replaceAll('&{track}', song.name).replaceAll('&{label}', split[1]).s);
+                    } else {
+                      bot.sendChat(S(langfile.messages.labels.existing_label).replaceAll('&{track}', song.name).replaceAll('&{label}', split[1]).replaceAll('&{id}', song.id).s);
+                    }
+                  });
+                } catch (e){
+                  bot.sendChat(langfile.messages.labels.argument_error);
+                }
+              } else {
+                bot.sendChat(langfile.messages.labels.argument_error);
+              }
+            }
+        }
+    });
+
+    commands.push({
+        names: ['!overridelabel', '!olbl'],
+        hidden: true,
+        enabled: true,
+        matchStart: true,
+        handler: function(data) {
+            if(getRole(data.user.id) > 2){
+              var split = data.message.trim().split(' ');
+              if(split.length === 2){
+                var media = bot.getMedia();
+                var songid = media.fkid;
+                Track.find({where: {fkid: songid}}).then(function(song){
+                  if(song !== undefined){
+                      Track.update({label: split[1]}, {where: {fkid: songid}});
+                      bot.sendChat(S(langfile.messages.labels.override).replaceAll('&{track}', song.name).replaceAll('&{label}', split[1]).s);
+                      checksong(media);
+                  }
+                });
+              } else if(split.length === 3){
+                try {
+                  var songid = parseInt(split[2]);
+                  Track.find({where: {id: songid}}).then(function(song){
+                      Track.update({label: split[1]}, {where: {id: songid}});
+                      bot.sendChat(S(langfile.messages.labels.override).replaceAll('&{track}', song.name).replaceAll('&{label}', split[1]).s);
+                  });
+                } catch (e){
+                  bot.sendChat(langfile.messages.labels.argument_error);
+                }
+              } else {
+                bot.sendChat(langfile.messages.labels.argument_error);
+              }
+            }
         }
     });
 
@@ -457,7 +547,6 @@ function loadCommands(){
         }
     });
 
-
     try {
         fs.readdirSync(__dirname + '/commands').forEach(function (file) {
             var command = require(__dirname + '/commands/' + file);
@@ -501,7 +590,7 @@ function loadlanguagefile() {
       return;
     }
     console.log('[LANGFILE] Successfully loaded langfile!');
-    fs.writeFile(__dirname + '/files/language.json')
+    fs.writeFile(__dirname + '/files/language.json', JSON.stringify(langfile, null, '\t'));
   });
 }
 
@@ -615,5 +704,37 @@ function kickforafk(){
     if(message.length > 0){
       bot.sendChat(message + langfile.messages.afk.kick);
     }
+  });
+}
+
+function checksong(media){
+  var songdata = {
+      name: media.name,
+      fkid: media.fkid,
+      thumbnail: media.images.thumbnail,
+      type: media.type,
+      songLength: media.songLength
+  };
+
+  Track.findOrCreate({where: {fkid: songdata.fkid}, defaults: songdata}).spread(function(song){
+    if(song.blacklisted === true && bot.getMedia().fkid === media.fkid){
+      bot.sendChat(S(langfile.messages.blacklist.is_blacklisted).replaceAll('&{track}', media.name).s);
+      bot.moderateSkip();
+      return;
+    }
+    if(song.label !== null && song.label !== undefined && bot.getMedia().fkid === media.fkid){
+      Track.findAll({where: {label: song.label}}).then(function(rows){
+        var songs = [];
+        rows.forEach(function(s){
+          songs.push(s.dataValues);
+        });
+        if(_.findWhere(songs, {blacklisted: true}) !== undefined && bot.getMedia().fkid === media.fkid){
+          bot.sendChat(S(langfile.messages.blacklist.is_blacklisted).replaceAll('&{track}', media.name).s);
+          bot.moderateSkip();
+          return;
+        }
+      });
+    }
+    song.updateAttributes(songdata);
   });
 }

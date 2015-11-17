@@ -1,19 +1,16 @@
 {
   "name": "dubbot",
-  "description": "Prototype of a Dubtrack-Bot",
+  "description": "A (simple) bot for dubtrack running with node.js",
   "version": "0.2.2",
   "keywords": [],
   "repository": {
     "type": "git",
-    "url": "git://git.fuechschen.org/Fuechschen/dubbot.git"
+    "url": "git://github.com/Fuechschen/dubbot.git"
   },
   "author": "Fuechschen <info@fuechschen.org>",
   "main": "bot.js",
   "directories": {
     "commands": "commands"
-  },
-  "engines": {
-    "node": ">= 0.6.0"
   },
   "dependencies": {
     "bluebird": "*",

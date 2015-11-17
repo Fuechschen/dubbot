@@ -6,7 +6,8 @@ module.exports = function (sequelize, Sequelize) {
         thumbnail: {type: Sequelize.STRING, allowNull: true},
         type: {type: Sequelize.STRING, allowNull: true},
         songLength: {type: Sequelize.INTEGER, allowNull: true},
-        blacklisted: {type: Sequelize.BOOLEAN, defaultValue: 0}
+        blacklisted: {type: Sequelize.BOOLEAN, defaultValue: 0},
+        label: {type: Sequelize.STRING, allowNull: true}
     }, {
         underscored: true,
         tableName: 'tracks'
