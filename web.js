@@ -50,27 +50,6 @@ app.get('/blacklist', function(req, res){
   });
 });
 
-app.get('/tracks', function(req, res){
-  fs.readFile(__dirname + '/files/blacklist.html', 'utf8', function(err, file){
-    if(!err){
-      Track.findAll({where: {blacklisted: true}}).then(function(rows){
-        var message = '';
-        rows.forEach(function(track){
-          var link = '-';
-          if(track.type === 'youtube'){
-            var arr = track.thumbnail.split('/');
-            var link = '<a href="https://youtu.be/' + arr[4] + '">Link</a>';
-          }
-          message += '<tr><th align="center">' + track.dataValues.id + '</th><th align="center">' + track.dataValues.name + '</th><th align="center">' + track.dataValues.type + '</th><th align="center">' + track.dataValues.songLength / 1000 + ' Seconds</th><th align="center">' + link + '</th><th align="center"><img src="' + track.dataValues.thumbnail + '" style="width:150px;height:100px"</th></tr>';
-        });
-        res.send(S(file).replaceAll('${blacklist}$', message).s);
-      });
-    } else {
-      res.send('Missing blacklist.html');
-    }
-  });
-});
-
 app.get('/stats.json', function(req, res){
   res.sendFile(__dirname + '/stats.json');
 });
