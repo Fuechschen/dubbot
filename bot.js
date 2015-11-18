@@ -17,9 +17,6 @@ var afkremovetimeout;
 var skipable = true;
 var helptimeout = false;
 
-var spamfilterstorage = [];
-var spamfilterresettimout;
-
 sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
     dialect: 'mysql',
     host: config.db.host,
@@ -62,7 +59,6 @@ new DubAPI(config.login, function(err, botg){
         performafkcheck();
       }, _.random(2, 6) * 60 * 1000);
       performafkcheck();
-      spamfilterresettimout = setInterval(function(){spamfilterstorage = []; console.log('[SPAMFILTER]', 'Reseting storage...');}, 60 * 1000 * 10);
       User.update({removed_for_afk: false, warned_for_afk: false}, {where: {roleid: '1'}});
   });
 
