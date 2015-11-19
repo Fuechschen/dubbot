@@ -18,6 +18,12 @@
 		"host": "",
 		"port": "3306"
 	},
+  "autoskip": {
+    "history": {
+      "enabled": true,
+      "time": 240
+    }
+  },
   "timelimit": {
     "enabled": true,
     "limit": 600

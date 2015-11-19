@@ -17,9 +17,6 @@ var afkremovetimeout;
 var skipable = true;
 var helptimeout = false;
 
-var spamfilterstorage = [];
-var spamfilterresettimout;
-
 sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
     dialect: 'mysql',
     host: config.db.host,
@@ -61,8 +58,6 @@ new DubAPI(config.login, function(err, botg){
       afkremovetimeout = setTimeout(function () {
         performafkcheck();
       }, _.random(2, 6) * 60 * 1000);
-      performafkcheck();
-      spamfilterresettimout = setInterval(function(){spamfilterstorage = []; console.log('[SPAMFILTER]', 'Reseting storage...');}, 60 * 1000 * 10);
       User.update({removed_for_afk: false, warned_for_afk: false}, {where: {roleid: '1'}});
   });
 
@@ -128,7 +123,7 @@ new DubAPI(config.login, function(err, botg){
             songLength: data.media.songLength
         };
 
-        Track.findOrCreate({where: {fkid: songdata.fkid}, defaults : songdata}).spread(function(song){
+        Track.findOrCreate({where: {fkid: songdata.fkid}, defaults: songdata}).spread(function(song){
           if(song.blacklisted === true && bot.getPlayID() === data.id){
             bot.sendChat(S(langfile.messages.blacklist.is_blacklisted).replaceAll('&{track}', data.media.name).s);
             bot.moderateSkip();
@@ -138,6 +133,14 @@ new DubAPI(config.login, function(err, botg){
             bot.sendChat(langfile.messages.timelimit.default);
             bot.moderateSkip();
             return;
+          }
+          if(config.autoskip.history.enabled === true && bot.getPlayID() === data.id){
+            var now = moment();
+            if(now.diff(song.last_played, 'minutes') < config.autoskip.history.time){
+              bot.moderateSkip();
+              bot.sendChat(langfile.messages.autoskip.history);
+              return;
+            }
           }
           if(song.label !== null && song.label !== undefined && bot.getPlayID() === data.id){
             Track.findAll({where: {label: song.label}}).then(function(rows){
@@ -156,14 +159,23 @@ new DubAPI(config.login, function(err, botg){
         });
       }
 
+      if(data.lastPlay !== undefined && data.lastPlay !== null){
+        Track.update({last_played: new Date()}, {where: {fkid: data.lastPlay.media.fkid}});
+      }
+
       if(config.options.room_state_file === true){
+        var usrs = [];
+        var stff = [];
+        bot.getUsers().forEach(function(user){if(user.id !== bot.getSelf().id){usrs.push(user);}});
+        bot.getStaff().forEach(function(user){if(user.id !== bot.getSelf().id){stff.push(user);}});
         var stats = {
           room: config.options.room,
           media: bot.getMedia(),
-          users: bot.getUsers(),
-          staff: bot.getStaff()
+          users: usrs,
+          staff: stff,
+          bot: bot.getSelf()
         };
-        fs.writeFile(__dirname + '/stats.json', JSON.stringify(stats), 'utf8');
+        fs.writeFile(__dirname + '/stats.json', JSON.stringify(stats, null, '\t'), 'utf8');
       }
   });
 
@@ -544,6 +556,26 @@ function loadCommands(){
                   }
                 });
               }
+        }
+    });
+
+    commands.push({
+        names: ['!clearchat'],
+        hidden: true,
+        enabled: true,
+        matchStart: true,
+        handler: function(data) {
+            if(getRole(data.user.id) > 2){
+              var chathistory = bot.getChatHistory();
+              chathistory.forEach(function(chat){
+                setTimeout(function(){
+                  bot.moderateDeleteChat(chat.id);
+                }, _.random(1, 3) * _.random(1 * 5) * 1000);
+              });
+              setTimeout(function(){
+                bot.sendChat(S(langfile.messages.clearchat.default).replaceAll('&{username}', data.user.username).s);
+              }, 16 * 1000);
+            }
         }
     });
 
