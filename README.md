@@ -42,7 +42,9 @@ If you are using your own file, remember to update it when updating the bot.
 
 #### Labels
 
-Labels are an easy way to connect diffrent version of songs in groups. If one song in this group is blacklist, every song in this group will be skipped. You can add a label to the actual song with ```!slbl (label)``` or overide the label of the actual song with ```!olbl (label)```.
+Labels are an easy way to connect diffrent version of songs in groups. If one song in this group is blacklist, every song in this group will be skipped. You can add a label to the actual song with ```!slbl (label)``` or override the label of the actual song with ```!olbl (label)```.
+
+Labels are strings without any spaces.
 
 ### PM2
 
