@@ -50,12 +50,25 @@ app.get('/blacklist', function(req, res){
   });
 });
 
+app.get('/texts', function(req, res){
+  fs.readFile(__dirname + '/files/blacklist.html', 'utf8', function(err, file){
+    if(!err){
+      CustomText.findAll({where: {trigger: {$ne: null}}}).then(function(rows){
+        var message = '';
+        rows.forEach(function(ct){
+          message += '<tr><th align="center">' + ct.dataValues.trigger + '</th><th align="center">' + ct.dataValues.response + '</th></tr>';
+        });
+        res.send(S(file).replaceAll('${customtexts}$', message).s);
+      });
+    } else {
+      res.send('Missing customtexts.html');
+    }
+  });
+});
+
 app.get('/stats.json', function(req, res){
   res.sendFile(__dirname + '/stats.json');
 });
 
-app.get('/*', function(req, res){
-  res.redirect(302, '/blacklist');
-});
 
 http.listen(config.options.http_port, function(){console.log('Listening on ' + config.http_port);});

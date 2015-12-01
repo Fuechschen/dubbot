@@ -7,6 +7,7 @@ module.exports = function (sequelize, Sequelize) {
         type: {type: Sequelize.STRING, allowNull: true},
         songLength: {type: Sequelize.INTEGER, allowNull: true},
         blacklisted: {type: Sequelize.BOOLEAN, defaultValue: 0},
+        last_played: {type: Sequelize.DATE, defaultValue: Sequelize.NOW},
         label: {type: Sequelize.STRING, allowNull: true}
     }, {
         underscored: true,

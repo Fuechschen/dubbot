@@ -21,6 +21,7 @@
   "autoskip": {
     "history": {
       "enabled": true,
+      "labeled": true,
       "time": 240
     }
   },
@@ -32,6 +33,7 @@
     "enabled": true,
     "timeout": 3600,
     "kick": true,
+    "kick_ignore_min_role": 3,
     "chat_ignore_phrase": "I am AFK at the moment"
   },
   "cleverbot": {
@@ -41,12 +43,15 @@
     "wordnik": ""
   },
   "chatfilter": {
-    "enabled": true,
+    "enabled": false,
     "dubtrackroom": true,
     "youtube": true,
     "word_blacklist": {
       "enabled": false,
       "words": []
     }
+  },
+  "restorePositions": {
+    "enabled": true
   }
 }

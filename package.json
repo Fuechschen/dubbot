@@ -26,6 +26,5 @@
   },
   "devDependencies": {
     "sequelize-fixtures": "*"
-  },
-  "optionalDependencies": {}
+  }
 }

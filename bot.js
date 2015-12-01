@@ -57,12 +57,18 @@ new DubAPI(config.login, function(err, botg){
 
       afkremovetimeout = setTimeout(function () {
         performafkcheck();
+
+        saveQueue();
       }, _.random(2, 6) * 60 * 1000);
       User.update({removed_for_afk: false, warned_for_afk: false}, {where: {roleid: '1'}});
   });
 
   bot.on('chat-message', function(data) {
+    if(data.user !== undefined){
       console.log('[CHAT]', data.user.username, ':', data.message);
+    } else {
+      console.log('[CHAT]', 'undefined', ':', data.message);
+    }
       if(data.user.username !== bot.getSelf().username){
         handleCommand(data);
         if(S(data.message).contains(config.afkremoval.chat_ignore_phrase) === false){
@@ -114,6 +120,10 @@ new DubAPI(config.login, function(err, botg){
 
       }
 
+      if(data.lastPlay !== undefined && data.lastPlay !== null){
+        Track.update({last_played: new Date()}, {where: {fkid: data.lastPlay.media.fkid}});
+      }
+
       if(data.media !== undefined && data.media !== null){
         var songdata = {
             name: data.media.name,
@@ -153,14 +163,22 @@ new DubAPI(config.login, function(err, botg){
                 bot.moderateSkip();
                 return;
               }
+              if(config.autoskip.history.enabled === true && config.autoskip.history.labeled === true && bot.getPlayID() === data.id){
+                var skipit = false;
+                songs.forEach(function(sng){
+                  if(now.diff(sng.last_played, 'minutes') < config.autoskip.history.time){
+                    skipit = true;
+                  }
+                });
+                if(skipit === true){
+                  bot.sendChat(langfile.messages.autoskip.history);
+                  bot.moderateSkip();
+                }
+              }
             });
           }
           song.updateAttributes(songdata);
         });
-      }
-
-      if(data.lastPlay !== undefined && data.lastPlay !== null){
-        Track.update({last_played: new Date()}, {where: {fkid: data.lastPlay.media.fkid}});
       }
 
       if(config.options.room_state_file === true){
@@ -201,9 +219,22 @@ new DubAPI(config.login, function(err, botg){
           removed_for_afk: false
       };
 
-      User.findOrCreate({where: {userid: userdata.userid}, defaults : userdata}).spread(function(user){user.updateAttributes(userdata);});
+      User.findOrCreate({where: {userid: userdata.userid}, defaults: userdata}).spread(function(usr, created){
+        if(created === false && config.restorePositions.enabled === true && usr.position !== -1){
+          var now = moment.utc();
+          if(now.diff(row.last_active, 'seconds') < config.afkremoval.timeout){
+            setTimeout(function(){
+              bot.sendChat(S(langfile.messages.restorePositions.default).replaceAll('&{username}', userdata.username).replaceAll('&{position}', usr.position));
+              setTimeout(function(){
+                bot.moderateMoveDJ(usr.userid, usr.position - 1);
+              }, 5 * 1000);
+            }, 15 * 1000);
+          }
+        }
+        user.updateAttributes(userdata);
+      });
 
-      if(data.user.username !== config.login.username && config.options.welcome_users === true){
+      if(data.user.id !== bot.getSelf().id && config.options.welcome_users === true){
         bot.sendChat(S(langfile.messages.welcome_users.default).replaceAll('&{username}', data.user.username).s)
       }
   });
@@ -245,13 +276,14 @@ function handleCommand(data){
     if(S(data.message).startsWith(config.options.customtext_trigger) === true){
       CustomText.find({where: {trigger: S(data.message).chompLeft(config.options.customtext_trigger).s}}).then(function(row){
         if(row !== undefined && row !== null){
-          bot.sendChat(row.response);
+          bot.sendChat(S(row.response).replaceAll('&{username}', data.user.username).s);
         }
       });
     }
 }
 
 function loadCommands(){
+  //moderation commands
     commands.push({
         names: ['!fs', '!skip'],
         handler: function(data){
@@ -279,114 +311,25 @@ function loadCommands(){
     });
 
     commands.push({
-        names: ['!ping'],
-        handler: function(data){
+        names: ['!bl', '!blacklist'],
+        hidden: true,
+        enabled: true,
+        matchStart: true,
+        handler: function(data) {
             getRole(data.user.id, function (role){
-                if(role > 1){
-                    bot.sendChat(langfile.messages.ping.default);
+                if(role > 2 && skipable === true){
+                    var track = bot.getMedia();
+                    Track.update({blacklisted: true}, {where: {fkid: track.fkid}});
+                    bot.sendChat(S(S(langfile.messages.blacklist.blacklisted_by).replaceAll('&{track}', track.name).s).replaceAll('&{username}', data.user.username).s);
+                    bot.moderateSkip();
+                    skipable = false
+                    setTimeout(function () {
+                      skipable = true;
+                    }, 3 * 1000);
+                    console.log('[BLACKLIST]', data.user.username, ': [', track.name, '|', track.fkid, ']');
                 }
             });
-        },
-        hidden: true,
-        enabled: true,
-        matchStart: true
-    });
-
-    commands.push({
-        names: ['!help'],
-        handler: function(data){
-            if(helptimeout === false){
-              var mods = '';
-              bot.getStaff().forEach(function(mod, index, array){
-                if(mod.id !== bot.getSelf().id){
-                  mods += '@' + mod.username + ' '
-                }
-              });
-              if(mods.length > 2){
-                bot.sendChat(S(langfile.messages.help.default).replaceAll('&{mods}', mods).s);
-              } else {
-                console.log(langfile.messages.help.no_one_here);
-                bot.sendChat(langfile.messages.help.no_one_here);
-              }
-              helptimeout = true;
-              setTimeout(function(){helptimeout = false}, 10 * 1000);
-            }
-        },
-        hidden: true,
-        enabled: true,
-        matchStart: true
-    });
-
-    commands.push({
-        names: ['!reloadcommands'],
-        handler: function(data){
-            getRole(data.user.id, function (role){
-                if(role > 3){
-                    commands = [];
-                    loadCommands();
-                    bot.sendChat(langfile.messages.commands_reloaded.default);
-                }
-            });
-        },
-        hidden: true,
-        enabled: true,
-        matchStart: true
-    });
-
-    commands.push({
-        names: ['!link'],
-        handler: function(data){
-            var media = bot.getMedia();
-            if(media === undefined){
-              bot._.reqHandler.queue({url: 'https://api.dubtrack.fm/room/' + config.options.room, method: 'GET'}, function(code, body){
-                if(code !== 200){
-                  bot.sendChat(langfile.messages.link.no_media);
-                } else {
-                  if(body.data.roomType === 'iframe'){
-                    bot.sendChat(S(langfile.messages.link.iframe).replaceAll('&{link}', body.data.roomEmbed).s);
-                  } else {
-                    bot.sendChat(langfile.messages.link.no_media);
-                  }
-                }
-              });
-              return;
-            }
-            if(media.type === 'soundcloud'){
-              var uri = S(media.streamUrl).chompRight('/stream').s.trim() + '?client_id=d77e72464690eebf8501fd2b47bab662';
-              request.get(uri, function(error, response, body){
-                if(!error && response.statusCode === 200){
-                  var data = JSON.parse(body);
-                  bot.sendChat(S(langfile.messages.link.default).replaceAll('&{songlink}', data.permalink_url).s);
-                }
-              });
-            } else if(media.type === 'youtube'){
-              var split = media.images.thumbnail.split('/');
-              var link = 'https://youtu.be/' + split[4].trim();
-              bot.sendChat(S(langfile.messages.link.default).replaceAll('&{songlink}', link).s);
-            }
-
-        },
-        hidden: true,
-        enabled: true,
-        matchStart: true
-    });
-
-    commands.push({
-      names: ['!addcustomtext', '!addct'],
-      hidden: true,
-      enabled: true,
-      matchStart: true,
-      handler: function(data) {
-          getRole(data.user.id, function (role){
-              if(role > 3){
-                  var texts = data.message.split('/:');
-                  var newtrigger = S(texts[1].trim()).chompLeft(config.options.customtext_trigger).s;
-                  var newresponse = texts[2].trim();
-                  CustomText.findOrCreate({where: {trigger: newtrigger}, defaults: {trigger: newtrigger, response: newresponse}}).spread(function(customtext){customtext.updateAttributes({trigger: newtrigger, response: newresponse})});
-                  console.log('[CUSTOMTEXT]', data.user.username, ': [', texts[1], '|', texts[2], ']');
-              }
-          });
-      }
+        }
     });
 
     commands.push({
@@ -408,6 +351,26 @@ function loadCommands(){
             });
         }
     });
+
+    commands.push({
+        names: ['!move'],
+        hidden: true,
+        enabled: true,
+        matchStart: true,
+        handler: function(data) {
+            getRole(data.user.id, function (role){
+                if(role > 2){
+                    var split = data.message.split(' ');
+                    var user = bot.getUserByName(S(split[1].trim()).chompLeft('@').s);
+                    var pos = parseInt(split[2].trim());
+                    if(user !== undefined && pos !== undefined){
+                      bot.moderateMoveDJ(user.id, pos - 1);
+                    }
+                }
+            });
+        }
+    });
+
 
     commands.push({
         names: ['!setlabel', '!slbl'],
@@ -488,6 +451,67 @@ function loadCommands(){
     });
 
     commands.push({
+        names: ['!clearchat'],
+        hidden: true,
+        enabled: true,
+        matchStart: false,
+        handler: function(data) {
+            if(getRole(data.user.id) > 2){
+              var chathistory = bot.getChatHistory();
+              chathistory.forEach(function(chat){
+                setTimeout(function(){
+                  bot.moderateDeleteChat(chat.id);
+                }, _.random(1, 3) * _.random(1 * 5) * 1000);
+              });
+              setTimeout(function(){
+                bot.sendChat(S(langfile.messages.clearchat.default).replaceAll('&{username}', data.user.username).s);
+              }, 16 * 1000);
+            }
+        }
+    });
+
+    commands.push({
+        names: ['!delchat'],
+        hidden: true,
+        enabled: true,
+        matchStart: true,
+        handler: function(data) {
+            if(getRole(data.user.id) > 2){
+              var chathistory = bot.getChatHistory();
+              var name = S(data.message).chompLeft('!delchat').s.trim().toLowerCase();
+              chathistory.forEach(function(chat){
+                if(chat.user.username.toLowerCase() === name){
+                  setTimeout(function(){
+                    bot.moderateDeleteChat(chat.id);
+                  }, _.random(1, 3) * _.random(1 * 5) * 1000);
+                }
+              });
+              setTimeout(function(){
+                bot.sendChat(S(langfile.messages.clearchat.default).replaceAll('&{username}', data.user.username).s);
+              }, 16 * 1000);
+            }
+        }
+    });
+
+    commands.push({
+      names: ['!addcustomtext', '!addct'],
+      hidden: true,
+      enabled: true,
+      matchStart: true,
+      handler: function(data) {
+          getRole(data.user.id, function (role){
+              if(role > 3){
+                  var texts = data.message.split('/:');
+                  var newtrigger = S(texts[1].trim()).chompLeft(config.options.customtext_trigger).s;
+                  var newresponse = texts[2].trim();
+                  CustomText.findOrCreate({where: {trigger: newtrigger}, defaults: {trigger: newtrigger, response: newresponse}}).spread(function(customtext){customtext.updateAttributes({trigger: newtrigger, response: newresponse})});
+                  console.log('[CUSTOMTEXT]', data.user.username, ': [', texts[1], '|', texts[2], ']');
+              }
+          });
+      }
+    });
+
+    commands.push({
       names: ['!afkcheck'],
       hidden: true,
       enabled: true,
@@ -515,25 +539,159 @@ function loadCommands(){
     });
 
     commands.push({
-        names: ['!bl', '!blacklist'],
-        hidden: true,
-        enabled: true,
-        matchStart: true,
-        handler: function(data) {
+      names: ['!lottery'],
+      hidden: true,
+      enabled: true,
+      matchStart: false,
+      handler: function(data) {
+          getRole(data.user.id, function (role){
+              if(role > 2){
+                  var split = data.message.split(' ');
+                  var time = 2;
+                  if(split.lenght === 2){
+                    time = parseInt(split[1].trim());
+                  }
+                  setTimeout(function(){
+                    var queue = bot.getQueue();
+                    try {
+                      var mover = queue[_.random(1, queue.lenght - 1)];
+                    } catch (e) {
+                      bot.sendChat(langfile.messages.lottery.no_winner);
+                      return;
+                    }
+                    bot.sendChat(S(langfile.messages.lottery.victory).replaceAll('&{username}', mover.user.username));
+                    bot.moderateMoveDJ(mover.uid, 0);
+                  }, time * 1000);
+                  bot.sendChat(S(langfile.messages.lottery.started).replaceAll('&{time}', time).s);
+              }
+          });
+      }
+    });
+
+    commands.push({
+      names: ['!roulette'],
+      hidden: true,
+      enabled: true,
+      matchStart: false,
+      handler: function(data) {
+          getRole(data.user.id, function (role){
+              if(role > 2){
+                  var split = data.message.split(' ');
+                  var time = 2;
+                  if(split.lenght === 2){
+                    time = parseInt(split[1].trim());
+                  }
+                  setTimeout(function(){
+                    var queue = bot.getQueue();
+                    var moverpos = _.random(1, queue.lenght - 1);
+                    try {
+                      var mover = queue[moverpos];
+                    } catch (e) {
+                      bot.sendChat(langfile.messages.roulette.no_winner);
+                      return;
+                    }
+                    bot.sendChat(S(langfile.messages.roulette.victory).replaceAll('&{username}', mover.user.username));
+                    bot.moderateMoveDJ(mover.uid, _.random(0, moverpos));
+                  }, time * 1000);
+                  bot.sendChat(S(langfile.messages.roulette.started).replaceAll('&{time}', time).s);
+              }
+          });
+      }
+    });
+
+  //tech commands
+    commands.push({
+        names: ['!ping'],
+        handler: function(data){
             getRole(data.user.id, function (role){
-                if(role > 2 && skipable === true){
-                    var track = bot.getMedia();
-                    Track.update({blacklisted: true}, {where: {fkid: track.fkid}});
-                    bot.sendChat(S(S(langfile.messages.blacklist.blacklisted_by).replaceAll('&{track}', track.name).s).replaceAll('&{username}', data.user.username).s);
-                    bot.moderateSkip();
-                    skipable = false
-                    setTimeout(function () {
-                      skipable = true;
-                    }, 3 * 1000);
-                    console.log('[BLACKLIST]', data.user.username, ': [', track.name, '|', track.fkid, ']');
+                if(role > 1){
+                    bot.sendChat(langfile.messages.ping.default);
                 }
             });
-        }
+        },
+        hidden: true,
+        enabled: true,
+        matchStart: false
+    });
+
+    commands.push({
+        names: ['!reloadcommands'],
+        handler: function(data){
+            getRole(data.user.id, function (role){
+                if(role > 3){
+                    commands = [];
+                    loadCommands();
+                    bot.sendChat(langfile.messages.commands_reloaded.default);
+                }
+            });
+        },
+        hidden: true,
+        enabled: true,
+        matchStart: false
+    });
+
+  //user commands
+    commands.push({
+        names: ['!help'],
+        handler: function(data){
+            if(helptimeout === false){
+              var mods = '';
+              bot.getStaff().forEach(function(mod, index, array){
+                if(mod.id !== bot.getSelf().id){
+                  mods += '@' + mod.username + ' '
+                }
+              });
+              if(mods.length > 2){
+                bot.sendChat(S(langfile.messages.help.default).replaceAll('&{mods}', mods).s);
+              } else {
+                console.log(langfile.messages.help.no_one_here);
+                bot.sendChat(langfile.messages.help.no_one_here);
+              }
+              helptimeout = true;
+              setTimeout(function(){helptimeout = false}, 10 * 1000);
+            }
+        },
+        hidden: true,
+        enabled: true,
+        matchStart: false
+    });
+
+    commands.push({
+        names: ['!link'],
+        handler: function(data){
+            var media = bot.getMedia();
+            if(media === undefined){
+              bot._.reqHandler.queue({url: 'https://api.dubtrack.fm/room/' + config.options.room, method: 'GET'}, function(code, body){
+                if(code !== 200){
+                  bot.sendChat(langfile.messages.link.no_media);
+                } else {
+                  if(body.data.roomType === 'iframe'){
+                    bot.sendChat(S(langfile.messages.link.iframe).replaceAll('&{link}', body.data.roomEmbed).s);
+                  } else {
+                    bot.sendChat(langfile.messages.link.no_media);
+                  }
+                }
+              });
+              return;
+            }
+            if(media.type === 'soundcloud'){
+              var uri = S(media.streamUrl).chompRight('/stream').s.trim() + '?client_id=d77e72464690eebf8501fd2b47bab662';
+              request.get(uri, function(error, response, body){
+                if(!error && response.statusCode === 200){
+                  var data = JSON.parse(body);
+                  bot.sendChat(S(langfile.messages.link.default).replaceAll('&{songlink}', data.permalink_url).s);
+                }
+              });
+            } else if(media.type === 'youtube'){
+              var split = media.images.thumbnail.split('/');
+              var link = 'https://youtu.be/' + split[4].trim();
+              bot.sendChat(S(langfile.messages.link.default).replaceAll('&{songlink}', link).s);
+            }
+
+        },
+        hidden: true,
+        enabled: true,
+        matchStart: false
     });
 
     commands.push({
@@ -556,26 +714,6 @@ function loadCommands(){
                   }
                 });
               }
-        }
-    });
-
-    commands.push({
-        names: ['!clearchat'],
-        hidden: true,
-        enabled: true,
-        matchStart: true,
-        handler: function(data) {
-            if(getRole(data.user.id) > 2){
-              var chathistory = bot.getChatHistory();
-              chathistory.forEach(function(chat){
-                setTimeout(function(){
-                  bot.moderateDeleteChat(chat.id);
-                }, _.random(1, 3) * _.random(1 * 5) * 1000);
-              });
-              setTimeout(function(){
-                bot.sendChat(S(langfile.messages.clearchat.default).replaceAll('&{username}', data.user.username).s);
-              }, 16 * 1000);
-            }
         }
     });
 
@@ -670,30 +808,14 @@ function performafkcheck(){
 }
 
 function afkcheck(){
-  var now = moment.utc();
-  request.get('https://api.dubtrack.fm/room/' + config.options.room, function(error1, response1, body1){
-    if(response1.statusCode === 200){
-      var room = JSON.parse(body1);
-      if(room.code === 200){
-        request.get('https://api.dubtrack.fm/room/' + room.data._id + '/playlist', function(error, response, body){
-          if(response.statusCode === 200){
-            var queueobject = JSON.parse(body);
-            if(queueobject.code === 200){
-              var queue = queueobject.data;
-              queue.forEach(function(user, index, array){
-                User.find({where: {userid: user.userid}}).then(function(row){
-                  if(row !== undefined && row !== null){
-                    if(now.diff(row.last_active, 'seconds') > config.afkremoval.timeout){
-                      User.update({afk: true}, {where: {userid: user.userid}});
-                    }
-                  }
-                });
-              });
-            }
-          }
-        });
+  bot.getQueue().forEach(function(user){
+    User.find({where: {userid: user.id}}).then(function(row){
+      if(row !== undefined && row !== null){
+        if(now.diff(row.last_active, 'seconds') > config.afkremoval.timeout){
+          User.update({afk: true}, {where: {userid: user.id}});
+        }
       }
-    }
+    });
   });
 }
 
@@ -714,11 +836,9 @@ function removeafk(){
   User.findAll({where: {warned_for_afk: true, status: 1}}).then(function(rows){
     var message = '';
     rows.forEach(function(user, index, array){
-      if(bot.isStaff(bot.getUser(user.dataValues.userid)) === false){
         message += '@' + user.dataValues.username + ' ';
         bot.moderateRemoveDJ(user.dataValues.userid);
         User.update({removed_for_afk: true}, {where: {userid: user.dataValues.userid}});
-      }
     });
     if(message.length > 3){
       bot.sendChat(message + langfile.messages.afk.remove);
@@ -730,8 +850,22 @@ function kickforafk(){
   User.findAll({where: {removed_for_afk: true, status: 1}}).then(function(rows){
     var message = '';
     rows.forEach(function(user, index, arr){
-      message += '@' + user.dataValues.username + ' ';
-      bot.moderateKickUser(user.userid);
+      if(bot.isStaff(user.dataValues.userid) === true){
+        var rl = bot.getUser(user.dataValues.userid).role;
+        if(getRole(user.id) < config.afkremoval.kick_ignore_min_role){
+          message += '@' + user.dataValues.username + ' ';
+          bot.moderateUnsetRole(user.dataValues.userid, rl);
+          setTimeout(function(){
+            bot.moderateKickUser(user.dataValues.userid);
+            setTimeout(function(){
+              bot.moderateSetRole(user.dataValues.userid, rl);
+            }, 3000);
+          }, 3000);
+        }
+      } else {
+        message += '@' + user.dataValues.username + ' ';
+        bot.moderateKickUser(user.dataValues.userid);
+      }
     });
     if(message.length > 0){
       bot.sendChat(message + langfile.messages.afk.kick);
@@ -765,8 +899,28 @@ function checksong(media){
           bot.moderateSkip();
           return;
         }
+        if(config.autoskip.history.enabled === true && config.autoskip.history.labeled === true && bot.getMedia().fkid === media.fkid){
+          var now = moment.utc();
+          var skipit = false;
+          songs.forEach(function(sng){
+            if(now.diff(sng.last_played, 'minutes') < config.autoskip.history.time){
+              skipit = true;
+            }
+          });
+          if(skipit === true){
+            bot.sendChat(langfile.messages.autoskip.history);
+            bot.moderateSkip();
+          }
+        }
       });
     }
     song.updateAttributes(songdata);
+  });
+}
+
+function saveQueue(){
+  User.update({position: -1}, {where: {position: {$ne: -1}}});
+  bot.getQueue().forEach(function(queueobj, index){
+    User.update({position: index + 1}, {where: {userid: queueobj.uid}});
   });
 }
