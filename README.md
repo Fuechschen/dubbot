@@ -10,6 +10,7 @@ Since dubbot is still under development, there will be features added in future.
 * Chat Logging
 * Custom Text Chat Triggers
 * Afk-Removal
+* Experimental chat- and spamfilter
 
 A full list of commands can be found here: https://dubbot.net/commands
 

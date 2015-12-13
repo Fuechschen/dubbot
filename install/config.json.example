@@ -49,6 +49,13 @@
     "word_blacklist": {
       "enabled": false,
       "words": []
+    },
+    "spam": {
+      "enabled": true,
+      "aggressivity": {
+        "delete": 5,
+        "mute": 2
+      }
     }
   },
   "restorePositions": {

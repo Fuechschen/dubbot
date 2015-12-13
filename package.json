@@ -2,16 +2,15 @@
   "name": "dubbot",
   "description": "A (simple) bot for dubtrack running with node.js",
   "version": "0.2.2",
-  "keywords": [],
+  "keywords": ["bot", "dubtrack", "dubtrack.fm"],
   "repository": {
     "type": "git",
     "url": "git://github.com/Fuechschen/dubbot.git"
   },
-  "author": "Fuechschen <info@fuechschen.org>",
+  "author": "Fuechschen <info@fuechschen.org> (https://fuechschen.org)",
   "main": "bot.js",
-  "directories": {
-    "commands": "commands"
-  },
+  "homepage": "https://dubbot.net",
+  "license": "CC-BY-SA-4.0",
   "dependencies": {
     "bluebird": "*",
     "dubapi": "git://github.com/anjanms/DubAPI.git",
@@ -23,8 +22,5 @@
     "string": "*",
     "underscore": "*",
     "cleverbot-node": "git://github.com/AvatarKava/cleverbot-node.git"
-  },
-  "devDependencies": {
-    "sequelize-fixtures": "*"
   }
 }
