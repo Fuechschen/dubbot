@@ -897,22 +897,24 @@ function kickforafk() {
             }
         });
 
-        bot.sendChat(afk_names.join(' ').trim() + langfile.afk.kick)
+        if(afks.length > 0){
+            bot.sendChat(afk_names.join(' ').trim() + langfile.afk.kick)
 
-        afks.forEach(function(user){
-            if(bot.isStaff(user)){
-                var role = user.role;
-                bot.moderateUnsetRole(user.id, role, function (err, body) {
-                    if(!err){
-                        bot.moderateKickUser(user.id, langfile.afk.kick_msg, function(err){
-                            if(!err){
-                                bot.moderateSetRole(user.id, role);
-                            }
-                        });
-                    }
-                });
-            }
-        });
+            afks.forEach(function(user){
+                if(bot.isStaff(user)){
+                    var role = user.role;
+                    bot.moderateUnsetRole(user.id, role, function (err, body) {
+                        if(!err){
+                            bot.moderateKickUser(user.id, langfile.afk.kick_msg, function(err){
+                                if(!err){
+                                    bot.moderateSetRole(user.id, role);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
     });
 }
 
