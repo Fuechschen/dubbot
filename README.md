@@ -11,6 +11,7 @@ Since dubbot is still under development, there will be features added in future.
 * Custom Text Chat Triggers
 * Afk-Removal
 * Experimental chat- and spamfilter
+* History Skipping
 
 A full list of commands can be found here: https://dubbot.net/commands
 
@@ -20,32 +21,22 @@ This bot requires node.js. Install it on Ubuntu/Debian with ```apt-get install n
 
 You will need an account at dubtrack with at least VIP-Permission in your room and E-Mail as login method.
 
+Also, a mysql, postgresql or a sqlite db is required.
+
 
 
 ### Installation
 
 1. Clone this repo.
 2. Run ```npm install``` in the folder of this repo.
-3. Create a MySql-Database and ensure dubbot's host can connect to it.
-4. Copy config.json.example from the install folder to the root folder of this repo (the folder bot.js can be found in), rename it to config.json and fill it with your data
+3. Create a Database and ensure dubbot's host can connect to it.
+4. Rename config.example.js to config.js and fill in you data.
 5. Run bot.js with ```node bot.js```
-6. If you want to see your blacklists, also run web.js with ```node web.js```, The viewer is now available under ```http://localhost:3000/blacklist```.
-
-`*` install_with_predefined_ct.sql adds .bot and .commands as customtexts
 
 #### Language
 
-DubBot's messages can be easily modified by providing a language file in the config.json. Fill in ```en``` for the default english language file or ```de``` for the default german language file. You can also provide your own language by just filling in a url which delivers a json-file looking like this: https://cdn.dubbot.net/files/language/english.json
+The language can be easily modified by translating /files/language.json. Remember to update it when updateing the bot!
 
-If you don't want to host it, you can use the file given in files/language.json. Just insert an invalid url in config,json at the language_file-option.
-
-If you are using your own file, remember to update it when updating the bot.
-
-#### Labels
-
-Labels are an easy way to connect diffrent version of songs in groups. If one song in this group is blacklist, every song in this group will be skipped. You can add a label to the actual song with ```!slbl (label)``` or override the label of the actual song with ```!olbl (label)```.
-
-Labels are strings without any spaces.
 
 ### PM2
 
