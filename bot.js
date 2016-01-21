@@ -243,14 +243,16 @@ new DubAPI(config.login, function (err, botg) {
             removed_for_afk: false
         };
 
-        User.findOrCreate({where: {userid: userdata.userid}, defaults: userdata}).spread(function (usr, created) {
-            if (created) {
-                bot.sendChat(S(langfile.welcome_users.new).replaceAll('&{username}', data.user.username).s);
-            } else {
-                bot.sendChat(S(langfile.welcome_users.default).replaceAll('&{username}', data.user.username).s);
-            }
-            user.updateAttributes(userdata);
-        });
+        setTimeout(function(){
+            User.findOrCreate({where: {userid: userdata.userid}, defaults: userdata}).spread(function (usr, created) {
+                if (created) {
+                    bot.sendChat(S(langfile.welcome_users.new).replaceAll('&{username}', data.user.username).s);
+                } else {
+                    bot.sendChat(S(langfile.welcome_users.default).replaceAll('&{username}', data.user.username).s);
+                }
+                user.updateAttributes(userdata);
+            });
+        }, 10 * 1000)
     });
 
     bot.on('user-leave', function (data) {

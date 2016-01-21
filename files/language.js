@@ -16,7 +16,7 @@ module.exports = {
   },
   "welcome_users": {
     "default": "Welcome &{username}",
-    "new": "Welcome to Nullcraft @&{username}. Have fun and don't be rude!"
+    "new": "Welcome @&{username}. Have fun and don't be rude!"
   },
   "afk": {
     "warning": "Seems like you are AFK? Stay active in chat or you will be removed from the queue!",
