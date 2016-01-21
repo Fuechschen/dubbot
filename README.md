@@ -35,7 +35,7 @@ Also, a mysql, postgresql or a sqlite db is required.
 
 #### Language
 
-The language can be easily modified by translating /files/language.json. Remember to update it when updateing the bot!
+The language can be easily modified by translating files/language.js. Remember to update it when updateing the bot!
 
 
 ### PM2
