@@ -13,7 +13,7 @@
 |!randommessage|!rndmsg|list/add/del/disable/enable|Manager|Edits random messages sent all 2-10 Minutes|
 |!afkcheck| | |VIP|Lists all afks in the community|
 |!lottery| |[time]|Mod|Starts a lottery with the given time in minutes. Time defaults to 2 minutes|
-|!roulete| |{time]|Mod|Starts a roulette with the given time in minutes. Time defaults to 2 minutes|
+|!roulete| |[time]|Mod|Starts a roulette with the given time in minutes. Time defaults to 2 minutes|
 |!ping| | |VIP|Pong!|
 |!help| | |User|Mentions all mods in the room|
 |!link| | |User|Sends a link to the current song|
@@ -21,4 +21,4 @@
 |!duell| |accept/decline/username|User|Accepts a duell, declines a duell or starts one|
 
 
-----------
+[  ] = optional argument
