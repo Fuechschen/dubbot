@@ -1,7 +1,7 @@
 # Commands for dubbot
 
 |Command|Alias|Argumants|Role|Description|
-|--|--|--|
+|--|--|--|--|--|
 |!skip|!fs|[reason]|VIP|Skips the current song and send reason when defined. Reasons can be defined in language.js|
 |!blacklist|!bl|[reason]|Mod|Skips the current song and adds the song to the blacklist. Reason is optianal and can be any string|
 |!unblacklist|!unbl|db_id|Mod|Removes the given track from the blacklist|
