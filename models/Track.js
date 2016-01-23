@@ -8,6 +8,7 @@ module.exports = function (sequelize, Sequelize) {
         type: {type: Sequelize.STRING, allowNull: true},
         songLength: {type: Sequelize.INTEGER, allowNull: true},
         blacklisted: {type: Sequelize.BOOLEAN, defaultValue: 0},
+        bl_reason: {type: Sequelize.STRING, allowNull: true},
         last_played: {type: Sequelize.DATE, defaultValue: null}
     }, {
         underscored: true,

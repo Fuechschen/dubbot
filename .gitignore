@@ -18,7 +18,7 @@ stats.json
 
 config.js
 
-!config.json.example
+!config.example.js
 
 test.js
 .idea
