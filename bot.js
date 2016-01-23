@@ -545,9 +545,9 @@ new DubAPI(config.login, function (err, bot) {
             matchStart: true,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'set-roles')) {
-                    var texts = data.message.split('/:');
+                    var texts = data.message.trim().split(' ');
                     var newtrigger = S(texts[1].trim()).chompLeft(config.options.customtext_trigger).s;
-                    var newresponse = texts[2].trim();
+                    var newresponse = _.rest(texts, 2).join(' ').trim();
                     CustomText.findOrCreate({
                         where: {trigger: newtrigger},
                         defaults: {trigger: newtrigger, response: newresponse}
@@ -566,7 +566,7 @@ new DubAPI(config.login, function (err, bot) {
             matchStart: true,
             handler: function (data) {
                 console.log('test');
-                if (bot.hasPermission(data.user, 'queue-order')) {
+                if (bot.hasPermission(data.user, 'set-roles')) {
                     var split = data.message.trim().split(' ');
                     if (split.length === 2) {
                         if (split[1] === 'list') {
@@ -618,19 +618,21 @@ new DubAPI(config.login, function (err, bot) {
             enabled: true,
             matchStart: false,
             handler: function (data) {
-                afkcheck();
-                User.findAll({where: {afk: true}}).then(function (rows) {
-                    var afks = '';
-                    rows.forEach(function (user, index, array) {
-                        afks += user.username;
-                        if (index !== rows.length - 1) {
-                            afks += ', ';
-                        }
-                        if (afks.length > 2) {
-                            bot.sendChat(S(langfile.afk.check).replaceAll('&{afks}', afks).s);
-                        }
-                    });
+                if(bot.hasPermission(data.user, 'skip'){
+                    afkcheck();
+                    User.findAll({where: {afk: true}}).then(function (rows) {
+                        var afks = '';
+                        rows.forEach(function (user, index, array) {
+                            afks += user.username;
+                            if (index !== rows.length - 1) {
+                                afks += ', ';
+                            }
+                            if (afks.length > 2) {
+                                bot.sendChat(S(langfile.afk.check).replaceAll('&{afks}', afks).s);
+                            }
+                        });
 
+                    });
                 });
             }
         });
@@ -789,15 +791,6 @@ new DubAPI(config.login, function (err, bot) {
             }
         });
 
-        commands.push({
-            names: ['!test'],
-            hidden: true,
-            enabled: true,
-            matchStart: true,
-            handler: function (data) {
-                timings();
-            }
-        });
 
         commands.push({
             names: ['!duell'],
