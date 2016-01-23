@@ -13,7 +13,7 @@ Since dubbot is still under development, there will be features added in future.
 * Experimental chat- and spamfilter
 * History Skipping
 
-A full list of commands can be found here: https://dubbot.net/commands
+A full list of commands can be found [here](/commands.md).
 
 ### Requirements
 
