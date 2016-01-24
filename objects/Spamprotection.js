@@ -2,20 +2,12 @@ var _ = require('underscore');
 var S = require('string');
 var moment = require('moment');
 
-var _id;
-var time;
-var lmessage;
-var score;
-var spamwarnings;
-var muted;
-
-function SpamProtection(userid, message) {
+function SpamProtection(userid) {
     this._id = userid;
-    this.time = moment();
-    this.lmessage = message;
     this.score = 1;
     this.spamwarnings = 0;
     this.muted = false;
+    this.postLinks = true;
 }
 
 SpamProtection.prototype.getScore = function () {
@@ -68,6 +60,14 @@ SpamProtection.prototype.getMuted = function () {
 SpamProtection.prototype.reset = function () {
     this.score = 1;
     this.spamwarnings = 0;
+};
+
+SpamProtection.prototype.canpostLinks = function () {
+    return this.postLinks;
+};
+
+SpamProtection.prototype.setpostLink = function (bool) {
+  this.postLinks = bool;
 };
 
 module.exports = SpamProtection;
