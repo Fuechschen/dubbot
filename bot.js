@@ -381,7 +381,7 @@ new DubAPI(config.login, function (err, bot) {
                     if (split.length > 1 && dj !== undefined) {
                         var msg = split[1].trim();
                         setTimeout(function () {
-                            bot.sendChat(S(_.findWhere(langfile.skipreasons, {reason: msg}).msg).replaceAll('&{dj}', dj.username).s);
+                            bot.sendChat(S(_.findWhere(config.skipreasons, {reason: msg}).msg).replaceAll('&{dj}', dj.username).s);
                         }, 3 * 1000);
                     }
                 }
