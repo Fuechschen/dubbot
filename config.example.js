@@ -98,5 +98,35 @@ module.exports = {
             botname: undefined,  //change the name of the bot in slack
             icon_url: undefined  // set an icon for the bot
         }
+    },
+    skipreasons: [     //set available skip-reasons for !skip
+        {
+            reason: "u",
+            msg: "@&{dj} Your song wasn't available."
+        },
+        {
+            reason: "o",
+            msg: "@&{dj} Your is overplayed."
+        },
+        {
+            reason: "h",
+            msg: "@&{dj} Your song was already played recently."
+        },
+        {
+            reason: "t",
+            msg: "@&{dj} Your song doesn't fit the theme."
+        },
+        {
+            reason: "n",
+            msg: "@&{dj} Your song wasn't safe for work!"
+        },
+        {
+            reason: "q",
+            msg: "@&{dj} Your song had a bad quality."
+        }
+    ],
+    pm2: {   //restart over pm2 (!restart)
+        enabled: false,    //only enable this when you are using pm2
+        processname: 'bot'   //the processname of the bot (you also use the processid here)
     }
 };

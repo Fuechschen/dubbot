@@ -21,6 +21,7 @@
     "sequelize": "*",
     "string": "*",
     "underscore": "*",
-    "cleverbot-node": "git://github.com/AvatarKava/cleverbot-node.git"
+    "cleverbot-node": "git://github.com/AvatarKava/cleverbot-node.git",
+    "pm2": "*"
   }
 }

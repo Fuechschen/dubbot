@@ -195,7 +195,7 @@ new DubAPI(config.login, function (err, bot) {
 
         }
 
-        if(config.autoskip.resdjskip.enabled === true){
+        if (config.autoskip.resdjskip.enabled === true) {
             skipvotes = [];
         }
 
@@ -771,6 +771,38 @@ new DubAPI(config.login, function (err, bot) {
         });
 
         commands.push({
+            names: ['!restart'],
+            hidden: true,
+            enabled: true,
+            matchStart: true,
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'set-roles') && config.pm2.enabled === true) {
+                    var pm2 = require('pm2');
+                    pm2.connect(function (err) {
+                        if (err) {
+                            bot.sendChat(langfile.error.default);
+                        } else {
+                            var time = parseInt(S(data.message).replaceAll('!restart', '').s.trim()) || 0;
+                            if (time !== 0) {
+                                bot.sendChat(S(langfile.pm2.restart_time).replaceAll('&{minutes}', time).s);
+                            }
+                            setTimeout(function () {
+                                bot.sendChat(langfile.pm2.restart_now);
+                                setTimeout(function(){
+                                    pm2.restart(config.pm2.processname, function (err) {
+                                        if (err) {
+                                            bot.sendChat(langfile.error.default);
+                                        }
+                                    });
+                                }, 5 * 1000);
+                            }, time * 60 * 1000);
+                        }
+                    })
+                }
+            }
+        });
+
+        commands.push({
             names: ['!reload'],
             hidden: true,
             enabled: true,
@@ -799,27 +831,27 @@ new DubAPI(config.login, function (err, bot) {
 
         //dj commands
         commands.push({
-           names: ['!voteskip'],
+            names: ['!voteskip'],
             hidden: true,
             enabled: true,
             matchStart: false,
-            handler: function(data){
-                if(config.autoskip.resdjskip.enabled === true && data.user.role !== undefined){
+            handler: function (data) {
+                if (config.autoskip.resdjskip.enabled === true && data.user.role !== undefined) {
                     var staff = [];
-                    bot.getStaff().forEach(function(user) {
+                    bot.getStaff().forEach(function (user) {
                         if (bot.hasPermission(user, 'delete-chat') && user.id !== bot.getSelf.id) {
                             staff.push(user);
                         }
                     });
 
-                    if(config.autoskip.resdjskip.condition.mods_online <= staff.length - 1) {
+                    if (config.autoskip.resdjskip.condition.mods_online <= staff.length - 1) {
                         bot.sendChat(langfile.autoskip.resdjskip.too_many_mods);
-                    } else if(_.contains(skipvotes, data.user.id)){
+                    } else if (_.contains(skipvotes, data.user.id)) {
                         bot.sendChat(langfile.autoskip.resdjskip.already_voted);
                     } else {
                         skipvotes.push(data.user.id);
 
-                        if(skipvotes.length >= config.autoskip.resdjskip.condition.votes){
+                        if (skipvotes.length >= config.autoskip.resdjskip.condition.votes) {
                             bot.moderateSkip();
                             bot.sendChat(langfile.autoskip.resdjskip.skip);
                         } else {
@@ -880,15 +912,15 @@ new DubAPI(config.login, function (err, bot) {
                                             text: _.rest(split, 1).join(' ').trim()
                                         })
                                     }
-                                }, function(err, req, body){
-                                   if(!err && req.statusCode === 200){
-                                       if (body == 'ok') {
-                                           bot.sendChat(langfile.callmod.mod_called);
-                                       }
-                                       else {
-                                           bot.sendChat(langfile.callmod.errors.request);
-                                       }
-                                   }
+                                }, function (err, req, body) {
+                                    if (!err && req.statusCode === 200) {
+                                        if (body == 'ok') {
+                                            bot.sendChat(langfile.callmod.mod_called);
+                                        }
+                                        else {
+                                            bot.sendChat(langfile.callmod.errors.request);
+                                        }
+                                    }
                                 });
                             }
                         } else {

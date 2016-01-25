@@ -108,37 +108,15 @@ module.exports = {
         enable: "Enabled message &{id}"
     },
     callmod: {
-      errors: {
-          unconfigured: "Error in configuration. Please report this to a staff memeber.",
-          request: "An error occured while calling a mod, sorry...",
-          no_message: "Please provide a messages to send like this: !callmod spammer in the room"
-      }  ,
+        errors: {
+            unconfigured: "Error in configuration. Please report this to a staff memeber.",
+            request: "An error occured while calling a mod, sorry...",
+            no_message: "Please provide a messages to send like this: !callmod spammer in the room"
+        },
         mod_called: "A moderator has been informed and will come as fast as possible if he is available"
     },
-    skipreasons: [
-        {
-            reason: "u",
-            msg: "@&{dj} Your song wasn't available."
-        },
-        {
-            reason: "o",
-            msg: "@&{dj} Your is overplayed."
-        },
-        {
-            reason: "h",
-            msg: "@&{dj} Your song was already played recently."
-        },
-        {
-            reason: "t",
-            msg: "@&{dj} Your song doesn't fit the theme."
-        },
-        {
-            reason: "n",
-            msg: "@&{dj} Your song wasn't safe for work!"
-        },
-        {
-            reason: "q",
-            msg: "@&{dj} Your song had a bad quality."
-        }
-    ]
+    pm2: {
+        restart_now: "Restarting...",
+        restart_time: "Restarting in &{minutes} minutes..."
+    }
 }
