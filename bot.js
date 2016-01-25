@@ -17,7 +17,12 @@ var autotimer;
 var duells = [];
 
 var skipable = true;
-var helptimeout = false;
+var skipvotes = [];
+
+var commandtimeout = {
+    callmod: false,
+    help: false
+};
 
 var spamfilterdata = {};
 
@@ -109,7 +114,7 @@ new DubAPI(config.login, function (err, bot) {
                 }
 
                 if (config.chatfilter.enabled === true) {
-                    if(config.chatfilter.link_protection.enabled === true && spamfilterdata[data.user.id].canpostLinks() === false && (S(data.message).contains('http://') || S(data.message).contains('https://'))){
+                    if (config.chatfilter.link_protection.enabled === true && spamfilterdata[data.user.id].canpostLinks() === false && (S(data.message).contains('http://') || S(data.message).contains('https://'))) {
                         bot.moderateDeleteChat(data.id);
                         bot.sendChat(S(langfile.chatfilter.link_protection).replaceAll('&{username}', data.user.username).s);
                         return;
@@ -190,6 +195,10 @@ new DubAPI(config.login, function (err, bot) {
 
         }
 
+        if(config.autoskip.resdjskip.enabled === true){
+            skipvotes = [];
+        }
+
         if (data.lastPlay !== undefined) {
             Track.update({last_played: new Date()}, {where: {dub_id: data.lastPlay.media.id}});
         }
@@ -229,6 +238,15 @@ new DubAPI(config.login, function (err, bot) {
             };
             fs.writeFile(__dirname + '/stats.json', JSON.stringify(stats, null, '\t'), 'utf8');
         }
+
+        if (config.autodj.enabled === true && config.autodj.playlistid !== '') {
+            if (bot.getQueue().lenght - 1 >= config.autodj.limits.max && bot.getQueue().lenght - 1 <= config.autodj.limits.min) {
+                queuePlaylist(config.autodj.playlistid);
+                shufflePlaylist();
+            } else {
+                clearQueue();
+            }
+        }
     });
 
     bot.on('error', function (err) {
@@ -242,7 +260,7 @@ new DubAPI(config.login, function (err, bot) {
         if (spamfilterdata[data.user.id] === undefined) {
             spamfilterdata[data.user.id] = new SpamProtection(data.user.id);
             spamfilterdata[data.user.id].setpostLink(false);
-            setTimeout(function(){
+            setTimeout(function () {
                 spamfilterdata[data.user.id].setpostLink(true)
             }, config.chatfilter.link_protection.timeout * 60 * 1000);
         }
@@ -664,7 +682,7 @@ new DubAPI(config.login, function (err, bot) {
             enabled: true,
             matchStart: false,
             handler: function (data) {
-                if (bot.hasPermission(data.user, 'skip')){
+                if (bot.hasPermission(data.user, 'skip')) {
                     afkcheck();
                     User.findAll({where: {afk: true}}).then(function (rows) {
                         var afks = '';
@@ -743,7 +761,7 @@ new DubAPI(config.login, function (err, bot) {
         commands.push({
             names: ['!ping'],
             handler: function (data) {
-                if (bot.hasPermission(data.user, 'skip')) {
+                if (bot.hasPermission(data.user, 'set-dj')) {
                     bot.sendChat(langfile.ping.default);
                 }
             },
@@ -752,12 +770,72 @@ new DubAPI(config.login, function (err, bot) {
             matchStart: false
         });
 
+        commands.push({
+            names: ['!reload'],
+            hidden: true,
+            enabled: true,
+            matchStart: true,
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'set-roles') === true) {
+                    var split = data.message.trim().split(' ');
+                    if (split.length === 1) {
+                        config = require(__dirname + '/config.js');
+                        langfile = require(__dirname + '/files/language.js');
+                    } else if (split.length === 2) {
+                        if (split[1] === 'config') {
+                            config = require(__dirname + '/config.js');
+                        } else if (split[1] === 'lang') {
+                            langfile = require(__dirname + '/files/language.js');
+                        } else {
+                            bot.sendChat(langfile.error.argument);
+                        }
+                    } else {
+                        bot.sendChat(langfile.error.argument);
+                    }
+                }
+            }
+        });
+
+
+        //dj commands
+        commands.push({
+           names: ['!voteskip'],
+            hidden: true,
+            enabled: true,
+            matchStart: false,
+            handler: function(data){
+                if(config.autoskip.resdjskip.enabled === true && data.user.role !== undefined){
+                    var staff = [];
+                    bot.getStaff().forEach(function(user) {
+                        if (bot.hasPermission(user, 'delete-chat') && user.id !== bot.getSelf.id) {
+                            staff.push(user);
+                        }
+                    });
+
+                    if(config.autoskip.resdjskip.condition.mods_online <= staff.length - 1) {
+                        bot.sendChat(langfile.autoskip.resdjskip.too_many_mods);
+                    } else if(_.contains(skipvotes, data.user.id)){
+                        bot.sendChat(langfile.autoskip.resdjskip.already_voted);
+                    } else {
+                        skipvotes.push(data.user.id);
+
+                        if(skipvotes.length >= config.autoskip.resdjskip.condition.votes){
+                            bot.moderateSkip();
+                            bot.sendChat(langfile.autoskip.resdjskip.skip);
+                        } else {
+                            bot.sendChat(S(langfile.autoskip.resdjskip.not_enough_votes).replaceAll('&{more}', config.autoskip.resdjskip.condition.votes - skipvotes.length).s);
+                        }
+                    }
+                }
+            }
+
+        });
 
         //user commands
         commands.push({
             names: ['!help'],
             handler: function (data) {
-                if (helptimeout === false) {
+                if (commandtimeout.help === false) {
                     var mods = '';
                     bot.getStaff().forEach(function (mod, index, array) {
                         if (mod.id !== bot.getSelf().id) {
@@ -769,15 +847,62 @@ new DubAPI(config.login, function (err, bot) {
                     } else {
                         bot.sendChat(langfile.help.no_one_here);
                     }
-                    helptimeout = true;
+                    commandtimeout.help = true;
                     setTimeout(function () {
-                        helptimeout = false
+                        commandtimeout.help = false
                     }, 10 * 1000);
                 }
             },
             hidden: true,
             enabled: true,
             matchStart: false
+        });
+
+        commands.push({
+            names: ['!callmod'],
+            enabled: true,
+            hidden: false,
+            matchStart: true,
+            handler: function (data) {
+                if (commandtimeout.callmod === false && config.callmod.enabled === true) {
+                    if (config.callmod.service === 'slack') {
+                        if (config.callmod.slack.webhookurl !== '') {
+                            var split = data.message.trim().split(' ');
+                            if (split.length === 1) {
+                                bot.sendChat(langfile.callmod.errors.no_message);
+                            } else {
+                                request.post(config.callmod.slack.webhookurl, {
+                                    form: {
+                                        payload: JSON.stringify({
+                                            username: config.callmod.slack.botname || bot.getSelf().username,
+                                            icon_url: config.callmod.slack.icon_url,
+                                            channel: config.callmod.slack.channel,
+                                            text: _.rest(split, 1).join(' ').trim()
+                                        })
+                                    }
+                                }, function(err, req, body){
+                                   if(!err && req.statusCode === 200){
+                                       if (body == 'ok') {
+                                           bot.sendChat(langfile.callmod.mod_called);
+                                       }
+                                       else {
+                                           bot.sendChat(langfile.callmod.errors.request);
+                                       }
+                                   }
+                                });
+                            }
+                        } else {
+                            bot.sendChat(langfile.callmod.errors.unconfigured);
+                        }
+                    }
+
+
+                    commandtimeout.callmod = true;
+                    setTimeout(function () {
+                        commandtimeout.callmod = false
+                    }, 2 * 60 * 1000);
+                }
+            }
         });
 
         commands.push({
@@ -1100,5 +1225,43 @@ new DubAPI(config.login, function (err, bot) {
     }
 
 
+    function queuePlaylist(playlistid) {
+        bot._.reqHandler.queue({
+            method: 'POST',
+            url: 'https://api.dubtrack.fm/room/%RID%/queueplaylist/' + playlistid
+        }, function (err, data) {
+            if (!err) {
+                return true;
+            } else {
+                return false;
+            }
+        })
+    }
+
+    function clearQueue() {
+        bot._.reqHandler.queue({
+            method: 'DELETE',
+            url: 'https://api.dubtrack.fm/user/session/room/%RID%/queue/order'
+        }, function (err, data) {
+            if (!err) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+    }
+
+    function shufflePlaylist() {
+        bot._.reqHandler.queue({
+            method: 'ORDER',
+            url: 'https://api.dubtrack.fm/user/session/room/%RID%/queue/order'
+        }, function (err, data) {
+            if (!err) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+    }
 });
 

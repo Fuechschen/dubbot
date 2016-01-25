@@ -67,7 +67,7 @@ SpamProtection.prototype.canpostLinks = function () {
 };
 
 SpamProtection.prototype.setpostLink = function (bool) {
-  this.postLinks = bool;
+    this.postLinks = bool;
 };
 
 module.exports = SpamProtection;

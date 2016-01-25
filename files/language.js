@@ -45,6 +45,12 @@ module.exports = {
         },
         timelimit: {
             default: "@&{username}, your track &{track}is too long!"
+        },
+        resdjskip: {
+            not_enough_votes: "&{more} more votes required to skip.",
+            skip: "Our residents decided to skip.",
+            too_many_mods: "Currently, the amount of mods in the room is high enough, so this function is disabled",
+            already_voted: "You already voted to skip!"
         }
     },
     queuecheck: {
@@ -100,6 +106,14 @@ module.exports = {
         add: "Message added!",
         disable: "Disabled message &{id}",
         enable: "Enabled message &{id}"
+    },
+    callmod: {
+      errors: {
+          unconfigured: "Error in configuration. Please report this to a staff memeber.",
+          request: "An error occured while calling a mod, sorry...",
+          no_message: "Please provide a messages to send like this: !callmod spammer in the room"
+      }  ,
+        mod_called: "A moderator has been informed and will come as fast as possible if he is available"
     },
     skipreasons: [
         {

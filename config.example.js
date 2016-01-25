@@ -34,6 +34,13 @@ module.exports = {
         },
         stucksongs: {    //skips songs if they aren't skipping automaitcally after their end
             enabled: true
+        },
+        resdjskip: {    //let your resdj/dj vote for a skip when not enough staff memebers are online
+            enabled: false,
+            condition: {
+                mods_online: 2,     //the amount of mods to be online to disable resdjskip only mod+ counted
+                votes: 2            //amout of votes for a skip
+            }
         }
     },
     queuecheck: {    //checks the queue for blacklisted/recently played songs and removes them
@@ -72,6 +79,24 @@ module.exports = {
         link_protection: {  //prevents users who just joind from posting links in chat
             enabled: true,
             timeout: 5       //minutes till users can post links
+        }
+    },
+    autodj: {     //bot automatically joins the queue when too short
+        enabled: false,
+        limits: {
+            min: 1,   //min queue lenght to let the bot join
+            max: 2    //max queue lenght without the bot to let the bot leave the queue
+        },
+        playlistid: ''  //id of the playlist to queue
+    },
+    callmod: {     //calls a mod through a webservice
+        enabled: true,
+        service: 'slack',    //only slack currently supported
+        slack: {
+            webhookurl: '',     //webhookurl for slack
+            channel: undefined,  //slackchannel to post
+            botname: undefined,  //change the name of the bot in slack
+            icon_url: undefined  // set an icon for the bot
         }
     }
 };
