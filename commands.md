@@ -11,6 +11,7 @@
 |!delchat||username|Mod|Deletes all messages from specified user in the last 512 messages since bot joined|
 |!sudo||various|Manager|Let the bot send your arguments in chat|
 |!reload||[config/lang]|Manager|Reloads config/langfile|
+|!restart||[time]|Manager|Restarts the bot(requires pm2)|
 |!addcustomtext|!addct|Manager|trigger message|Adds a custom chat command which is triggers when .trigger is send in chat|
 |!randommessage|!rndmsg|list/add/del/disable/enable|Manager|Edits random messages sent all 2-10 Minutes|
 |!afkcheck| | |VIP|Lists all afks in the community|
