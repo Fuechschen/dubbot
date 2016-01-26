@@ -4,7 +4,7 @@ module.exports = {
         blacklisted_reason: "@&{dj}, the track '&{track}' was blacklisted by &{moderator} for: &{reason}",
         is_blacklisted: "@{dj}, the track &{track} is blacklisted!",
         is_blacklisted_reason: "@{dj}, the track &{track} is blacklisted for: &{reason}",
-        unblacklisted: "&{username} unblacklisted &{track}",
+        unblacklisted: "&{username} removed &{track} from the blacklist.",
         queueblacklist: "@&{dj}, your track '&{track}' was added to the blacklist and will be removed from the queue.",
         queueblacklist_reason: "@&{dj}, your track '&{track}' was added to the blacklist for '&{reason}' and will be removed from the queue.",
         id_blacklist: "&{moderator} added '&{track}' to the blacklist.",
@@ -126,6 +126,6 @@ module.exports = {
     },
     findtrack: {
         notracksfound: "No tracks found for that name.",
-        list: "[&{id}] - '&{name}' - '&{sourceid}' - '&{type}' - '&{length'} - '&{blacklisted}'"
+        list: "[&{id}] - '&{name}' - '&{sourceid}' - '&{type}' - '&{length}' - '&{blacklisted}'"
     }
 }
