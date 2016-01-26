@@ -899,7 +899,8 @@ new DubAPI(config.login, function (err, bot) {
                     if (split.length > 1) {
                         Track.findAll({
                             where: {name: {$like: '%' + _.rest(split, 1).join(' ').trim() + '%'}},
-                            order: [['id', 'ASC']]
+                            order: [['id', 'ASC']],
+                            limit: 15
                         }).then(function (rows) {
                             if (rows.length === 0) {
                                 bot.sendChat(langfile.findtrack.notracksfound);
