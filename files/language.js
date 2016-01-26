@@ -6,7 +6,9 @@ module.exports = {
         is_blacklisted_reason: "@{dj}, the track &{track} is blacklisted for: &{reason}",
         unblacklisted: "&{username} unblacklisted &{track}",
         queueblacklist: "@&{dj}, your track '&{track}' was added to the blacklist and will be removed from the queue.",
-        queueblacklist_reason: "@&{dj}, your track '&{track}' was added to the blacklist for '&{reason}' and will be removed from the queue."
+        queueblacklist_reason: "@&{dj}, your track '&{track}' was added to the blacklist for '&{reason}' and will be removed from the queue.",
+        id_blacklist: "&{moderator} added '&{track}' to the blacklist.",
+        id_blacklist_reson: "&{moderator} added '&{track}' to the blacklist for: &{reason}"
     },
     commands_reloaded: {
         default: "Reloaded commands!"

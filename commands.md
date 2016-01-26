@@ -4,7 +4,8 @@
 |----|----|----|----|----|
 |!skip|!fs|[reason]|VIP|Skips the current song and send reason when defined. Reasons can be defined in language.js|
 |!blacklist|!bl|[reason]|Mod|Skips the current song and adds the song to the blacklist. Reason is optianal and can be any string|
-|!queueblacklist|!qbl|position [reason]|Adds the track at the given position to the blacklist and removes it.
+|!queueblacklist|!qbl|position [reason]|Mod|Adds the track at the given position to the blacklist and removes it.|
+|!idblacklist|!idbl|id [reason]|Mod|Addes the given song to the blacklist|
 |!unblacklist|!unbl|db_id|Mod|Removes the given track from the blacklist|
 |!move||username position|Mod|Moves the specified user to the specified position|
 |!clearchat|||Mod|Deletes last 512 messages sinc bot joined the room|

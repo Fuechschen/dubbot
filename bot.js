@@ -215,7 +215,7 @@ new DubAPI(config.login, function (err, bot) {
                 }, (data.media.songLength + 10) * 1000);
             }
 
-            if(config.options.upvote === true){
+            if (config.options.upvote === true) {
                 bot.updub();
             }
         }
@@ -418,7 +418,6 @@ new DubAPI(config.login, function (err, bot) {
                         Track.update({blacklisted: true, bl_reason: reason}, {where: {dub_id: track.id}});
                         bot.sendChat(S(S(langfile.blacklist.blacklisted_reason).replaceAll('&{track}', track.name).s).replaceAll('&{moderator}', data.user.username).replaceAll('&{dj}', dj.username).replaceAll('&{reason}', reason).s);
                     }
-                    console.log('[BLACKLIST]', data.user.username, ': [', track.name, '|', track.id, '|', track.fkid, ']');
                 }
             }
         });
@@ -465,25 +464,59 @@ new DubAPI(config.login, function (err, bot) {
         });
 
         commands.push({
+            names: ['!idbl', '!idblacklist'],
+            hidden: true,
+            enabled: true,
+            matchStart: true,
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'ban')) {
+                    var split = data.message.trim().split(' ');
+                    if (split.length === 1) {
+                        bot.sendChat(langfile.error.argument);
+                    } else {
+                        var trackid = parseInt(split[1]);
+                        if (trackid !== undefined) {
+                            Track.find({where: {id: trackid}}).then(function (row) {
+                                if (split.length === 2) {
+                                    Track.update({blacklisted: true}, {where: {id: trackid}});
+                                    bot.sendChat(S(S(langfile.blacklist.id_blacklist).replaceAll('&{track}', row.name).s).replaceAll('&{moderator}', data.user.username).s);
+                                } else {
+                                    Track.update({
+                                        blacklisted: true,
+                                        bl_reason: _.rest(split, 2).join(' ').trim()
+                                    }, {where: {id: trackid}});
+                                    bot.sendChat(S(S(langfile.blacklist.id_blacklist_reason).replaceAll('&{track}', row.name).s).replaceAll('&{moderator}', data.user.username).replaceAll('&{reason}', _.rest(split, 2).join(' ').trim()).s);
+                                }
+                            });
+                        } else {
+                            bot.sendChat(langfile.error.argument);
+                        }
+                    }
+                }
+            }
+        });
+
+        commands.push({
             names: ['!unbl', '!unblacklist'],
             hidden: true,
             enabled: true,
             matchStart: true,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'ban')) {
-                    var msg = data.message.split(' ');
-                    var trackid;
-                    try {
-                        trackid = parseInt(msg[1]);
-                    } catch (e) {
-                        bot.sendChat(langfile.errors.argument);
-                        return;
+                    var split = data.message.split(' ');
+                    if (split.length === 1) {
+                        bot.sendChat(langfile.error.argument);
+                    } else {
+                        var trackid = parseInt(split[1]);
+                        if (trackid !== undefined) {
+                            Track.find({where: {id: trackid}}).then(function (row) {
+                                Track.update({blacklisted: false, bl_reason: null}, {where: {id: trackid}});
+                                bot.sendChat(S(S(langfile.blacklist.unblacklisted).replaceAll('&{track}', row.name).s).replaceAll('&{username}', data.user.username).s);
+                            });
+                        } else {
+                            bot.sendChat(langfile.error.argument);
+                        }
                     }
-                    Track.find({where: {id: trackid}}).then(function (row) {
-                        Track.update({blacklisted: false, bl_reason: null}, {where: {id: trackid}});
-                        bot.sendChat(S(S(langfile.blacklist.unblacklisted).replaceAll('&{track}', row.name).s).replaceAll('&{username}', data.user.username).s);
-                        console.log('[UNBLACKLIST]', data.user.username, ': [', row.name, '|', row.id, '|', row.fkid, ']');
-                    });
                 }
             }
         });
@@ -792,7 +825,7 @@ new DubAPI(config.login, function (err, bot) {
                             }
                             setTimeout(function () {
                                 bot.sendChat(langfile.pm2.restart_now);
-                                setTimeout(function(){
+                                setTimeout(function () {
                                     pm2.restart(config.pm2.processname, function (err) {
                                         if (err) {
                                             bot.sendChat(langfile.error.default);
@@ -837,16 +870,16 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
-            handler: function(data){
-                if(bot.hasPermission(data.user, 'queue-order') === true){
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'queue-order') === true) {
                     var split = data.message.trim().split(' ');
-                    if(split.length === 1){
+                    if (split.length === 1) {
                         bot.sendChat(langfile.error.argument);
                     } else {
                         var id = parseInt(split[1]);
-                        if(id !== undefined){
-                            Track.find({where: {id: id}}).then(function(track){
-                               Track.update({last_played: new Date("1990 01 01 01:01:01")}, {where: {id: track.id}});
+                        if (id !== undefined) {
+                            Track.find({where: {id: id}}).then(function (track) {
+                                Track.update({last_played: new Date("1990 01 01 01:01:01")}, {where: {id: track.id}});
                                 bot.sendChat(S(langfile.resetPlay.default).replaceAll('&{track}', track.name).s);
                             });
                         }
@@ -860,16 +893,19 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             matchStart: true,
             enabled: true,
-            handler: function(data){
-                if(bot.hasPermission(data.user, 'skip')){
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'skip')) {
                     var split = data.message.trim().split(' ');
-                    if(split.length > 1){
-                        Track.findAll({where: {name: {$like: '%' + _.rest(split, 1).join(' ').trim() + '%'}}, order: [['id', 'ASC']]}).then(function(rows){
-                            if(rows.length === 0){
+                    if (split.length > 1) {
+                        Track.findAll({
+                            where: {name: {$like: '%' + _.rest(split, 1).join(' ').trim() + '%'}},
+                            order: [['id', 'ASC']]
+                        }).then(function (rows) {
+                            if (rows.length === 0) {
                                 bot.sendChat(langfile.findtrack.notracksfound);
                             } else {
-                                rows.forEach(function(track){
-                                   bot.sendChat(S(langfile.findtrack.list).replaceAll('&{id}', track.id).replaceAll('&{name}', track.name).replaceAll('&{sourceid}', track.source_id).replaceAll('&{type}', track.type).replaceAll('&{length}', track.songLength).replaceAll('&{blacklisted}', track.blacklisted).s);
+                                rows.forEach(function (track) {
+                                    bot.sendChat(S(langfile.findtrack.list).replaceAll('&{id}', track.id).replaceAll('&{name}', track.name).replaceAll('&{sourceid}', track.source_id).replaceAll('&{type}', track.type).replaceAll('&{length}', track.songLength).replaceAll('&{blacklisted}', track.blacklisted).s);
                                 });
                             }
                         });
