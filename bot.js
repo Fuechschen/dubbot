@@ -479,7 +479,7 @@ new DubAPI(config.login, function (err, bot) {
                             Track.find({where: {id: trackid}}).then(function (row) {
                                 if (split.length === 2) {
                                     Track.update({blacklisted: true}, {where: {id: trackid}});
-                                    bot.sendChat(S(S(langfile.blacklist.id_blacklist).replaceAll('&{track}', row.name).s).replaceAll('&{moderator}', data.user.username).s);
+                                    bot.sendChat(S(langfile.blacklist.id_blacklist).replaceAll('&{track}', row.name).replaceAll('&{moderator}', data.user.username).s);
                                 } else {
                                     Track.update({
                                         blacklisted: true,
