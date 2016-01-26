@@ -70,7 +70,7 @@ module.exports = {
             words: []
         },
         spam: {
-            enabled: true,
+            enabled: false,    //enable this on your own risk, it's maybe a bit too aggressive,
             aggressivity: {
                 delete: 5,  //how many positive spam resultis till messages are deleted
                 mute: 2     // how many times a the bot deletes messages before muting
