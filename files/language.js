@@ -118,5 +118,12 @@ module.exports = {
     pm2: {
         restart_now: "Restarting...",
         restart_time: "Restarting in &{minutes} minutes..."
+    },
+    resetPlay: {
+        default: "Reset play for '&{track}'"
+    },
+    findtrack: {
+        notracksfound: "No tracks found for that name.",
+        list: "[&{id}] - '&{name}' - '&{sourceid}' - '&{type}' - '&{length'} - '&{blacklisted}'"
     }
 }

@@ -5,10 +5,11 @@ module.exports = {
     },
     options: {
         room: "", //the thing behind https://www.dubtrack.fm/join/
-        customtext_trigger: ".",
+        customtext_trigger: ".",    //literal to trigger custom texts
         welcome_users: true,     //welcome users or not
         room_state_file: true,  // wether to generate stats.json or not
-        random_messages: true     //send a random messages all 2-10 minutes, see !rndmsg
+        random_messages: true,     //send a random messages all 2-10 minutes, see !rndmsg
+        upvote: false              //upvote every song
     },
     db: {   //your db config, fill in the path to database when usind sqlite (which is not recommended due to performance)
         dialect: "",
@@ -45,7 +46,7 @@ module.exports = {
     },
     queuecheck: {    //checks the queue for blacklisted/recently played songs and removes them
         enabled: true,
-        action: "REMOVESONG"    //"REMOVESONG" for removeing only the song, "REMOVEDJ" to remove the dj
+        action: "REMOVESONG"    //"REMOVESONG" for removing only the song, "REMOVEDJ" to remove the dj
     },
     afkremoval: {
         enabled: true,

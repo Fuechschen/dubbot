@@ -14,6 +14,8 @@
 |!restart||[time]|Manager|Restarts the bot (requires pm2)|
 |!addcustomtext|!addct|Manager|trigger message|Adds a custom chat command which is triggers when .trigger is send in chat|
 |!randommessage|!rndmsg|list/add/del/disable/enable|Manager|Edits random messages sent all 2-10 Minutes|
+|!resetplay||id|Mod|Resets the last play for the given song|
+|!findtrack||name|VIP|Searches the databse for the given songname|
 |!afkcheck| | |VIP|Lists all afks in the community|
 |!lottery| |[time]|Mod|Starts a lottery with the given time in minutes. Time defaults to 2 minutes|
 |!roulete| |[time]|Mod|Starts a roulette with the given time in minutes. Time defaults to 2 minutes|

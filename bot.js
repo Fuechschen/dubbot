@@ -214,6 +214,10 @@ new DubAPI(config.login, function (err, bot) {
                     }
                 }, (data.media.songLength + 10) * 1000);
             }
+
+            if(config.options.upvote === true){
+                bot.updub();
+            }
         }
 
         if (config.options.room_state_file === true) {
@@ -827,6 +831,54 @@ new DubAPI(config.login, function (err, bot) {
                 }
             }
         });
+
+        commands.push({
+            names: ['!resetplay'],
+            hidden: true,
+            enabled: true,
+            matchStart: true,
+            handler: function(data){
+                if(bot.hasPermission(data.user, 'queue-order') === true){
+                    var split = data.message.trim().split(' ');
+                    if(split.length === 1){
+                        bot.sendChat(langfile.error.argument);
+                    } else {
+                        var id = parseInt(split[1]);
+                        if(id !== undefined){
+                            Track.find({where: {id: id}}).then(function(track){
+                               Track.update({last_played: new Date("1990 01 01 01:01:01")}, {where: {id: track.id}});
+                                bot.sendChat(S(langfile.resetPlay.default).replaceAll('&{track}', track.name).s);
+                            });
+                        }
+                    }
+                }
+            }
+        });
+
+        commands.push({
+            names: ['!findtrack'],
+            hidden: true,
+            matchStart: true,
+            enabled: true,
+            handler: function(data){
+                if(bot.hasPermission(data.user, 'skip')){
+                    var split = data.message.trim().split(' ');
+                    if(split.length > 1){
+                        Track.findAll({where: {name: {$like: '%' + _.rest(split, 1).join(' ').trim() + '%'}}, order: [['id', 'ASC']]}).then(function(rows){
+                            if(rows.length === 0){
+                                bot.sendChat(langfile.findtrack.notracksfound);
+                            } else {
+                                rows.forEach(function(track){
+                                   bot.sendChat(S(langfile.findtrack.list).replaceAll('&{id}', track.id).replaceAll('&{name}', track.name).replaceAll('&{sourceid}', track.source_id).replaceAll('&{type}', track.type).replaceAll('&{length}', track.songLength).replaceAll('&{blacklisted}', track.blacklisted).s);
+                                });
+                            }
+                        });
+                    } else {
+                        bot.sendChat(langfile.error.argument);
+                    }
+                }
+            }
+        })
 
 
         //dj commands
