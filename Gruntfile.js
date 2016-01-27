@@ -13,7 +13,8 @@ module.exports = function(grunt) {
                         projectKey: 'sonar:dubbot',
                         projectName: 'dubbot',
                         projectVersion: '0.2.2',
-                        sources: ['test'].join(','),
+                        sources: './',
+                        exclusions: ['node_modules', 'commands.md', 'README.md'],
                         language: 'js',
                         sourceEncoding: 'UTF-8'
                     }
