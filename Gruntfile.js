@@ -24,5 +24,5 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-sonar-runner');
 
-    grunt.registerTask('default', ['grunt-sonar-runner']);
+    grunt.registerTask('default', ['sonarRunner']);
 };
