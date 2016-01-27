@@ -63,17 +63,15 @@ new DubAPI(config.login, function (err, bot) {
         return console.error(err);
     }
     console.log('Using DubApi ' + bot.version);
-    loadCommands();
 
     bot.connect(config.options.room);
 
     bot.on('connected', function (data) {
         console.log('Connected: ', data);
-
-
-        autotimer = setTimeout(function () {
+        loadCommands();
+        setTimeout(function(){
             timings();
-        }, _.random(0, 3) * 60 * 1000);
+        }, 1000);
 
         User.update({removed_for_afk: false, warned_for_afk: false}, {where: {}});
 
@@ -1130,7 +1128,6 @@ new DubAPI(config.login, function (err, bot) {
             }
         });
 
-
         commands.push({
             names: ['!duell'],
             hidden: true,
@@ -1181,6 +1178,7 @@ new DubAPI(config.login, function (err, bot) {
     }
 
     function timings() {
+
         if (config.afkremoval.enabled === true) {
             afkcheck();
             if (config.afkremoval.kick === true) {
@@ -1189,15 +1187,9 @@ new DubAPI(config.login, function (err, bot) {
             warnafk();
             removeafk();
         }
-
         if (config.queuecheck.enabled === true) {
             checkQueue(bot.getQueue());
         }
-        var minutes = _.random(2, 10);
-        autotimer = setTimeout(function () {
-            timings();
-        }, minutes * 60 * 1000);
-
         if (config.options.random_messages) {
             RandomMessage.findAll({where: {status: true}}).then(function (rows) {
                 if (rows.length !== 0) {
@@ -1205,6 +1197,12 @@ new DubAPI(config.login, function (err, bot) {
                 }
             });
         }
+
+        var minutes = _.random(2, 10);
+        autotimer = setTimeout(function () {
+            timings();
+        }, minutes * 60 * 1000);
+        console.log('[INFO] Executed timings, next execution in ' + minutes + ' minutes.');
     }
 
     function afkcheck() {
@@ -1291,90 +1289,102 @@ new DubAPI(config.login, function (err, bot) {
         if (media.songLength > config.autoskip.timelimit.limit * 1000 && config.autoskip.timelimit.enabled) {
             bot.moderateSkip();
             bot.sendChat(langfile.autoskip.timelimit.default);
-        }
-
-        var trackdata = {
-            name: media.name,
-            dub_id: media.id,
-            type: media.type,
-            source_id: media.fkid,
-            thumbnail: media.thumbnail,
-            songLength: media.songLength
-        };
-
-        Track.findOrCreate({where: {dub_id: trackdata.dub_id}, defaults: trackdata}).then(function (trackl, created) {
-            if (!created && bot.getPlayID() === playid) {
-                var track = trackl[0];
-                var dj = bot.getDJ();
-                if (track.blacklisted) {
-                    bot.moderateSkip();
-                    if (track.bl_reason !== undefined && track.bl_reason !== null) {
-                        bot.sendChat(S(langfile.blacklisted.is_blacklisted).replaceAll('&{track}', track.name).replaceAll('&{dj}', dj.username).replaceAll('&{reason}', track.bl_reason).s);
-                    } else {
-                        bot.sendChat(S(langfile.blacklisted.is_blacklisted).replaceAll('&{track}', track.name).replaceAll('&{dj}', dj.username).s);
-                    }
-                } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined) {
-                    bot.moderateSkip();
-                    bot.sendChat(S(langfile.autoskip.history).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
-                }
-                /*track.getLabels().then(function (tracks) {
-                 if (playid === bot.getPlayID()) {
-                 var moderated = false;
-                 tracks.forEach(function (trck) {
-                 if(moderated === false){
-                 if (config.autoskip.history.enabled === true && moment().diff(trck.last_played, 'minutes') < config.autoskip.history.time && trck.last_played !== undefined) {
-                 bot.moderateSkip();
-                 bot.sendChat(langfile.autoskip.history);
-                 moderated = true;
-                 }
-                 }
-                 });
-                 }
-                 });*/
-            }
-        });
-    }
-
-    function checkQueue(queue) {
-        queue.forEach(function (queueobject) {
+        } else {
             var trackdata = {
-                name: queueobject.media.name,
-                dub_id: queueobject.media.id,
-                type: queueobject.media.type,
-                source_id: queueobject.media.fkid,
-                thumbnail: queueobject.media.thumbnail,
-                songLength: queueobject.media.songLength
+                name: media.name,
+                dub_id: media.id,
+                type: media.type,
+                source_id: media.fkid,
+                thumbnail: media.thumbnail,
+                songLength: media.songLength
             };
 
             Track.findOrCreate({
-                where: {dub_id: queueobject.media.id},
+                where: {dub_id: trackdata.dub_id},
                 defaults: trackdata
-            }).then(function (tracks, created) {
-                var track = tracks[0];
-                if (!created) {
+            }).then(function (trackl, created) {
+                if (!created && bot.getPlayID() === playid) {
+                    var track = trackl[0];
+                    var dj = bot.getDJ();
                     if (track.blacklisted) {
-                        if (config.queuecheck.action === 'REMOVESONG') {
-                            bot.moderateRemoveSong(queueobject.user.id);
-                        } else if (config.queuecheck.action === 'REMOVEDJ') {
-                            bot.moderateRemoveDJ(queueobject.user.id);
-                        }
+                        bot.moderateSkip();
                         if (track.bl_reason !== undefined && track.bl_reason !== null) {
-                            bot.sendChat(S(langfile.queuecheck.blacklisted_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).replaceAll('&{reason}', track.bl_reason).s);
+                            bot.sendChat(S(langfile.blacklisted.is_blacklisted).replaceAll('&{track}', track.name).replaceAll('&{dj}', dj.username).replaceAll('&{reason}', track.bl_reason).s);
                         } else {
-                            bot.sendChat(S(langfile.queuecheck.blacklisted).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
+                            bot.sendChat(S(langfile.blacklisted.is_blacklisted).replaceAll('&{track}', track.name).replaceAll('&{dj}', dj.username).s);
                         }
                     } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined) {
-                        if (config.queuecheck.action === 'REMOVESONG') {
-                            bot.moderateRemoveSong(queueobject.user.id);
-                        } else if (config.queuecheck.action === 'REMOVEDJ') {
-                            bot.moderateRemoveDJ(queueobject.user.id);
-                        }
-                        bot.sendChat(S(langfile.queuecheck.history).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
+                        bot.moderateSkip();
+                        bot.sendChat(S(langfile.autoskip.history).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
                     }
-
-                    //todo add label when working
+                    /*track.getLabels().then(function (tracks) {
+                     if (playid === bot.getPlayID()) {
+                     var moderated = false;
+                     tracks.forEach(function (trck) {
+                     if(moderated === false){
+                     if (config.autoskip.history.enabled === true && moment().diff(trck.last_played, 'minutes') < config.autoskip.history.time && trck.last_played !== undefined) {
+                     bot.moderateSkip();
+                     bot.sendChat(langfile.autoskip.history);
+                     moderated = true;
+                     }
+                     }
+                     });
+                     }
+                     });*/
                 }
             });
+        }
+    }
+
+    function checkQueue(queue) {
+        queue.forEach(function (queueobject, index) {
+            if (queueobject.media.songLength > config.autoskip.timelimit.limit * 1000 && config.autoskip.timelimit.enabled) {
+                if (config.queuecheck.action === 'REMOVESONG') {
+                    bot.moderateRemoveSong(queueobject.user.id);
+                } else if (config.queuecheck.action === 'REMOVEDJ') {
+                    bot.moderateRemoveDJ(queueobject.user.id);
+                }
+                bot.sendChat(S(langfile.queuecheck.length).replaceAll('&{username}', queueobject.user.username).s);
+            } else {
+                var trackdata = {
+                    name: queueobject.media.name,
+                    dub_id: queueobject.media.id,
+                    type: queueobject.media.type,
+                    source_id: queueobject.media.fkid,
+                    thumbnail: queueobject.media.thumbnail,
+                    songLength: queueobject.media.songLength
+                };
+
+                Track.findOrCreate({
+                    where: {dub_id: queueobject.media.id},
+                    defaults: trackdata
+                }).then(function (tracks, created) {
+                    var track = tracks[0];
+                    if (!created && bot.getQueue()[index].media.id === track.id) {
+                        if (track.blacklisted) {
+                            if (config.queuecheck.action === 'REMOVESONG') {
+                                bot.moderateRemoveSong(queueobject.user.id);
+                            } else if (config.queuecheck.action === 'REMOVEDJ') {
+                                bot.moderateRemoveDJ(queueobject.user.id);
+                            }
+                            if (track.bl_reason !== undefined && track.bl_reason !== null) {
+                                bot.sendChat(S(langfile.queuecheck.blacklisted_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).replaceAll('&{reason}', track.bl_reason).s);
+                            } else {
+                                bot.sendChat(S(langfile.queuecheck.blacklisted).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
+                            }
+                        } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined) {
+                            if (config.queuecheck.action === 'REMOVESONG') {
+                                bot.moderateRemoveSong(queueobject.user.id);
+                            } else if (config.queuecheck.action === 'REMOVEDJ') {
+                                bot.moderateRemoveDJ(queueobject.user.id);
+                            }
+                            bot.sendChat(S(langfile.queuecheck.history).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
+                        }
+
+                        //todo add label when working
+                    }
+                });
+            }
         });
     }
 
