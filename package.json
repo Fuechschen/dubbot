@@ -26,7 +26,6 @@
   },
   "devDependencies": {
     "grunt": "*",
-    "grunt-sonar-runner": "*",
-
+    "grunt-sonar-runner": "*"
   }
 }
