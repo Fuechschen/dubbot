@@ -23,5 +23,10 @@
     "underscore": "*",
     "cleverbot-node": "git://github.com/AvatarKava/cleverbot-node.git",
     "pm2": "*"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-sonar-runner": "*",
+
   }
 }
