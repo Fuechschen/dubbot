@@ -175,12 +175,6 @@ new DubAPI(config.login, function (err, bot) {
                         }
                     }
                 }
-
-                if (config.cleverbot.enabled === true && S(data.message).contains('@' + bot.getSelf().username) === true) {
-                    cleverbot.write(S(data.message).replaceAll('@' + bot.getSelf().username, '').s, function (res) {
-                        bot.sendChat('@' + data.user.username + ' ' + res.message);
-                    });
-                }
             }
         } else {
             console.log('[CHAT]', 'undefined', ':', data.message);
@@ -355,16 +349,19 @@ new DubAPI(config.login, function (err, bot) {
             }
             return found;
         })[0];
+
         if (command && command.enabled) {
             command.handler(data, bot);
             console.log('[COMMAND] Executed command ' + command.names[0] + ' (' + data.message + ')');
-        }
-
-        if (S(data.message).startsWith(config.options.customtext_trigger) === true) {
+        } else if (S(data.message).startsWith(config.options.customtext_trigger) === true) {
             CustomText.find({where: {trigger: S(data.message).chompLeft(config.options.customtext_trigger).s}}).then(function (row) {
                 if (row !== undefined && row !== null) {
                     bot.sendChat(S(row.response).replaceAll('&{username}', data.user.username).s);
                 }
+            });
+        } else if (config.cleverbot.enabled === true && S(data.message).contains('@' + bot.getSelf().username) === true) {
+            cleverbot.write(S(data.message).replaceAll('@' + bot.getSelf().username, '').s, function (res) {
+                bot.sendChat('@' + data.user.username + ' ' + res.message);
             });
         }
     }
@@ -629,6 +626,48 @@ new DubAPI(config.login, function (err, bot) {
         });
 
         commands.push({
+            names: ['!clearqueue'],
+            hidden: true,
+            enabled: false,
+            matchStart: false,
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'queue-order')) {
+                    bot.moderateLockQueue(true);
+                    bot.sendChat(S(langfile.clearqueue.default).replaceAll('&{moderator}', data.user.username).s);
+                    bot.getQueue().forEach(function (queueobject) {
+                        setTimeout(function () {
+                            bot.moderateRemoveDj(queueobject.user.id);
+                        }, _.random(2, 10) * 1000);
+                    });
+                }
+            }
+        });
+
+        commands.push({
+            names: ['!lock'],
+            hidden: true,
+            enabled: false,
+            matchStart: false,
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'lock-queue')) {
+                    bot.moderateLockQueue(true);
+                }
+            }
+        });
+
+        commands.push({
+            names: ['!unlock'],
+            hidden: true,
+            enabled: false,
+            matchStart: false,
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'lock-queue')) {
+                    bot.moderateLockQueue(false);
+                }
+            }
+        });
+
+        commands.push({
             names: ['!sudo'],
             hidden: true,
             enabled: true,
@@ -876,13 +915,21 @@ new DubAPI(config.login, function (err, bot) {
                     if (split.length === 1) {
                         bot.sendChat(langfile.error.argument);
                     } else {
-                        var id = parseInt(split[1]);
-                        if (id !== undefined) {
-                            Track.find({where: {id: id}}).then(function (track) {
-                                Track.update({last_played: new Date("1990 01 01 01:01:01")}, {where: {id: track.id}});
-                                bot.sendChat(S(langfile.resetPlay.default).replaceAll('&{track}', track.name).s);
-                            });
-                        }
+                        _.rest(split, 1).forEach(function (sid, index) {
+                            var id = parseInt(sid);
+                            if (id !== undefined) {
+                                Track.find({where: {id: id}}).then(function (track) {
+                                    if (track !== undefined && track !== null) {
+                                        Track.update({last_played: new Date("1990 01 01 01:01:01")}, {where: {id: track.id}});
+                                        bot.sendChat(S(langfile.resetPlay.default).replaceAll('&{track}', track.name).s);
+                                    } else {
+                                        bot.sendChat(langfile.error.track_not_found);
+                                    }
+                                });
+                            } else {
+                                bot.sendChat(langfile.error.argument);
+                            }
+                        });
                     }
                 }
             }

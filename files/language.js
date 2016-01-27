@@ -15,7 +15,8 @@ module.exports = {
     },
     error: {
         argument: "Error in arguments",
-        default: "An error occured while performing this command!"
+        default: "An error occured while performing this command!",
+        track_not_found: "The track wasn't found!"
     },
     ping: {
         default: "Pong!"
@@ -127,5 +128,8 @@ module.exports = {
     findtrack: {
         notracksfound: "No tracks found for that name.",
         list: "[&{id}] - '&{name}' - '&{sourceid}' - '&{type}' - '&{length}' - '&{blacklisted}'"
+    },
+    clearqueue: {
+        default: "@djs, &{moderator} cleared and locked the queue. You will be removed within the next few seconds. If you don't want to loose qour personal queue, pause it NOW!"
     }
 }
