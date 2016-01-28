@@ -132,5 +132,41 @@ module.exports = {
     },
     clearqueue: {
         default: "@djs, &{moderator} cleared and locked the queue. You will be removed within the next few seconds. If you don't want to loose qour personal queue, pause it NOW!"
+    },
+    commands: {
+      default: "Available commands: &{commands}",
+        desc: "Alias: '&{alias}', &{desc}",
+        not_found: "Command not found."
+    },
+    commanddesc: {
+        skip: "Skips the current song and send reason if provided.",
+        blacklist: "Skips the current song, adds the song to the blacklist and sends a provided reason.",
+        queueblacklist: "Adds the track at the given position to the blacklist and removes it.",
+        idblacklist: "Adds the given song to the blacklist.",
+        unblacklist: "Removes the given song from the blacklist",
+        move: "Moves the given user to the given position.",
+        clearchat: "Deletes last 512 messages from the chat.",
+        delchat: "Deletes all messages from the given user.",
+        sudo: "Sends the given message in the chat.",
+        reload: "Reloads config/language.",
+        restart: "Restarts the bot in the given time.",
+        addcustomtext: "Adds or updates a customtext.",
+        randommessage: "List or edits randommessages.",
+        resetplay: "Resets the last_played value for the given songs.",
+        findtrack: "Searches a song in the database by name.",
+        afkcheck: "Lists all afks in the community.",
+        lottery: "Starts a lottery.",
+        roulette: "Starts a roulette.",
+        ping: "Pong!",
+        voteskip: "Votes for a skip.",
+        help: "Mentions all mods.",
+        callmod: "Calls a mod over an external messenger.",
+        link: "Send a link to the current song.",
+        define: "Defines the given word over wordnik.",
+        duell: "Starts or accepts a duell.",
+        clearqueue: "Locks and clears the queue.",
+        lock: "Locks the queue.",
+        unlock: "Unlocks the queue.",
+        commands: "List all commands/Provides their descriptions."
     }
-}
+};

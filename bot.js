@@ -368,6 +368,10 @@ new DubAPI(config.login, function (err, bot) {
         //moderation commands
         commands.push({
             names: ['!fs', '!skip'],
+            hidden: true,
+            enabled: true,
+            matchStart: true,
+            desc: langfile.commanddesc.skip,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'skip') && skipable) {
                     var dj = bot.getDJ();
@@ -385,9 +389,6 @@ new DubAPI(config.login, function (err, bot) {
                     }
                 }
             },
-            hidden: true,
-            enabled: true,
-            matchStart: true
         });
 
         commands.push({
@@ -395,6 +396,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.blacklist,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'ban')) {
                     var track = bot.getMedia();
@@ -422,6 +424,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.queueblacklist,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'ban')) {
                     var split = data.message.trim().split(' ');
@@ -463,6 +466,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.idblacklist,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'ban')) {
                     var split = data.message.trim().split(' ');
@@ -496,6 +500,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.unblacklist,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'ban')) {
                     var split = data.message.split(' ');
@@ -573,6 +578,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.move,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'queue-order')) {
                     var split = data.message.split(' ');
@@ -592,6 +598,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: false,
+            desc: langfile.commanddesc.clearchat,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'delete-chat')) {
                     var chathistory = bot.getChatHistory();
@@ -612,12 +619,20 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.delchat,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'delete-chat')) {
                     var split = data.message.trim().split(' ');
-                    var user = bot.getUserByName(S(split[1]).replaceAll('@', '').s);
-                    if (user !== undefined) {
-                        cleanchat(user.id);
+                    if (split.length === 2) {
+                        User.find({where: {username: S(split[1]).replaceAll('@', '').s}}).then(function(user){
+                           if(user !== undefined && user !== null){
+                               cleanchat(user.id);
+                           } else {
+                               bot.sendChat(langfile.error.argument);
+                           }
+                        });
+                    } else {
+                        bot.sendChat(langfile.error.argument);
                     }
                 }
             }
@@ -628,6 +643,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: false,
             matchStart: false,
+            desc: langfile.commanddesc.clearQueue,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'queue-order')) {
                     bot.moderateLockQueue(true);
@@ -646,6 +662,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: false,
             matchStart: false,
+            desc: langfile.commanddesc.lock,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'lock-queue')) {
                     bot.moderateLockQueue(true);
@@ -658,6 +675,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: false,
             matchStart: false,
+            desc: langfile.commanddesc.unlock,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'lock-queue')) {
                     bot.moderateLockQueue(false);
@@ -670,6 +688,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.sudo,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'set-roles')) {
                     bot.sendChat(S(data.message).chompLeft('!sudo').s.trim());
@@ -682,6 +701,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.addcustomtext,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'set-roles')) {
                     var texts = data.message.trim().split(' ');
@@ -703,6 +723,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.randommessage,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'set-roles')) {
                     var split = data.message.trim().split(' ');
@@ -755,6 +776,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: false,
+            desc: langfile.commanddesc.afkcheck,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'skip')) {
                     afkcheck();
@@ -780,6 +802,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.lottery,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'queue-order')) {
                     var split = data.message.split(' ');
@@ -807,6 +830,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.roulette,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'queue-order')) {
                     var split = data.message.split(' ');
@@ -841,7 +865,8 @@ new DubAPI(config.login, function (err, bot) {
             },
             hidden: true,
             enabled: true,
-            matchStart: false
+            matchStart: false,
+            desc: langfile.commanddesc.ping
         });
 
         commands.push({
@@ -849,6 +874,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.restart,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'set-roles') && config.pm2.enabled === true) {
                     var pm2 = require('pm2');
@@ -881,6 +907,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.reload,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'set-roles') === true) {
                     var split = data.message.trim().split(' ');
@@ -907,6 +934,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.resetplay,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'queue-order') === true) {
                     var split = data.message.trim().split(' ');
@@ -938,6 +966,7 @@ new DubAPI(config.login, function (err, bot) {
             hidden: true,
             matchStart: true,
             enabled: true,
+            desc: langfile.commanddesc.findtrack,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'skip')) {
                     var split = data.message.trim().split(' ');
@@ -966,9 +995,10 @@ new DubAPI(config.login, function (err, bot) {
         //dj commands
         commands.push({
             names: ['!voteskip'],
-            hidden: true,
+            hidden: false,
             enabled: true,
             matchStart: false,
+            desc: langfile.commanddesc.voteskip,
             handler: function (data) {
                 if (config.autoskip.resdjskip.enabled === true && data.user.role !== undefined) {
                     var staff = [];
@@ -1000,6 +1030,7 @@ new DubAPI(config.login, function (err, bot) {
         //user commands
         commands.push({
             names: ['!help'],
+            desc: langfile.commanddesc.help,
             handler: function (data) {
                 if (commandtimeout.help === false) {
                     var mods = '';
@@ -1019,7 +1050,7 @@ new DubAPI(config.login, function (err, bot) {
                     }, 10 * 1000);
                 }
             },
-            hidden: true,
+            hidden: false,
             enabled: true,
             matchStart: false
         });
@@ -1029,6 +1060,7 @@ new DubAPI(config.login, function (err, bot) {
             enabled: true,
             hidden: false,
             matchStart: true,
+            desc: langfile.commanddesc.callmod,
             handler: function (data) {
                 if (commandtimeout.callmod === false && config.callmod.enabled === true) {
                     if (config.callmod.service === 'slack') {
@@ -1100,16 +1132,18 @@ new DubAPI(config.login, function (err, bot) {
                     bot.sendChat(langfile.error.default);
                 }
             },
-            hidden: true,
+            hidden: false,
             enabled: true,
-            matchStart: false
+            matchStart: false,
+            desc: langfile.commanddesc.link,
         });
 
         commands.push({
             names: ['!define'],
-            hidden: true,
+            hidden: false,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.define,
             handler: function (data) {
                 var msg = _.rest(data.message.split(' '), 1).join(' ').trim();
                 if (msg.length > 0 && config.apiKeys.wordnik) {
@@ -1130,9 +1164,10 @@ new DubAPI(config.login, function (err, bot) {
 
         commands.push({
             names: ['!duell'],
-            hidden: true,
+            hidden: false,
             enabled: true,
             matchStart: true,
+            desc: langfile.commanddesc.duell,
             handler: function (data) {
                 var split = data.message.trim().split(' ');
                 if (split.length === 2) {
@@ -1172,6 +1207,40 @@ new DubAPI(config.login, function (err, bot) {
                     }
                 } else {
                     bot.sendChat(langfile.error.argument);
+                }
+            }
+        });
+
+        commands.push({
+            names: ['!commands'],
+            hidden: false,
+            enabled: true,
+            matchStart: true,
+            desc: langfile.commanddesc.commands,
+            handler: function (data) {
+                var split = data.message.trim().split(' ');
+                if(split.length === 1){
+                    var commands_list = [];
+                    _.where(commands, {hidden: false, enabled: true}).forEach(function(command){
+                        commands_list.push(command.names[0]);
+                    });
+                    bot.sendChat(S(langfile.commands.default).replaceAll('&{commands}', commands_list.join(', ').trim()).s);
+                } else {
+                    var command = commands.filter(function (cmd) {
+                        var found = false;
+                        for (i = 0; i < cmd.names.length; i++) {
+                            if (!found) {
+                                found = (cmd.names[i] == split[1].toLowerCase() || (cmd.matchStart && split[1].toLowerCase().indexOf(cmd.names[i]) == 0));
+                            }
+                        }
+                        return found;
+                    })[0];
+
+                    if(command && command.enabled){
+                        bot.sendChat(S(langfile.commands.desc).replaceAll('&{desc}', command.desc).replaceAll('&{alias}', command.names.join(', ').trim()).s);
+                    } else {
+                        bot.sendChat(langfile.commands.not_found);
+                    }
                 }
             }
         });

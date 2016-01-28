@@ -14,7 +14,7 @@ module.exports = function(grunt) {
                         projectName: 'dubbot',
                         projectVersion: '0.2.2',
                         sources: './',
-                        exclusions: ['node_modules', 'commands.md', 'README.md'],
+                        exclusions: ['node_modules/*', 'commands.md', 'README.md'],
                         language: 'js',
                         sourceEncoding: 'UTF-8'
                     }
