@@ -641,7 +641,7 @@ new DubAPI(config.login, function (err, bot) {
         commands.push({
             names: ['!clearqueue'],
             hidden: true,
-            enabled: false,
+            enabled: true,
             matchStart: false,
             desc: langfile.commanddesc.clearQueue,
             handler: function (data) {
@@ -660,7 +660,7 @@ new DubAPI(config.login, function (err, bot) {
         commands.push({
             names: ['!lock'],
             hidden: true,
-            enabled: false,
+            enabled: true,
             matchStart: false,
             desc: langfile.commanddesc.lock,
             handler: function (data) {
@@ -673,7 +673,7 @@ new DubAPI(config.login, function (err, bot) {
         commands.push({
             names: ['!unlock'],
             hidden: true,
-            enabled: false,
+            enabled: true,
             matchStart: false,
             desc: langfile.commanddesc.unlock,
             handler: function (data) {

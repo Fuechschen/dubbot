@@ -9,6 +9,9 @@
 |!unblacklist|!unbl|db_id|Mod|Removes the given song from the blacklist|
 |!move||username position|Mod|Moves the specified user to the specified position|
 |!clearchat|||Mod|Deletes last 512 messages sinc bot joined the room|
+|!clearqueue|||Mod|Locks and clears the queue|
+|!lock|||Mod|Locks the queue|
+|!unlock|||Mod|Unlocks the queue|
 |!delchat||username|Mod|Deletes all messages from specified user in the last 512 messages since bot joined|
 |!sudo||various|Manager|Let the bot send your arguments in chat|
 |!reload||[config/lang]|Manager|Reloads config/langfile|
