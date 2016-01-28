@@ -912,13 +912,36 @@ new DubAPI(config.login, function (err, bot) {
                 if (bot.hasPermission(data.user, 'set-roles') === true) {
                     var split = data.message.trim().split(' ');
                     if (split.length === 1) {
-                        config = require(__dirname + '/config.js');
-                        langfile = require(__dirname + '/files/language.js');
+                        var new_config = config;
+                        var new_langfile = langfile;
+                        try {
+                            new_langfile = require(__dirname + '/files/language.js');
+                            new_config = require(__dirname + '/config.js');
+                        } catch (e) {
+                            bot.sendChat(langfile.error.default);
+                            return;
+                        }
+                        config = new_config;
+                        langfile = new_langfile;
                     } else if (split.length === 2) {
                         if (split[1] === 'config') {
-                            config = require(__dirname + '/config.js');
+                            var new_config = config
+                            try {
+                                new_config = require(__dirname + '/config.js');
+                            } catch (e) {
+                                bot.sendChat(langfile.error.default);
+                                return;
+                            }
+                            config = new_config;
                         } else if (split[1] === 'lang') {
-                            langfile = require(__dirname + '/files/language.js');
+                            var new_langfile = langfile;
+                            try {
+                                new_langfile = require(__dirname + '/files/language.js');
+                            } catch (e) {
+                                bot.sendChat(langfile.error.default);
+                                return;
+                            }
+                            langfile = new_langfile;
                         } else {
                             bot.sendChat(langfile.error.argument);
                         }
