@@ -650,7 +650,7 @@ new DubAPI(config.login, function (err, bot) {
                     bot.sendChat(S(langfile.clearqueue.default).replaceAll('&{moderator}', data.user.username).s);
                     bot.getQueue().forEach(function (queueobject) {
                         setTimeout(function () {
-                            bot.moderateRemoveDj(queueobject.user.id);
+                            bot.moderateRemoveDJ(queueobject.user.id);
                         }, _.random(2, 10) * 1000);
                     });
                 }
