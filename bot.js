@@ -587,7 +587,7 @@ new DubAPI(config.login, function (err, bot) {
                     if (user !== undefined && pos !== undefined) {
                         bot.moderateMoveDJ(user.id, pos - 1);
                     } else {
-                        bot.sendChat(langfile.errors.argument);
+                        bot.sendChat(langfile.error.argument);
                     }
                 }
             }
@@ -742,7 +742,7 @@ new DubAPI(config.login, function (err, bot) {
                                 RandomMessage.destroy({where: {id: msg}});
                                 bot.sendChat(S(langfile.randommessage.delete).replaceAll('&{id}', msg).s);
                             } else {
-                                bot.sendChat(langfile.errors.argument);
+                                bot.sendChat(langfile.error.argument);
                             }
                         } else if (split[1] === 'disable') {
                             var msg = parseInt(split[2]);
@@ -750,7 +750,7 @@ new DubAPI(config.login, function (err, bot) {
                                 RandomMessage.update({status: false}, {where: {id: msg}});
                                 bot.sendChat(S(langfile.randommessage.disable).replaceAll('&{id}', msg).s);
                             } else {
-                                bot.sendChat(langfile.errors.argument);
+                                bot.sendChat(langfile.error.argument);
                             }
                         } else if (split[1] === 'enable') {
                             var msg = parseInt(split[2]);
@@ -758,7 +758,7 @@ new DubAPI(config.login, function (err, bot) {
                                 RandomMessage.update({status: true}, {where: {id: msg}});
                                 bot.sendChat(S(langfile.randommessage.enable).replaceAll('&{id}', msg).s);
                             } else {
-                                bot.sendChat(langfile.errors.argument);
+                                bot.sendChat(langfile.error.argument);
                             }
                         }
                     } else if (split.length > 2) {
@@ -812,11 +812,11 @@ new DubAPI(config.login, function (err, bot) {
                                 User.update({last_active: new Date()}, {where: {id: user.id}});
                                 bot.sendChat(S(langfile.afk.reset).replaceAll('&{username}', user.username).s);
                             } else {
-                                bot.sendChat(langfile.errors.argument);
+                                bot.sendChat(langfile.error.argument);
                             }
                         })
                     } else {
-                        bot.sendChat(langfile.errors.argument);
+                        bot.sendChat(langfile.error.argument);
                     }
                 }
             }
