@@ -798,6 +798,31 @@ new DubAPI(config.login, function (err, bot) {
         });
 
         commands.push({
+            names: ['!afkreset'],
+            hidden: true,
+            enabled: true,
+            matchStart: true,
+            desc: langfile.commanddesc.afkreset,
+            handler: function (data) {
+                if(bot.hasPermission(data.user, 'queue-order')){
+                    var split = data.message.trim().split(' ');
+                    if(split.length > 1){
+                        User.find({where: {username: {$like: '%' + S(_.rest(split, 1).join(' ').trim()).replaceAll('@', '').s + '%'}}}).then(function(user){
+                            if(user !== undefined && user !== null){
+                                User.update({last_active: new Date()}, {where: {id: user.id}});
+                                bot.sendChat(S(langfile.afk.reset).replaceAll('&{username}', user.username).s);
+                            } else {
+                                bot.sendChat(langfile.errors.argument);
+                            }
+                        })
+                    } else {
+                        bot.sendChat(langfile.errors.argument);
+                    }
+                }
+            }
+        });
+
+        commands.push({
             names: ['!lottery'],
             hidden: true,
             enabled: true,

@@ -30,7 +30,8 @@ module.exports = {
         remove: "You have been afk for too long! You will now be removed from the queue. Remember to chat next time!",
         kick: "You have been removed from the queue for being AFK once. You will now be kicked out of the room!",
         kick_msg: "You have been removed from the queue for being AFK once. You now have been kicked out of the room!",
-        check: "Currently AFK: &{afks}"
+        check: "Currently AFK: &{afks}",
+        reset: "Time reset for '&{username}."
     },
     help: {
         default: "Need help? @mods",
@@ -167,6 +168,7 @@ module.exports = {
         clearqueue: "Locks and clears the queue.",
         lock: "Locks the queue.",
         unlock: "Unlocks the queue.",
-        commands: "List all commands/Provides their descriptions."
+        commands: "List all commands/Provides their descriptions.",
+        afkreset: "Resets AFK-time for the given user."
     }
 };
