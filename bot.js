@@ -69,7 +69,7 @@ new DubAPI(config.login, function (err, bot) {
     bot.on('connected', function (data) {
         console.log('Connected: ', data);
         loadCommands();
-        setTimeout(function(){
+        setTimeout(function () {
             timings();
         }, 1000);
 
@@ -582,7 +582,7 @@ new DubAPI(config.login, function (err, bot) {
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'queue-order')) {
                     var split = data.message.split(' ');
-                    var user = bot.getUserByName(S(split[1].trim()).chompLeft('@').s);
+                    var user = bot.getUserByName(S(split[1].trim()).chompLeft('@').s, true);
                     var pos = parseInt(split[2].trim());
                     if (user !== undefined && pos !== undefined) {
                         bot.moderateMoveDJ(user.id, pos - 1);
@@ -624,12 +624,12 @@ new DubAPI(config.login, function (err, bot) {
                 if (bot.hasPermission(data.user, 'delete-chat')) {
                     var split = data.message.trim().split(' ');
                     if (split.length === 2) {
-                        User.find({where: {username: S(split[1]).replaceAll('@', '').s}}).then(function(user){
-                           if(user !== undefined && user !== null){
-                               cleanchat(user.id);
-                           } else {
-                               bot.sendChat(langfile.error.argument);
-                           }
+                        User.find({where: {username: S(split[1]).replaceAll('@', '').s}}).then(function (user) {
+                            if (user !== undefined && user !== null) {
+                                cleanchat(user.id);
+                            } else {
+                                bot.sendChat(langfile.error.argument);
+                            }
                         });
                     } else {
                         bot.sendChat(langfile.error.argument);
@@ -804,11 +804,11 @@ new DubAPI(config.login, function (err, bot) {
             matchStart: true,
             desc: langfile.commanddesc.afkreset,
             handler: function (data) {
-                if(bot.hasPermission(data.user, 'queue-order')){
+                if (bot.hasPermission(data.user, 'queue-order')) {
                     var split = data.message.trim().split(' ');
-                    if(split.length > 1){
-                        User.find({where: {username: {$like: '%' + S(_.rest(split, 1).join(' ').trim()).replaceAll('@', '').s + '%'}}}).then(function(user){
-                            if(user !== undefined && user !== null){
+                    if (split.length > 1) {
+                        User.find({where: {username: {$like: '%' + S(_.rest(split, 1).join(' ').trim()).replaceAll('@', '').s + '%'}}}).then(function (user) {
+                            if (user !== undefined && user !== null) {
                                 User.update({last_active: new Date()}, {where: {id: user.id}});
                                 bot.sendChat(S(langfile.afk.reset).replaceAll('&{username}', user.username).s);
                             } else {
@@ -840,10 +840,13 @@ new DubAPI(config.login, function (err, bot) {
                         var mover = queue[_.random(0, queue.lenght - 1)];
                         if (mover === undefined) {
                             bot.sendChat(langfile.lottery.no_winner);
-                            return;
+                        } else {
+                            bot.sendChat(S(langfile.lottery.victory).replaceAll('&{username}', mover.user.username));
+                            bot.moderateMoveDJ(mover.uid, 0);
+                            if(config.points.enabled && config.points.lottery){
+                                points_manipulator("award", config.points.lottery_reward, [mover.user]);
+                            }
                         }
-                        bot.sendChat(S(langfile.lottery.victory).replaceAll('&{username}', mover.user.username));
-                        bot.moderateMoveDJ(mover.uid, 0);
                     }, time * 60 * 1000);
                     bot.sendChat(S(langfile.lottery.started).replaceAll('&{time}', time).s);
                 }
@@ -869,11 +872,13 @@ new DubAPI(config.login, function (err, bot) {
                         var mover = queue[moverpos];
                         if (mover === undefined) {
                             bot.sendChat(langfile.roulette.no_winner);
-                            return;
+                        } else {
+                            bot.sendChat(S(langfile.roulette.victory).replaceAll('&{username}', mover.user.username));
+                            bot.moderateMoveDJ(mover.uid, _.random(0, moverpos));
+                            if(config.points.enabled && config.points.roulette){
+                                points_manipulator("award", config.points.roulette_reward, [mover.user]);
+                            }
                         }
-
-                        bot.sendChat(S(langfile.roulette.victory).replaceAll('&{username}', mover.user.username));
-                        bot.moderateMoveDJ(mover.uid, _.random(0, moverpos));
                     }, time * 60 * 1000);
                     bot.sendChat(S(langfile.roulette.started).replaceAll('&{time}', time).s);
                 }
@@ -1241,14 +1246,24 @@ new DubAPI(config.login, function (err, bot) {
                             bot.sendChat(langfile.duell.no_open_duells);
                         }
                     } else {
-                        var user = bot.getUserByName(S(split[1]).replace('@', '').s);
+                        var user = bot.getUserByName(S(split[1]).replace('@', '').s, true);
                         if (user) {
                             if (user.id === data.user.id) {
                                 bot.sendChat(langfile.error.argument);
-                                return;
+                            } else if (config.points.enabled && config.points.duell_cost.enabled) {
+                                User.find({where: {dub_id: data.user.id}}).then(function (user) {
+                                    if (user.points - config.points.duell_cost.cost >= 0) {
+                                        duells.push(new Duell(data.user, user));
+                                        bot.sendChat(S(langfile.duell.start).replaceAll('&{challenged}', user.username).replaceAll('&{challenger}', data.user.username).s);
+                                        points_manipulator("duell", config.points.duell_cost, [data.user]);
+                                    } else {
+                                        bot.sendChat(S(langfile.duell.no_points).replaceAll('&{points_name}', config.points.name).s);
+                                    }
+                                });
+                            } else {
+                                duells.push(new Duell(data.user, user));
+                                bot.sendChat(S(langfile.duell.start).replaceAll('&{challenged}', user.username).replaceAll('&{challenger}', data.user.username).s);
                             }
-                            duells.push(new Duell(data.user, user));
-                            bot.sendChat(S(langfile.duell.start).replaceAll('&{challenged}', user.username).replaceAll('&{challenger}', data.user.username).s);
                         } else {
                             bot.sendChat(langfile.error.argument);
                         }
@@ -1267,9 +1282,9 @@ new DubAPI(config.login, function (err, bot) {
             desc: langfile.commanddesc.commands,
             handler: function (data) {
                 var split = data.message.trim().split(' ');
-                if(split.length === 1){
+                if (split.length === 1) {
                     var commands_list = [];
-                    _.where(commands, {hidden: false, enabled: true}).forEach(function(command){
+                    _.where(commands, {hidden: false, enabled: true}).forEach(function (command) {
                         commands_list.push(command.names[0]);
                     });
                     bot.sendChat(S(langfile.commands.default).replaceAll('&{commands}', commands_list.join(', ').trim()).s);
@@ -1284,11 +1299,39 @@ new DubAPI(config.login, function (err, bot) {
                         return found;
                     })[0];
 
-                    if(command && command.enabled){
+                    if (command && command.enabled) {
                         bot.sendChat(S(langfile.commands.desc).replaceAll('&{desc}', command.desc).replaceAll('&{alias}', command.names.join(', ').trim()).s);
                     } else {
                         bot.sendChat(langfile.commands.not_found);
                     }
+                }
+            }
+        });
+
+        commands.push({
+            names: {'!points'},
+            hidden: false,
+            enabled: false,
+            matchStart: true,
+            desc: langfile.commanddesc.points,
+            handler: function (data) {
+                var split = data.message.trim().split(' ');
+                if(split.length === 1){
+                    User.find({where: {dub_id: data.user.id}}).then(function(user){
+                       bot.sendChat(S(langfile.points.command.default).replaceAll('&{points_name}', config.points.name).replaceAll('&{amount}', user.points).s);
+                    });
+                } else if (aplit.length === 4){
+                    if(split[1] === 'gift'){
+                        var reciever = bot.getUserByName(split[2], true);
+                        var amount = parseInt(split[3]);
+                        if(amount && reciever && amount > 0 && reciever !== data.user && data.user){
+                            points_manipulator("gift", amount, [data.user, reciever]);
+                        } else if (amount && amount <= 0){
+                            bot.sendChat(S(langfile.points.command.no_negative_gift).replaceAll('&{points_name}', config.points.name).s);
+                        }
+                    }
+                } else {
+                    bot.sendChat(langfile.error.argument);
                 }
             }
         });
@@ -1516,6 +1559,46 @@ new DubAPI(config.login, function (err, bot) {
                     }, _.random(2, 4) * 1000);
                 }
             });
+        }
+    }
+
+    function points_manipulator(action, amount, users) {
+        if (typeof action !== 'string' || typeof amount !== 'number') {
+            return;
+        }
+        switch (action) {
+            case "award":
+                if (users.length === 1) {
+                    User.find({where: {dub_id: users[0].id}}).then(function (user) {
+                        User.update({points: user.points + amount}, {where: {id: user.id}});
+                        bot.sendChat(S(langfile.points.award).replaceAll('&{points_name}', config.points.name).replaceAll('&{username}', user.username).replaceAll('&{amount}', amount).s);
+                    });
+                }
+                break;
+            case "gift":
+                if (users.length === 2) {
+                    User.find({where: {dub_id: users[0].id}}).then(function (gifter) {
+                        if (gifter.points - amount > -1) {
+                            User.find({where: {dub_id: users[1].id}}).then(function (reciever) {
+                                User.update({points: gifter.points - amount}, {where: {id: gifter.id}});
+                                User.update({points: reciever.points + amount}, {where: {id: reciever.id}});
+                                bot.sendChat(S(langfile.points.command.gift).replaceAll('&{points_name}', config.points.name).replaceAll('&{amount}', amount).replaceAll('&{gifter}', gifter.username).replaceAll('&{reciever}', reciever.username).s);
+                            });
+                        } else {
+                            bot.sendChat(S(langfile.points.command.gift_failed).replaceAll('&{points_name}', config.points.name).s);
+                        }
+                    });
+                }
+                break;
+            case "duell":
+                if (users.lenght === 1) {
+                    User.find({where: {dub_id: users[0].id}}).then(function (user) {
+                        user.update({points: user.points - amount}, {where: {id: user.id}});
+                    })
+                }
+                break;
+            default:
+                break;
         }
     }
 

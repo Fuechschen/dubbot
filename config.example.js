@@ -129,5 +129,22 @@ module.exports = {
     pm2: {   //restart over pm2 (!restart)
         enabled: false,    //only enable this when you are using pm2
         processname: 'bot'   //the processname of the bot (you also use the processid here)
+    },
+    duell: {
+        enabled: true
+    },
+    points: {
+        enabled: true,
+        name: "points",
+        lottery: true,
+        lottery_reward: 1,
+        roulette: true,
+        roulette_reward: 1,
+        points_duell: true,
+        duell_reward: 2,
+        duell_cost: {
+            enabled: true,
+            cost: 2
+        }
     }
 };

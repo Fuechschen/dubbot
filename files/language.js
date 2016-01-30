@@ -104,7 +104,8 @@ module.exports = {
         accepted: "&{challenged} has accepted the duell. Let the dices roll",
         decline: "&{challenged} has declined the duell.",
         winner: "@&{winner} has won the duell! @&{loser} bye...",
-        no_open_duells: "You have no open duells."
+        no_open_duells: "You have no open duells.",
+        no_points: "You aren't having enough &{points_name} to start a duell!"
     },
     randommessage: {
         delete: "Deleted message with id &{id}.",
@@ -169,6 +170,16 @@ module.exports = {
         lock: "Locks the queue.",
         unlock: "Unlocks the queue.",
         commands: "List all commands/Provides their descriptions.",
-        afkreset: "Resets AFK-time for the given user."
+        afkreset: "Resets AFK-time for the given user.",
+        points: "Commands to use for points."
+    },
+    points: {
+        award: "&{username} was arwarded &{amount} &{points_name}",
+        command: {
+            default: "You have &{amount} &{points_name}.",
+            no_negative_gift: "You can't gift a negative amount of &{points_name}.",
+            gift: "&{gifter} gifted &{amount} &{points_name} to &{reciever}",
+            gift_failed: "You aren't having enough &{points_name} for that."
+        }
     }
 };
