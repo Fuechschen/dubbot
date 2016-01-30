@@ -174,7 +174,8 @@ module.exports = {
         points: "Commands to use for points."
     },
     points: {
-        award: "&{username} was arwarded &{amount} &{points_name}",
+        award: "&{username} was arwarded &{amount} &{points_name}.",
+        remove: "&{username} had &{amount} &{points_name} removed.",
         command: {
             default: "You have &{amount} &{points_name}.",
             no_negative_gift: "You can't gift a negative amount of &{points_name}.",

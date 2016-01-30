@@ -1251,7 +1251,7 @@ new DubAPI(config.login, function (err, bot) {
                             if (user.id === data.user.id) {
                                 bot.sendChat(langfile.error.argument);
                             } else if (config.points.enabled && config.points.duell_cost.enabled) {
-                                User.find({where: {dub_id: data.user.id}}).then(function (user) {
+                                User.find({where: {userid: data.user.id}}).then(function (user) {
                                     if (user.points - config.points.duell_cost.cost >= 0) {
                                         duells.push(new Duell(data.user, user));
                                         bot.sendChat(S(langfile.duell.start).replaceAll('&{challenged}', user.username).replaceAll('&{challenger}', data.user.username).s);
@@ -1309,29 +1309,51 @@ new DubAPI(config.login, function (err, bot) {
         });
 
         commands.push({
-            names: {'!points'},
+            names: ['!points'],
             hidden: false,
-            enabled: false,
+            enabled: true,
             matchStart: true,
             desc: langfile.commanddesc.points,
             handler: function (data) {
-                var split = data.message.trim().split(' ');
-                if(split.length === 1){
-                    User.find({where: {dub_id: data.user.id}}).then(function(user){
-                       bot.sendChat(S(langfile.points.command.default).replaceAll('&{points_name}', config.points.name).replaceAll('&{amount}', user.points).s);
-                    });
-                } else if (aplit.length === 4){
-                    if(split[1] === 'gift'){
-                        var reciever = bot.getUserByName(split[2], true);
-                        var amount = parseInt(split[3]);
-                        if(amount && reciever && amount > 0 && reciever !== data.user && data.user){
-                            points_manipulator("gift", amount, [data.user, reciever]);
-                        } else if (amount && amount <= 0){
-                            bot.sendChat(S(langfile.points.command.no_negative_gift).replaceAll('&{points_name}', config.points.name).s);
+                if(config.points.enabled){
+                    var split = data.message.trim().split(' ');
+                    if(split.length === 1){
+                        User.find({where: {userid: data.user.id}}).then(function(user){
+                            bot.sendChat(S(langfile.points.command.default).replaceAll('&{points_name}', config.points.name).replaceAll('&{amount}', user.points).s);
+                        });
+                    } else if (split.length === 4){
+                        if(split[1] === 'gift'){
+                            var reciever = bot.getUserByName(split[2], true);
+                            var amount = parseInt(split[3]);
+                            if(amount && reciever && amount > 0 && reciever !== data.user && data.user){
+                                points_manipulator("gift", amount, [data.user, reciever]);
+                            } else if (amount && amount <= 0){
+                                bot.sendChat(S(langfile.points.command.no_negative_gift).replaceAll('&{points_name}', config.points.name).s);
+                            }
+                        } else if (bot.hasPermission(data.user, 'queue-order')){
+                            if(split[1] === 'add'){
+                                var reciever = bot.getUserByName(split[2], true);
+                                var amount = parseInt(split[3]);
+                                if(amount && reciever && amount > 0){
+                                    points_manipulator("award", amount, [reciever]);
+                                } else {
+                                    bot.sendChat(langfile.error.argument);
+                                }
+                            } else if (split[1] === 'remove'){
+                                var reciever = bot.getUserByName(split[2], true);
+                                var amount = parseInt(split[3]);
+                                if(amount && reciever && amount > 0){
+                                    points_manipulator("remove", amount, [reciever]);
+                                } else {
+                                    bot.sendChat(langfile.error.argument);
+                                }
+                            } else {
+                                bot.sendChat(langfile.error.argument);
+                            }
                         }
+                    } else {
+                        bot.sendChat(langfile.error.argument);
                     }
-                } else {
-                    bot.sendChat(langfile.error.argument);
                 }
             }
         });
@@ -1569,17 +1591,23 @@ new DubAPI(config.login, function (err, bot) {
         switch (action) {
             case "award":
                 if (users.length === 1) {
-                    User.find({where: {dub_id: users[0].id}}).then(function (user) {
+                    User.find({where: {userid: users[0].id}}).then(function (user) {
                         User.update({points: user.points + amount}, {where: {id: user.id}});
                         bot.sendChat(S(langfile.points.award).replaceAll('&{points_name}', config.points.name).replaceAll('&{username}', user.username).replaceAll('&{amount}', amount).s);
                     });
                 }
                 break;
+            case "remove":
+                if(users.length === 1){
+                    User.find({where: {userid: users[0].id}}).then(function (user) {
+                        User.update({points: user.points - amount}, {where: {id: user.id}});
+                        bot.sendChat(S(langfile.points.remove).replaceAll('&{points_name}', config.points.name).replaceAll('&{username}', user.username).replaceAll('&{amount}', amount).s);
+                    });}break;
             case "gift":
                 if (users.length === 2) {
-                    User.find({where: {dub_id: users[0].id}}).then(function (gifter) {
+                    User.find({where: {userid: users[0].id}}).then(function (gifter) {
                         if (gifter.points - amount > -1) {
-                            User.find({where: {dub_id: users[1].id}}).then(function (reciever) {
+                            User.find({where: {userid: users[1].id}}).then(function (reciever) {
                                 User.update({points: gifter.points - amount}, {where: {id: gifter.id}});
                                 User.update({points: reciever.points + amount}, {where: {id: reciever.id}});
                                 bot.sendChat(S(langfile.points.command.gift).replaceAll('&{points_name}', config.points.name).replaceAll('&{amount}', amount).replaceAll('&{gifter}', gifter.username).replaceAll('&{reciever}', reciever.username).s);
@@ -1592,7 +1620,7 @@ new DubAPI(config.login, function (err, bot) {
                 break;
             case "duell":
                 if (users.lenght === 1) {
-                    User.find({where: {dub_id: users[0].id}}).then(function (user) {
+                    User.find({where: {userid: users[0].id}}).then(function (user) {
                         user.update({points: user.points - amount}, {where: {id: user.id}});
                     })
                 }

@@ -134,7 +134,7 @@ module.exports = {
         enabled: true
     },
     points: {
-        enabled: true,
+        enabled: false,
         name: "points",
         lottery: true,
         lottery_reward: 1,
