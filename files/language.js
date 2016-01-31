@@ -133,7 +133,7 @@ module.exports = {
         list: "[&{id}] - '&{name}' - '&{sourceid}' - '&{type}' - '&{length}' - '&{blacklisted}'"
     },
     clearqueue: {
-        default: "@djs, &{moderator} cleared and locked the queue. You will be removed within the next few seconds. If you don't want to loose qour personal queue, pause it NOW!"
+        default: "@djs, &{moderator} cleared and locked the queue. You will be removed within the next few seconds. If you don't want to loose your personal queue, pause it NOW!"
     },
     commands: {
       default: "Available commands: &{commands}",
