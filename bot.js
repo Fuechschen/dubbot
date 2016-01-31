@@ -1251,8 +1251,8 @@ new DubAPI(config.login, function (err, bot) {
                             if (user.id === data.user.id) {
                                 bot.sendChat(langfile.error.argument);
                             } else if (config.points.enabled && config.points.duell_cost.enabled) {
-                                User.find({where: {userid: data.user.id}}).then(function (user) {
-                                    if (user.points - config.points.duell_cost.cost >= 0) {
+                                User.find({where: {userid: data.user.id}}).then(function (duser) {
+                                    if (duser.points - config.points.duell_cost.cost >= 0) {
                                         duells.push(new Duell(data.user, user));
                                         bot.sendChat(S(langfile.duell.start).replaceAll('&{challenged}', user.username).replaceAll('&{challenger}', data.user.username).s);
                                         points_manipulator("duell", config.points.duell_cost, [data.user]);
