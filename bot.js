@@ -430,7 +430,7 @@ new DubAPI(config.login, function (err, bot) {
                     var split = data.message.trim().split(' ');
                     if (split.length > 1) {
                         var pos = parseInt(split[1]);
-                        if (pos !== undefined && bot.getQueue().length > pos) {
+                        if (pos !== undefined && bot.getQueue().length >= pos - 1) {
                             var queueobj = bot.getQueue()[pos - 1];
                             Track.findOrCreate({
                                 where: {dub_id: queueobj.media.id}, defaults: {
