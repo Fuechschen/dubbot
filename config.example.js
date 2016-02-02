@@ -74,8 +74,7 @@ module.exports = {
             aggressivity: {
                 delete: 5,  //how many positive spam resultis till messages are deleted
                 mute: 2     // how many times a the bot deletes messages before muting
-            },
-
+            }
         },
         link_protection: {  //prevents users who just joind from posting links in chat
             enabled: true,
@@ -107,7 +106,7 @@ module.exports = {
         },
         {
             reason: "o",
-            msg: "@&{dj} Your is overplayed."
+            msg: "@&{dj} Your song is overplayed."
         },
         {
             reason: "h",
@@ -130,19 +129,19 @@ module.exports = {
         enabled: false,    //only enable this when you are using pm2
         processname: 'bot'   //the processname of the bot (you also use the processid here)
     },
-    duell: {
+    duell: {      //enable/disbale duells
         enabled: true
     },
-    points: {
+    points: {     //settings for the points system
         enabled: false,
-        name: "points",
-        lottery: true,
+        name: "points",   //name for the currency, emotes can be used
+        lottery: true,     //set points for winning the lottery
         lottery_reward: 1,
-        roulette: true,
+        roulette: true,     //set points for winning roulette
         roulette_reward: 1,
-        points_duell: true,
+        points_duell: true,   //set points for winning a duell
         duell_reward: 2,
-        duell_cost: {
+        duell_cost: {         //set cost for starting a duell
             enabled: true,
             cost: 2
         }

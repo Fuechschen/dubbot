@@ -32,14 +32,8 @@ SpamProtection.prototype.updateMessage = function (message) {
 
 SpamProtection.prototype.checkforspam = function (message) {
     if (message === this.lmessage) {
-        if (moment().diff(this.time, 'seconds') <= 5) {
-            return true;
-        }
-    } else if (moment().diff(this.time, 'seconds') <= 1) {
-        return true;
-    } else {
-        return false;
-    }
+        if (moment().diff(this.time, 'seconds') <= 1) return true;
+    } else return moment().diff(this.time, 'seconds') <= 6;
 };
 
 SpamProtection.prototype.increaseSpamWarnings = function (count) {
@@ -53,7 +47,7 @@ SpamProtection.prototype.setMuted = function (state) {
     this.muted = state;
 };
 
-SpamProtection.prototype.getMuted = function () {
+SpamProtection.prototype.isMuted = function () {
     return this.muted;
 };
 
