@@ -119,7 +119,8 @@ module.exports = {
             request: "An error occured while calling a mod, sorry...",
             no_message: "Please provide a messages to send like this: !callmod spammer in the room"
         },
-        mod_called: "A moderator has been informed and will come as fast as possible if he is available"
+        mod_called: "A moderator has been informed and will come as fast as possible if he is available",
+        message: "&{username} needs help in &{roomname}! \n Message: &{message}"
     },
     pm2: {
         restart_now: "Restarting...",

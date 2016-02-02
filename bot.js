@@ -1027,7 +1027,7 @@ new DubAPI(config.login, function (err, bot) {
                                             username: config.callmod.slack.botname || bot.getSelf().username,
                                             icon_url: config.callmod.slack.icon_url,
                                             channel: config.callmod.slack.channel,
-                                            text: _.rest(split, 1).join(' ').trim()
+                                            text: S(langfile.callmod.message).replaceAll('&{message}', _.rest(split, 1).join(' ').trim()).replaceAll('&{username}', data.user.username).replaceAll('&{roomname}', bot.getRoomMeta().name).s
                                         })
                                     }
                                 }, function (err, req, body) {
