@@ -23,7 +23,7 @@
 |!afkcheck| | |VIP|Lists all afks in the community|
 |!afkreset||username|Mod|Resets AFK-time for the given user|
 |!lottery| |[time]|Mod|Starts a lottery with the given time in minutes. Time defaults to 2 minutes|
-|!roulete| |[time]|Mod|Starts a roulette with the given time in minutes. Time defaults to 2 minutes|
+|!roulette| |[time]|Mod|Starts a roulette with the given time in minutes. Time defaults to 2 minutes|
 |!ping| | |ResidengDj|Pong!|
 |!voteskip| | |Dj|Votes for skip, only usable when to low mods in the room|
 |!help| | |User|Mentions all mods in the room|
