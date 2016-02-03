@@ -90,7 +90,7 @@ module.exports = {
         playlistid: ''  //id of the playlist to queue
     },
     callmod: {     //calls a mod through a webservice
-        enabled: true,
+        enabled: false,
         service: 'slack',    //only slack currently supported
         slack: {
             webhookurl: '',     //webhookurl for slack

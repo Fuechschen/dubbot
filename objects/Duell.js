@@ -12,6 +12,7 @@ function Duell(challenger, challenged) {
     this.challenger = challenger;
     this.challenged = challenged;
     this.c_id = challenged.id;
+    this.o_id = challenger.id;
 
     this.active = true;
 

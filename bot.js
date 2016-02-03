@@ -105,9 +105,9 @@ new DubAPI(config.login, function (err, bot) {
                     }, {where: {userid: data.user.id}});
                 }
 
-                if (config.chatfilter.enabled === true) {
+                if (config.chatfilter.enabled === true && bot.hasPermission(data.user, 'delete-chat')) {
                     if (config.chatfilter.link_protection.enabled === true && spamfilterdata[data.user.id].canpostLinks() === false && (S(data.message).contains('http://') || S(data.message).contains('https://'))) {
-                        bot.moderateDeleteChat(data.id);
+                        deleteChatMessage(data.id);
                         bot.sendChat(S(langfile.chatfilter.link_protection).replaceAll('&{username}', data.user.username).s);
                         return;
                     }
@@ -133,7 +133,7 @@ new DubAPI(config.login, function (err, bot) {
                     }
                     if (config.chatfilter.dubtrackroom === true) {
                         if (S(data.message).contains('dubtrack.fm/join/') === true) {
-                            bot.moderateDeleteChat(data.id);
+                            deleteChatMessage(data.id);
                             bot.sendChat(S(langfile.chatfilter.dubtrackroom).replaceAll('&{username}', data.user.username).s);
                             spamfilterdata[data.user.id].increaseScore();
                             return;
@@ -141,7 +141,7 @@ new DubAPI(config.login, function (err, bot) {
                     }
                     if (config.chatfilter.youtube === true) {
                         if (S(data.message).contains('youtu.be') === true || (S(data.message).contains('http') === true && S(data.message).contains('youtube.') === true)) {
-                            bot.moderateDeleteChat(data.id);
+                            deleteChatMessage(data.id);
                             bot.sendChat(S(langfile.chatfilter.youtube).replaceAll('&{username}', data.user.username).s);
                             spamfilterdata[data.user.id].increaseScore();
                             return;
@@ -153,7 +153,7 @@ new DubAPI(config.login, function (err, bot) {
                             if (S(data.message).contains(word) === true) found = true;
                         });
                         if (found === true) {
-                            bot.moderateDeleteChat(data.id);
+                            deleteChatMessage(data.id);
                             bot.sendChat(S(langfile.chatfilter.word_blacklist).replaceAll('&{username}', data.user.username).s);
                             spamfilterdata[data.user.id].increaseScore();
                         }
@@ -195,26 +195,24 @@ new DubAPI(config.login, function (err, bot) {
         }
 
         if (config.options.room_state_file === true) {
-            var usrs = [];
-            var stff = [];
-            bot.getUsers().forEach(function (user) {
-                if (user.id !== bot.getSelf().id) usrs.push(user);
-            });
-            bot.getStaff().forEach(function (user) {
-                if (user.id !== bot.getSelf().id) stff.push(user);
-            });
             var stats = {
                 room: config.options.room,
                 media: bot.getMedia(),
-                users: usrs,
-                staff: stff,
+                users: [],
+                staff: [],
                 bot: bot.getSelf()
             };
+            bot.getUsers().forEach(function (user) {
+                if (user.id !== bot.getSelf().id) stats.users.push(user);
+            });
+            bot.getStaff().forEach(function (user) {
+                if (user.id !== bot.getSelf().id) stats.staff.push(user);
+            });
             fs.writeFile(__dirname + '/stats.json', JSON.stringify(stats, null, '\t'), 'utf8');
         }
 
         if (config.autodj.enabled === true && config.autodj.playlistid !== '') {
-            if (bot.getQueue().lenght - 1 >= config.autodj.limits.max && bot.getQueue().lenght - 1 <= config.autodj.limits.min) {
+            if (bot.getQueue().length - 1 >= config.autodj.limits.max && bot.getQueue().length - 1 <= config.autodj.limits.min) {
                 queuePlaylist(config.autodj.playlistid);
                 shufflePlaylist();
             } else clearQueue();
@@ -277,7 +275,7 @@ new DubAPI(config.login, function (err, bot) {
         spamfilterdata[data.user.id].setMuted(false);
     });
 
-    bot.on('room_playlist-dub', function (data) {
+    bot.on('room_playlist-dub', function () {
         if (config.autoskip.votes.enabled) {
             var dj = bot.getDJ();
             var track = bot.getMedia();
@@ -773,10 +771,10 @@ new DubAPI(config.login, function (err, bot) {
                 if (bot.hasPermission(data.user, 'queue-order')) {
                     var split = data.message.split(' ');
                     var time = 2;
-                    if (split.lenght === 2) time = parseInt(split[1].trim());
+                    if (split.length === 2) time = parseInt(split[1].trim());
                     setTimeout(function () {
                         var queue = bot.getQueue();
-                        var mover = queue[_.random(0, queue.lenght - 1)];
+                        var mover = queue[_.random(0, queue.length - 1)];
                         if (mover === undefined) bot.sendChat(langfile.lottery.no_winner);
                         else {
                             bot.sendChat(S(langfile.lottery.victory).replaceAll('&{username}', mover.user.username));
@@ -799,10 +797,10 @@ new DubAPI(config.login, function (err, bot) {
                 if (bot.hasPermission(data.user, 'queue-order')) {
                     var split = data.message.split(' ');
                     var time = 2;
-                    if (split.lenght === 2) time = parseInt(split[1].trim());
+                    if (split.length === 2) time = parseInt(split[1].trim());
                     setTimeout(function () {
                         var queue = bot.getQueue();
-                        var moverpos = _.random(1, queue.lenght - 1);
+                        var moverpos = _.random(1, queue.length - 1);
                         var mover = queue[moverpos];
                         if (mover === undefined) bot.sendChat(langfile.roulette.no_winner);
                         else {
@@ -989,7 +987,7 @@ new DubAPI(config.login, function (err, bot) {
         commands.push({
             names: ['!help'],
             desc: langfile.commanddesc.help,
-            handler: function (data) {
+            handler: function () {
                 if (commandtimeout.help === false) {
                     var mods = '';
                     bot.getStaff().forEach(function (mod) {
@@ -1049,7 +1047,7 @@ new DubAPI(config.login, function (err, bot) {
 
         commands.push({
             names: ['!link'],
-            handler: function (data) {
+            handler: function () {
                 if (bot.getRoomMeta().roomType === 'room') {
                     var media = bot.getMedia();
                     if (media !== undefined) {
@@ -1104,9 +1102,11 @@ new DubAPI(config.login, function (err, bot) {
             desc: langfile.commanddesc.duell,
             handler: function (data) {
                 var split = data.message.trim().split(' ');
-                if (split.length === 2) {
+                if(_.findWhere(duells, {active: true, o_id: data.user.id}) === undefined){
+                    bot.sendChat(langfile.duell.pending_duell);
+                } else if (split.length === 2) {
+                    var duell = _.findWhere(duells, {active: true, c_id: data.user.id});
                     if (split[1] === 'accept') {
-                        var duell = _.findWhere(duells, {active: true, c_id: data.user.id});
                         if (duell) {
                             var result = duell.start();
                             if (result.status === true) {
@@ -1115,7 +1115,6 @@ new DubAPI(config.login, function (err, bot) {
                             } else bot.sendChat(langfile.duell.no_open_duells);
                         } else bot.sendChat(langfile.duell.no_open_duells);
                     } else if (split[1] === 'decline') {
-                        var duell = _.findWhere(duells, {active: true, c_id: data.user.id});
                         if (duell) {
                             duell.setStatus(false);
                             bot.sendChat(S(langfile.duell.decline).replaceAll('&{challenged}', duell.challenged.username).s);
@@ -1445,6 +1444,17 @@ new DubAPI(config.login, function (err, bot) {
                 break;
             default:
                 break;
+        }
+    }
+
+    function deleteChatMessage(chatid){
+        var chatHistory = bot.getChatHistory();
+        var pos = _.findIndex(chatHistory, {id: chatid});
+        if(chatHistory[pos - 1] !== undefined){
+            if(chatHistory[pos - 1].user.id === chatHistory[pos].user.id)deleteChatMessage(chatHistory[pos - 1].id);
+            else bot.moderateDeleteChat(chatid);
+        } else {
+            bot.moderateDeleteChat(chatid);
         }
     }
 

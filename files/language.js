@@ -8,7 +8,7 @@ module.exports = {
         queueblacklist: "@&{dj}, your track '&{track}' was added to the blacklist and will be removed from the queue.",
         queueblacklist_reason: "@&{dj}, your track '&{track}' was added to the blacklist for '&{reason}' and will be removed from the queue.",
         id_blacklist: "&{moderator} added '&{track}' to the blacklist.",
-        id_blacklist_reson: "&{moderator} added '&{track}' to the blacklist for: &{reason}"
+        id_blacklist_reason: "&{moderator} added '&{track}' to the blacklist for: &{reason}"
     },
     commands_reloaded: {
         default: "Reloaded commands!"
@@ -105,7 +105,8 @@ module.exports = {
         decline: "&{challenged} has declined the duell.",
         winner: "@&{winner} has won the duell! @&{loser} bye...",
         no_open_duells: "You have no open duells.",
-        no_points: "You aren't having enough &{points_name} to start a duell!"
+        no_points: "You aren't having enough &{points_name} to start a duell!",
+        pending_duell: "You already started a duell. Wait unitl it's over to start a new one!"
     },
     randommessage: {
         delete: "Deleted message with id &{id}.",
