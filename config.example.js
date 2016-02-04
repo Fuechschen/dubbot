@@ -46,7 +46,7 @@ module.exports = {
     },
     queuecheck: {    //checks the queue for blacklisted/recently played songs and removes them
         enabled: true,
-        action: "REMOVESONG"    //"REMOVESONG" for removing only the song, "REMOVEDJ" to remove the dj
+        action: "REMOVESONG"    //"REMOVESONG" for removing only the song, "REMOVEDJ" to remove the dj, "PAUSEUSERQUEUE" to remove the DJ without clearing his queue
     },
     afkremoval: {
         enabled: true,
