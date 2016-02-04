@@ -63,14 +63,14 @@ module.exports = {
     },
     chatfilter: {
         enabled: true,
-        dubtrackroom: true,    //dubtrack-room-urls will be automatically deleted
+        dubtrackroom: true,    //dubtrack-room-urls will be blocked
         youtube: true,         //youtube-urls will be blocked
         word_blacklist: {      //blacklist for words
             enabled: false,
             words: []
         },
         spam: {
-            enabled: false,    //enable this on your own risk, it's maybe a bit too aggressive,
+            enabled: false,    //enable this on your own risk, it's (maybe) a bit too aggressive,
             aggressivity: {
                 delete: 5,  //how many positive spam resultis till messages are deleted
                 mute: 2     // how many times a the bot deletes messages before muting

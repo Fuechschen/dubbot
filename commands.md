@@ -31,7 +31,7 @@
 |!link| | |User|Sends a link to the current song|
 |!define| |word|User|Defines the given word|
 |!duell| |accept/decline/username|User|Accepts a duell, declines a duell or starts one|
-|!commands| |[command]|User|Lists unhidden commands and provides their description|
+|!commands| |[command]|User|Lists unhidden commands and provides their description when used with argument|
 
 
 [  ] = optional argument
