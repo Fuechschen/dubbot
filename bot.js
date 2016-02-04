@@ -1255,7 +1255,8 @@ new DubAPI(config.login, function (err, bot) {
             users.forEach(function (user) {
                 if (_.contains(queue, bot.getUser(user.userid))) {
                     afks.push('@' + user.username);
-                    bot.moderateRemoveDJ(user.userid);
+                    if(config.afkremoval.action === "REMOVEDJ") bot.moderateRemoveDJ(user.userid);
+                    else if (config.afkremoval.action === "PAUSEUSERQUEUE") bot.moderatePauseDj(user.userid);
                     User.update({removed_for_afk: true}, {where: {id: user.id}});
                 }
             });
