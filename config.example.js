@@ -53,7 +53,10 @@ module.exports = {
         timeout: 3600,   //time in seconds
         kick: true,
         chat_ignore_phrase: "[AFK]",   //bot will ignore messages that include this
-        action: "REMOVEDJ"  //"REMOVEDJ" to remove the dj and clear his queue, "PAUSEUSERQUEUE" to remove the DJ without clearing his queue
+        action: "REMOVEDJ",  //"REMOVEDJ" to remove the dj and clear his queue, "PAUSEUSERQUEUE" to remove the DJ without clearing his queue
+        afk_message: {       //activate integrated afk message
+            enabled: true
+        }
     },
     cleverbot: {    //config if the bot speaks when mentioned
         enabled: true
