@@ -173,7 +173,8 @@ module.exports = {
         unlock: "Unlocks the queue.",
         commands: "List all commands/Provides their descriptions.",
         afkreset: "Resets AFK-time for the given user.",
-        points: "Commands to use for points."
+        points: "Commands to use for points.",
+        afkmsg: "Commands for managing the integrated afkmessage."
     },
     points: {
         award: "&{username} was arwarded &{amount} &{points_name}.",
@@ -184,5 +185,13 @@ module.exports = {
             gift: "&{gifter} gifted &{amount} &{points_name} to &{reciever}",
             gift_failed: "You aren't having enough &{points_name} for that."
         }
+    },
+    afk_message: {
+        enabled: "@&{username}, your afk message is now enabled and will disabled the next time you chat.",
+        message_set: "@&{username}, your afk message was set to: \"&{message}\"",
+        reset: "@&{username}, your message is now empty.",
+        mod_reset: "AFK-Message for '&{username}' cleared.",
+        no_message: "[&{afk}] @&{username}, I'm currently afk.",
+        with_message: "[&{afk}] @&{username} &{msg}"
     }
 };

@@ -29,7 +29,7 @@ var sequelize = new Sequelize(config.db.database, config.db.username, config.db.
     dialect: config.db.dialect,
     host: config.db.host,
     port: config.db.port,
-    logging: false
+    //logging: false
 });
 
 sequelize.authenticate().then(function (err) {
@@ -84,7 +84,7 @@ new DubAPI(config.login, function (err, bot) {
             };
 
             User.findOrCreate({where: {userid: userdata.userid}, defaults: userdata}).spread(function (usr) {
-                usr.updateAttributes(userdata);
+                User.update(userdata, {where: {id: usr.id}});
             });
         });
     });
@@ -101,7 +101,8 @@ new DubAPI(config.login, function (err, bot) {
                         last_active: new Date(),
                         afk: false,
                         warned_for_afk: false,
-                        removed_for_afk: false
+                        removed_for_afk: false,
+                        afk_message_enabled: false
                     }, {where: {userid: data.user.id}});
                 }
 
@@ -268,7 +269,7 @@ new DubAPI(config.login, function (err, bot) {
 
 
     bot.on('user-unmute', function (data) {
-        if(spamfilterdata[data.user.id]) spamfilterdata[data.user.id].setMuted(false);
+        if (spamfilterdata[data.user.id]) spamfilterdata[data.user.id].setMuted(false);
     });
 
     bot.on('room_playlist-dub', function () {
@@ -323,6 +324,14 @@ new DubAPI(config.login, function (err, bot) {
         } else if (config.cleverbot.enabled === true && S(data.message).contains('@' + bot.getSelf().username) === true) {
             cleverbot.write(S(data.message).replaceAll('@' + bot.getSelf().username, '').s, function (res) {
                 bot.sendChat('@' + data.user.username + ' ' + res.message);
+            });
+        } else if (config.afkremoval.afk_message.enabled) {
+            User.findAll({where: {afk_message_enabled: true, status: true}}).spread(function (user) {
+                if (S(data.message).contains('@' + user.username)) {
+                    if (user.afk_message !== null && user.afk_message !== undefined)bot.sendChat(S(langfile.afk_message.with_message).replaceAll('&{username}', data.user.username).replaceAll('&{afk}', user.username).replaceAll('&{msg}', user.afk_message).s);
+                    else bot.sendChat(S(langfile.afk_message.no_message).replaceAll('&{username}', data.user.username).replaceAll('&{afk}', user.username).s);
+
+                }
             });
         }
     }
@@ -1199,6 +1208,40 @@ new DubAPI(config.login, function (err, bot) {
                 }
             }
         });
+
+        commands.push({
+            names: ['!afkmsg'],
+            hidden: false,
+            enabled: true,
+            matchStart: true,
+            desc: langfile.commanddesc.afkmsg,
+            handler: function (data) {
+                if (config.afkremoval.afk_message.enabled) {
+                    var split = data.message.trim().split(' ');
+                    if (split.length === 2) {
+                        if (split[1] === 'enable') {
+                            setTimeout(function(){User.update({afk_message_enabled: true}, {where: {userid: data.user.id}});}, 10 * 1000);
+                            bot.sendChat(S(langfile.afk_message.enabled).replaceAll('&{username}', data.user.username).s);
+                        } else if (split[1] === 'clear' || split[1] === 'reset') {
+                            User.update({afk_message: null}, {where: {userid: data.user.id}});
+                            bot.sendChat(S(langfile.afk_message.reset).replaceAll('&{username}', data.user.username).s);
+                        } else bot.sendChat(langfile.error.argument);
+                    } else if (split.length > 2) {
+                        if (split[1] === 'set') {
+                            User.update({afk_message: _.rest(split, 2).join(' ').trim()}, {where: {userid: data.user.id}});
+                            bot.sendChat(S(langfile.afk_message.message_set).replaceAll('&{message}', _.rest(split, 2).join(' ').trim()).replaceAll('&{username}', data.user.username).s);
+                        } else if ((split[1] === 'reset' || split[1] === 'clear') && bot.hasPermission(data.user, 'delete-chat')) {
+                            User.find({where: {username: {$like: '%' + S(split[2]).chompLeft('@').s + '%'}}}).then(function (user) {
+                                if (user !== undefined && user !== null) {
+                                    User.update({afk_message: null}, {where: {id: user.id}});
+                                    bot.sendChat(S(langfile.afk_message.mod_reset).replaceAll('&{username', user.username).s);
+                                } else bot.sendChat(langfile.error.argument);
+                            });
+                        } else bot.sendChat(langfile.error.argument);
+                    } else bot.sendChat(langfile.error.argument);
+                }
+            }
+        });
     }
 
     function timings() {
@@ -1255,7 +1298,7 @@ new DubAPI(config.login, function (err, bot) {
             users.forEach(function (user) {
                 if (_.contains(queue, bot.getUser(user.userid))) {
                     afks.push('@' + user.username);
-                    if(config.afkremoval.action === "REMOVEDJ") bot.moderateRemoveDJ(user.userid);
+                    if (config.afkremoval.action === "REMOVEDJ") bot.moderateRemoveDJ(user.userid);
                     else if (config.afkremoval.action === "PAUSEUSERQUEUE") bot.moderatePauseDj(user.userid);
                     User.update({removed_for_afk: true}, {where: {id: user.id}});
                 }

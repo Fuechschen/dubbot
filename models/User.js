@@ -9,7 +9,9 @@ module.exports = function (sequelize, Sequelize) {
         afk: {type: Sequelize.BOOLEAN, defaultValue: false},
         status: {type: Sequelize.BOOLEAN, defaultValue: true},
         warned_for_afk: {type: Sequelize.BOOLEAN, defaultValue: false},
-        removed_for_afk: {type: Sequelize.BOOLEAN, defaultValue: false}
+        removed_for_afk: {type: Sequelize.BOOLEAN, defaultValue: false},
+        afk_message_enabled: {type: Sequelize.BOOLEAN, defaultValue: false},
+        afk_message: {type: Sequelize.STRING, defaultValue: null}
     }, {
         underscored: true,
         tableName: 'users'
