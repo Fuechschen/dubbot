@@ -29,7 +29,7 @@ var sequelize = new Sequelize(config.db.database, config.db.username, config.db.
     dialect: config.db.dialect,
     host: config.db.host,
     port: config.db.port,
-    //logging: false
+    logging: false
 });
 
 sequelize.authenticate().then(function (err) {
