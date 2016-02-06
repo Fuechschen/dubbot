@@ -43,10 +43,13 @@ var Label = sequelize.import(__dirname + '/models/Label');
 var RandomMessage = sequelize.import(__dirname + '/models/RandomMessage');
 var Track = sequelize.import(__dirname + '/models/Track');
 var User = sequelize.import(__dirname + '/models/User');
+var QueueBan = sequelize.import(__dirname + '/models/QueueBan');
 
 
 Track.belongsToMany(Label, {through: 'tracktolabel'});
 Label.belongsToMany(Track, {through: 'tracktolabel'});
+QueueBan.belongsTo(User, {trough: 'mod'});
+QueueBan.belongsTo(User, {through: 'user'});
 
 sequelize.sync();
 
@@ -1395,35 +1398,43 @@ new DubAPI(config.login, function (err, bot) {
                 else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
                 bot.sendChat(S(langfile.queuecheck.length).replaceAll('&{username}', queueobject.user.username).s);
             } else {
-                var trackdata = {
-                    name: queueobject.media.name,
-                    dub_id: queueobject.media.id,
-                    type: queueobject.media.type,
-                    source_id: queueobject.media.fkid,
-                    thumbnail: queueobject.media.thumbnail,
-                    songLength: queueobject.media.songLength
-                };
+                QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function(ban){
+                    if(ban !== undefined && ban !== null){
+                        bot.moderateRemoveDJ(ban.dub_user_id);
+                        if(ban.reason !== null && ban.reason !== undefined) bot.sendChat(S(langfile.queueban.banned_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{reason}', ban.reason).s);
+                        else bot.sendChat(S(langfile.queueban.banned).replaceAll('&{username}', queueobject.user.username).s);
+                    } else {
+                        var trackdata = {
+                            name: queueobject.media.name,
+                            dub_id: queueobject.media.id,
+                            type: queueobject.media.type,
+                            source_id: queueobject.media.fkid,
+                            thumbnail: queueobject.media.thumbnail,
+                            songLength: queueobject.media.songLength
+                        };
 
-                Track.findOrCreate({
-                    where: {dub_id: queueobject.media.id},
-                    defaults: trackdata
-                }).then(function (tracks, created) {
-                    var track = tracks[0];
-                    if (!created && bot.getQueue()[index].media.id === track.id) {
-                        if (track.blacklisted) {
-                            if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
-                            else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
-                            else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                            if (track.bl_reason !== undefined && track.bl_reason !== null) bot.sendChat(S(langfile.queuecheck.blacklisted_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).replaceAll('&{reason}', track.bl_reason).s);
-                            else bot.sendChat(S(langfile.queuecheck.blacklisted).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
-                        } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined) {
-                            if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
-                            else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
-                            else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                            bot.sendChat(S(langfile.queuecheck.history).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
-                        }
+                        Track.findOrCreate({
+                            where: {dub_id: queueobject.media.id},
+                            defaults: trackdata
+                        }).then(function (tracks, created) {
+                            var track = tracks[0];
+                            if (!created && bot.getQueue()[index].media.id === track.id) {
+                                if (track.blacklisted) {
+                                    if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
+                                    else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
+                                    else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
+                                    if (track.bl_reason !== undefined && track.bl_reason !== null) bot.sendChat(S(langfile.queuecheck.blacklisted_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).replaceAll('&{reason}', track.bl_reason).s);
+                                    else bot.sendChat(S(langfile.queuecheck.blacklisted).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
+                                } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined) {
+                                    if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
+                                    else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
+                                    else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
+                                    bot.sendChat(S(langfile.queuecheck.history).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
+                                }
 
-                        //todo add label when working
+                                //todo add label when working
+                            }
+                        });
                     }
                 });
             }

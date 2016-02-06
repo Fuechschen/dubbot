@@ -193,5 +193,9 @@ module.exports = {
         mod_reset: "AFK-Message for '&{username}' cleared.",
         no_message: "[&{afk}] @&{username}, I'm currently afk.",
         with_message: "[&{afk}] @&{username} &{msg}"
+    },
+    queueban: {
+        banned: "@&{username}, you are banned from joining the queue and you will therefore be removed!",
+        banned_reason: "@&{username}, you are banned from joining the queue for \"&{reason}\" and you will therefore be removed!"
     }
 };
