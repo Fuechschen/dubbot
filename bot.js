@@ -275,6 +275,14 @@ new DubAPI(config.login, function (err, bot) {
         if (spamfilterdata[data.user.id]) spamfilterdata[data.user.id].setMuted(false);
     });
 
+    bot.on('user-mute', function (data) {
+        if (config.automation.delete_chat.mute && data.mod.id !== bot.getSelf().id) cleanchat(data.user.id);
+    });
+
+    bot.on('user-kick', function (data) {
+        if (config.automation.delete_chat.kick && data.mod.id !== bot.getSelf().id) cleanchat(data.user.id);
+    });
+
     bot.on('room_playlist-dub', function () {
         if (config.autoskip.votes.enabled) {
             var dj = bot.getDJ();
@@ -1223,7 +1231,9 @@ new DubAPI(config.login, function (err, bot) {
                     var split = data.message.trim().split(' ');
                     if (split.length === 2) {
                         if (split[1] === 'enable') {
-                            setTimeout(function(){User.update({afk_message_enabled: true}, {where: {userid: data.user.id}});}, 10 * 1000);
+                            setTimeout(function () {
+                                User.update({afk_message_enabled: true}, {where: {userid: data.user.id}});
+                            }, 10 * 1000);
                             bot.sendChat(S(langfile.afk_message.enabled).replaceAll('&{username}', data.user.username).s);
                         } else if (split[1] === 'clear' || split[1] === 'reset') {
                             User.update({afk_message: null}, {where: {userid: data.user.id}});
@@ -1398,10 +1408,10 @@ new DubAPI(config.login, function (err, bot) {
                 else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
                 bot.sendChat(S(langfile.queuecheck.length).replaceAll('&{username}', queueobject.user.username).s);
             } else {
-                QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function(ban){
-                    if(ban !== undefined && ban !== null){
+                QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function (ban) {
+                    if (ban !== undefined && ban !== null) {
                         bot.moderateRemoveDJ(ban.dub_user_id);
-                        if(ban.reason !== null && ban.reason !== undefined) bot.sendChat(S(langfile.queueban.banned_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{reason}', ban.reason).s);
+                        if (ban.reason !== null && ban.reason !== undefined) bot.sendChat(S(langfile.queueban.banned_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{reason}', ban.reason).s);
                         else bot.sendChat(S(langfile.queueban.banned).replaceAll('&{username}', queueobject.user.username).s);
                     } else {
                         var trackdata = {

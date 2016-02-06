@@ -149,5 +149,11 @@ module.exports = {
             enabled: true,
             cost: 2
         }
+    },
+    automation: {
+        delete_chat: {
+            mute: true,    //delete users chat if muted
+            kick: true     //delete users chat if kicked
+        }
     }
 };
