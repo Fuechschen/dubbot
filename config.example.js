@@ -83,6 +83,11 @@ module.exports = {
         link_protection: {  //prevents users who just joind from posting links in chat
             enabled: true,
             timeout: 5       //minutes till users can post links
+        },
+        images: {            //delete images from chat WARNING: may also deletes messages before image
+            enabled: false,
+            timeout: 60,     //seconds before images is deleted, set to 0 if images should be blocked completely
+            regex: /http(|s):\/\/.+\.(png|jpg|jpeg|gif)/i     //regex to detect images, only edit if you know what you are doing
         }
     },
     autodj: {     //bot automatically joins the queue when too short

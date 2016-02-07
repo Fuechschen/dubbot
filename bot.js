@@ -109,10 +109,16 @@ new DubAPI(config.login, function (err, bot) {
                     }, {where: {userid: data.user.id}});
                 }
 
-                if (config.chatfilter.enabled === true && bot.hasPermission(data.user, 'delete-chat')) {
+                if (config.chatfilter.enabled && !bot.hasPermission(data.user, 'delete-chat')) {
                     if (config.chatfilter.link_protection.enabled === true && spamfilterdata[data.user.id].canpostLinks() === false && (S(data.message).contains('http://') || S(data.message).contains('https://'))) {
-                        deleteChatMessage(data.id);
+                        deleteChatMessage(data.id, bot.getChatHistory());
                         bot.sendChat(S(langfile.chatfilter.link_protection).replaceAll('&{username}', data.user.username).s);
+                        return;
+                    } else if (config.chatfilter.images.enabled && config.chatfilter.images.regex.test(data.message.toLowerCase())) {
+                        console.log(2,config.chatfilter.images.regex.test(data.message.toLowerCase()));
+                        setTimeout(function () {
+                            deleteChatMessage(data.id, bot.getChatHistory())
+                        }, config.chatfilter.images.timeout * 1000);
                         return;
                     }
                     if (config.chatfilter.spam.enabled === true) {
@@ -135,29 +141,29 @@ new DubAPI(config.login, function (err, bot) {
                             spamfilterdata[data.user.id].updateMessage(data.message);
                         } else spamfilterdata[data.user.id] = new SpamProtection(data.user.id);
                     }
-                    if (config.chatfilter.dubtrackroom === true) {
+                    if (config.chatfilter.dubtrackroom) {
                         if (S(data.message).contains('dubtrack.fm/join/') === true) {
-                            deleteChatMessage(data.id);
+                            deleteChatMessage(data.id, bot.getChatHistory());
                             bot.sendChat(S(langfile.chatfilter.dubtrackroom).replaceAll('&{username}', data.user.username).s);
                             spamfilterdata[data.user.id].increaseScore();
                             return;
                         }
                     }
-                    if (config.chatfilter.youtube === true) {
+                    if (config.chatfilter.youtube) {
                         if (S(data.message).contains('youtu.be') === true || (S(data.message).contains('http') === true && S(data.message).contains('youtube.') === true)) {
-                            deleteChatMessage(data.id);
+                            deleteChatMessage(data.id, bot.getChatHistory());
                             bot.sendChat(S(langfile.chatfilter.youtube).replaceAll('&{username}', data.user.username).s);
                             spamfilterdata[data.user.id].increaseScore();
                             return;
                         }
                     }
-                    if (config.chatfilter.word_blacklist.enabled === true) {
+                    if (config.chatfilter.word_blacklist.enabled) {
                         var found = false;
                         config.chatfilter.word_blacklist.words.forEach(function (word) {
                             if (S(data.message).contains(word) === true) found = true;
                         });
                         if (found === true) {
-                            deleteChatMessage(data.id);
+                            deleteChatMessage(data.id, bot.getChatHistory());
                             bot.sendChat(S(langfile.chatfilter.word_blacklist).replaceAll('&{username}', data.user.username).s);
                             spamfilterdata[data.user.id].increaseScore();
                         }
@@ -272,7 +278,7 @@ new DubAPI(config.login, function (err, bot) {
 
 
     bot.on('user-unmute', function (data) {
-        if (spamfilterdata[data.user.id]) spamfilterdata[data.user.id].setMuted(false);
+        if (data.user && spamfilterdata[data.user.id]) spamfilterdata[data.user.id].setMuted(false);
     });
 
     bot.on('user-mute', function (data) {
@@ -338,10 +344,12 @@ new DubAPI(config.login, function (err, bot) {
             });
         } else if (config.afkremoval.afk_message.enabled) {
             User.findAll({where: {afk_message_enabled: true, status: true}}).spread(function (user) {
-                if (S(data.message).contains('@' + user.username)) {
-                    if (user.afk_message !== null && user.afk_message !== undefined)bot.sendChat(S(langfile.afk_message.with_message).replaceAll('&{username}', data.user.username).replaceAll('&{afk}', user.username).replaceAll('&{msg}', user.afk_message).s);
-                    else bot.sendChat(S(langfile.afk_message.no_message).replaceAll('&{username}', data.user.username).replaceAll('&{afk}', user.username).s);
+                if (user !== undefined && user !== null) {
+                    if (S(data.message).contains('@' + user.username)) {
+                        if (user.afk_message !== null && user.afk_message !== undefined)bot.sendChat(S(langfile.afk_message.with_message).replaceAll('&{username}', data.user.username).replaceAll('&{afk}', user.username).replaceAll('&{msg}', user.afk_message).s);
+                        else bot.sendChat(S(langfile.afk_message.no_message).replaceAll('&{username}', data.user.username).replaceAll('&{afk}', user.username).s);
 
+                    }
                 }
             });
         }
@@ -1508,11 +1516,12 @@ new DubAPI(config.login, function (err, bot) {
         }
     }
 
-    function deleteChatMessage(chatid) {
-        var chatHistory = bot.getChatHistory();
-        var pos = _.findIndex(chatHistory, {id: chatid});
-        if (chatHistory[pos - 1] !== undefined) {
-            if (chatHistory[pos - 1].user.id === chatHistory[pos].user.id)deleteChatMessage(chatHistory[pos - 1].id);
+    function deleteChatMessage(chatid, history) {
+        var pos = _.findIndex(history, {id: chatid});
+        if (history[pos - 1] !== undefined) {
+            if (history[pos - 1].user.id === history[pos].user.id){
+                deleteChatMessage(history[pos - 1].id, history);
+            }
             else bot.moderateDeleteChat(chatid);
         } else {
             bot.moderateDeleteChat(chatid);
