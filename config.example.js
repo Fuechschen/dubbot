@@ -11,9 +11,9 @@ module.exports = {
         random_messages: true,     //send a random messages all 2-10 minutes, see !rndmsg
         upvote: false              //upvote every song
     },
-    db: {   //your db config, fill in the path to database when usind sqlite (which is not recommended due to performance)
-        dialect: "",
-        database: "",
+    db: {   //your db config, fill in the path to database when usind sqlite (which is not recommended due to performance) Refer to http://sequelize.readthedocs.org/en/latest/api/sequelize/ for other dialects.
+        dialect: "mysql",   //dialect for the db connection, required to run (remember to install the required packages if you are using something else than mysql/mariadb
+        database: "",       //name og the database, required to run
         username: "",
         password: "",
         host: "",

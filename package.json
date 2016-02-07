@@ -1,8 +1,12 @@
 {
   "name": "dubbot",
   "description": "A (simple) bot for dubtrack running with node.js",
-  "version": "0.2.2",
-  "keywords": ["bot", "dubtrack", "dubtrack.fm"],
+  "version": "1.0.0",
+  "keywords": [
+    "bot",
+    "dubtrack",
+    "dubtrack.fm"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/Fuechschen/dubbot.git"
@@ -10,22 +14,16 @@
   "author": "Fuechschen <info@fuechschen.org> (https://fuechschen.org)",
   "main": "bot.js",
   "homepage": "https://dubbot.net",
-  "license": "CC-BY-SA-4.0",
+  "license": "MIT",
   "dependencies": {
-    "bluebird": "*",
+    "cleverbot-node": "git://github.com/avatarkava/cleverbot-node.git",
     "dubapi": "^1.4.0",
-    "express": "^4.13.3",
-    "moment": "^2.10.6",
-    "mysql": "*",
-    "request": "*",
-    "sequelize": "*",
-    "string": "*",
-    "underscore": "*",
-    "cleverbot-node": "git://github.com/AvatarKava/cleverbot-node.git",
-    "pm2": "*"
-  },
-  "devDependencies": {
-    "grunt": "*",
-    "grunt-sonar-runner": "*"
+    "moment": "^2.11.2",
+    "mysql": "^2.10.2",
+    "pm2": "^1.0.0",
+    "request": "^2.69.0",
+    "sequelize": "^3.19.2",
+    "string": "^3.3.1",
+    "underscore": "^1.8.3"
   }
 }

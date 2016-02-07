@@ -39,15 +39,11 @@ sequelize.authenticate().then(function (err) {
 });
 
 var CustomText = sequelize.import(__dirname + '/models/CustomText');
-var Label = sequelize.import(__dirname + '/models/Label');
 var RandomMessage = sequelize.import(__dirname + '/models/RandomMessage');
 var Track = sequelize.import(__dirname + '/models/Track');
 var User = sequelize.import(__dirname + '/models/User');
 var QueueBan = sequelize.import(__dirname + '/models/QueueBan');
 
-
-Track.belongsToMany(Label, {through: 'tracktolabel'});
-Label.belongsToMany(Track, {through: 'tracktolabel'});
 QueueBan.belongsTo(User, {as: 'mod', foreignKey: 'mod_id'});
 QueueBan.belongsTo(User, {as: 'user', foreignKey: 'user_id'});
 
@@ -514,58 +510,6 @@ new DubAPI(config.login, function (err, bot) {
                 }
             }
         });
-
-
-        //todo fix sequelize errors
-        /*commands.push({
-         names: ['!label', '!lbl'],
-         hidden: true,
-         enabled: true,
-         matchStart: true,
-         handler: function (data) {
-         if (bot.hasPermission(data.user, 'ban')) {
-         var media = bot.getMedia();
-         var playid = bot.getPlayID();
-         var split = data.message.trim().split(' ');
-         if (split.length === 1) {
-         Track.find({where: {dub_id: media.id}}).then(function (track) {
-         track.getLabels().then(function (labels) {
-         var lab = '';
-         labels.forEach(function (label, index) {
-         lab += label.name;
-         if (index !== labels.length - 1) {
-         lab += ', ';
-         }
-         });
-         bot.sendChat(S(langfile.labels.labels_found).replaceAll('&{track}', track.name).replaceAll('&{labels}', lab).s);
-         });
-         });
-         } else if (split.length === 3) {
-         if (split[1] === 'add') {
-         Label.findOrCreate({
-         where: {name: split[2]},
-         defaults: {name: split[2]}
-         }).then(function (label) {
-         Track.find({where: {dub_id: media.id}}).then(function (track) {
-         label.addTracks(track);
-         checksong(media, playid);
-         });
-         });
-         } else if (split[1] === 'set') {
-         Label.findOrCreate({
-         where: {name: split[2]},
-         defaults: {name: split[2]}
-         }).then(function (label) {
-         Track.find({where: {dub_id: media.id}}).then(function (track) {
-         track.setLabels([label]);
-         checksong(media, playid);
-         });
-         });
-         }
-         }
-         }
-         }
-         });*/
 
         commands.push({
             names: ['!move'],
@@ -1465,20 +1409,6 @@ new DubAPI(config.login, function (err, bot) {
                         bot.moderateSkip();
                         bot.sendChat(S(langfile.autoskip.history).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
                     }
-                    /*track.getLabels().then(function (tracks) {
-                     if (playid === bot.getPlayID()) {
-                     var moderated = false;
-                     tracks.forEach(function (trck) {
-                     if(moderated === false){
-                     if (config.autoskip.history.enabled === true && moment().diff(trck.last_played, 'minutes') < config.autoskip.history.time && trck.last_played !== undefined) {
-                     bot.moderateSkip();
-                     bot.sendChat(langfile.autoskip.history);
-                     moderated = true;
-                     }
-                     }
-                     });
-                     }
-                     });*/
                 }
             });
         }
@@ -1525,8 +1455,6 @@ new DubAPI(config.login, function (err, bot) {
                                     else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
                                     bot.sendChat(S(langfile.queuecheck.history).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
                                 }
-
-                                //todo add label when working
                             }
                         });
                     }
@@ -1599,9 +1527,7 @@ new DubAPI(config.login, function (err, bot) {
                 deleteChatMessage(history[pos - 1].id, history);
             }
             else bot.moderateDeleteChat(chatid);
-        } else {
-            bot.moderateDeleteChat(chatid);
-        }
+        } else bot.moderateDeleteChat(chatid);
     }
 
 
@@ -1611,7 +1537,7 @@ new DubAPI(config.login, function (err, bot) {
             url: 'https://api.dubtrack.fm/room/%RID%/queueplaylist/' + playlistid
         }, function (err) {
             return !err;
-        })
+        });
     }
 
     function clearQueue() {
