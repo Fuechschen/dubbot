@@ -43,13 +43,13 @@ var Label = sequelize.import(__dirname + '/models/Label');
 var RandomMessage = sequelize.import(__dirname + '/models/RandomMessage');
 var Track = sequelize.import(__dirname + '/models/Track');
 var User = sequelize.import(__dirname + '/models/User');
-var QueueBan = sequelize.import(__dirname + '/models/QueueBan');
+//var QueueBan = sequelize.import(__dirname + '/models/QueueBan');
 
 
 Track.belongsToMany(Label, {through: 'tracktolabel'});
 Label.belongsToMany(Track, {through: 'tracktolabel'});
-QueueBan.belongsTo(User, {trough: 'mod'});
-QueueBan.belongsTo(User, {through: 'user'});
+//QueueBan.belongsTo(User, {trough: 'mod'});
+//QueueBan.belongsTo(User, {through: 'user'});
 
 sequelize.sync();
 
