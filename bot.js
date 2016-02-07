@@ -685,7 +685,7 @@ new DubAPI(config.login, function (err, bot) {
                             bot.sendChat(msg);
                         } else bot.sendChat(S(langfile.queueban.check.negative).replaceAll('&{username}', data.user.username).s);
                     });
-                } else if (bot.hasPermission(data.user, 'ban') || bot.hasPermission(data.user, 'unban')) {
+                } else if (bot.hasPermission(data.user, 'ban')) {
                     if ((split[1] === 'ban') && bot.hasPermission(data.user, 'ban') && split.length >= 4) {
                         User.find({where: {username: {$like: S(split[2]).chompLeft('@').s}}}).then(function (banned) {
                             if (banned !== undefined && banned !== null) {
