@@ -12,6 +12,7 @@ Since dubbot is still under development, there will be features added in future.
 * Afk-Removal
 * Experimental chat- and spamfilter
 * History Skipping
+* Ban users from joining the queue
 
 A full list of commands can be found [here](/commands.md).
 
