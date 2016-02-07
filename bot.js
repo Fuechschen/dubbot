@@ -726,7 +726,7 @@ new DubAPI(config.login, function (err, bot) {
                                 });
                             } else bot.sendChat(langfile.error.argument);
                         });
-                    } else if ((split[1] === 'remove' || split[1] === 'rem' || split[1] === 'delete' || split[1] === 'del') && split.length === 3) {
+                    } else if ((split[1] === 'remove' || split[1] === 'rem' || split[1] === 'delete' || split[1] === 'del' || split[1] === 'unban') && split.length === 3) {
                         User.find({where: {username: {$like: S(split[2]).chompLeft('@').s}}}).then(function (user) {
                             if (user !== undefined && user !== null) {
                                 QueueBan.update({active: false}, {where: {dub_user_id: user.userid}});
@@ -1359,6 +1359,7 @@ new DubAPI(config.login, function (err, bot) {
         autotimer = setTimeout(function () {
             timings();
         }, minutes * 60 * 1000);
+        QueueBan.update({active: false}, {where: {expires: {$lte: new Date()}}});
         console.log('[INFO] Executed timings, next execution in ' + minutes + ' minutes.');
     }
 
