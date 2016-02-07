@@ -43,18 +43,20 @@ var Label = sequelize.import(__dirname + '/models/Label');
 var RandomMessage = sequelize.import(__dirname + '/models/RandomMessage');
 var Track = sequelize.import(__dirname + '/models/Track');
 var User = sequelize.import(__dirname + '/models/User');
-//var QueueBan = sequelize.import(__dirname + '/models/QueueBan');
+var QueueBan = sequelize.import(__dirname + '/models/QueueBan');
 
 
 Track.belongsToMany(Label, {through: 'tracktolabel'});
 Label.belongsToMany(Track, {through: 'tracktolabel'});
-//QueueBan.belongsTo(User, {trough: 'mod'});
-//QueueBan.belongsTo(User, {through: 'user'});
+QueueBan.belongsTo(User, {as: 'mod', foreignKey: 'mod_id'});
+QueueBan.belongsTo(User, {as: 'user', foreignKey: 'user_id'});
 
 sequelize.sync();
 
 var cleverbot = new Cleverbot;
 cleverbot.prepare();
+
+moment.locale(langfile.momentjs.locale);
 
 new DubAPI(config.login, function (err, bot) {
     if (err) return console.error(err);
@@ -115,7 +117,7 @@ new DubAPI(config.login, function (err, bot) {
                         bot.sendChat(S(langfile.chatfilter.link_protection).replaceAll('&{username}', data.user.username).s);
                         return;
                     } else if (config.chatfilter.images.enabled && config.chatfilter.images.regex.test(data.message.toLowerCase())) {
-                        console.log(2,config.chatfilter.images.regex.test(data.message.toLowerCase()));
+                        console.log(2, config.chatfilter.images.regex.test(data.message.toLowerCase()));
                         setTimeout(function () {
                             deleteChatMessage(data.id, bot.getChatHistory())
                         }, config.chatfilter.images.timeout * 1000);
@@ -660,6 +662,79 @@ new DubAPI(config.login, function (err, bot) {
             desc: langfile.commanddesc.unlock,
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'lock-queue')) bot.moderateLockQueue(false);
+            }
+        });
+
+        commands.push({
+            names: ['!queueban', '!qban'],
+            hidden: true,
+            enabled: true,
+            matchStart: true,
+            desc: langfile.commanddesc.queueban,
+            handler: function (data) {
+                var split = data.message.trim().split(' ');
+                if (split.length === 1) {
+                    QueueBan.find({where: {dub_user_id: data.user.id, active: true}}).then(function (qban) {
+                        if (qban !== undefined && qban !== null) {
+                            var msg = '';
+                            if (qban.reason !== null && qban.reason !== undefined)msg += S(langfile.queueban.check.positive_reason).replaceAll('&{username}', data.user.username).replaceAll('&{reason}', qban.reason).s;
+                            else msg += S(langfile.queueban.check.positive_reason).replaceAll('&{username}', data.user.username).s;
+
+                            if (qban.permanent) msg += ' ' + langfile.queueban.check.expires.never;
+                            else msg += ' ' + S(langfile.queueban.check.expires.time).replaceAll('&{time}', moment().to(moment(qban.expires))).s;
+                            bot.sendChat(msg);
+                        } else bot.sendChat(S(langfile.queueban.check.negative).replaceAll('&{username}', data.user.username).s);
+                    });
+                } else if (bot.hasPermission(data.user, 'ban') || bot.hasPermission(data.user, 'unban')) {
+                    if ((split[1] === 'ban') && bot.hasPermission(data.user, 'ban') && split.length >= 4) {
+                        User.find({where: {username: {$like: S(split[2]).chompLeft('@').s}}}).then(function (banned) {
+                            if (banned !== undefined && banned !== null) {
+                                User.find({where: {userid: data.user.id}}).then(function (mod) {
+                                    var r = (_.rest(split, 4).join(' ').trim().length !== 0 ? _.rest(split, 4).join(' ').trim() : undefined);
+                                    if (split[3] === 'permanent') {
+                                        QueueBan.create({
+                                            dub_user_id: banned.userid,
+                                            dub_mod_id: mod.userid,
+                                            mod: mod,
+                                            user: banned,
+                                            reason: r,
+                                            permanent: true,
+                                            active: true
+                                        });
+                                        if (r) bot.sendChat(S(langfile.queueban.mod.ban.permanent_reason).replaceAll('&{banned}', banned.username).replaceAll('&{mod}', mod.username).replaceAll('&{reason}', r).s);
+                                        else bot.sendChat(S(langfile.queueban.mod.ban.permanent).replaceAll('&{banned}', banned.username).replaceAll('&{mod}', mod.username).s);
+                                    } else {
+                                        var time = {
+                                            amount: parseInt(split[3].trim().split('')[0]),
+                                            key: split[3].trim().split('')[1]
+                                        };
+                                        if (time) {
+                                            QueueBan.create({
+                                                dub_user_id: banned.userid,
+                                                dub_mod_id: mod.userid,
+                                                mod: mod,
+                                                user: banned,
+                                                reason: r,
+                                                expires: moment().add(time.amount, time.key),
+                                                permanent: false,
+                                                active: true
+                                            });
+                                            if (r) bot.sendChat(S(langfile.queueban.mod.ban.time_reason).replaceAll('&{banned}', banned.username).replaceAll('&{mod}', mod.username).replaceAll('&{reason}', r).s);
+                                            else bot.sendChat(S(langfile.queueban.mod.ban.time).replaceAll('&{banned}', banned.username).replaceAll('&{mod}', mod.username).s);
+                                        } else bot.sendChat(langfile.error.argument);
+                                    }
+                                });
+                            } else bot.sendChat(langfile.error.argument);
+                        });
+                    } else if ((split[1] === 'remove' || split[1] === 'rem' || split[1] === 'delete' || split[1] === 'del') && split.length === 3) {
+                        User.find({where: {username: {$like: S(split[2]).chompLeft('@').s}}}).then(function (user) {
+                            if (user !== undefined && user !== null) {
+                                QueueBan.update({active: false}, {where: {dub_user_id: user.userid}});
+                                bot.sendChat(S(langfile.queueban.mod.unban).replaceAll('&{username}', user.username).s);
+                            } else bot.sendChat(langfile.error.argument);
+                        });
+                    } else bot.sendChat(langfile.error.argument);
+                }
             }
         });
 
@@ -1416,12 +1491,12 @@ new DubAPI(config.login, function (err, bot) {
                 else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
                 bot.sendChat(S(langfile.queuecheck.length).replaceAll('&{username}', queueobject.user.username).s);
             } else {
-               /* QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function (ban) {
+                QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function (ban) {
                     if (ban !== undefined && ban !== null) {
                         bot.moderateRemoveDJ(ban.dub_user_id);
                         if (ban.reason !== null && ban.reason !== undefined) bot.sendChat(S(langfile.queueban.banned_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{reason}', ban.reason).s);
                         else bot.sendChat(S(langfile.queueban.banned).replaceAll('&{username}', queueobject.user.username).s);
-                    } else {*/
+                    } else {
                         var trackdata = {
                             name: queueobject.media.name,
                             dub_id: queueobject.media.id,
@@ -1453,8 +1528,8 @@ new DubAPI(config.login, function (err, bot) {
                                 //todo add label when working
                             }
                         });
-                    //}
-                //});
+                    }
+                });
             }
         });
     }
@@ -1519,7 +1594,7 @@ new DubAPI(config.login, function (err, bot) {
     function deleteChatMessage(chatid, history) {
         var pos = _.findIndex(history, {id: chatid});
         if (history[pos - 1] !== undefined) {
-            if (history[pos - 1].user.id === history[pos].user.id){
+            if (history[pos - 1].user.id === history[pos].user.id) {
                 deleteChatMessage(history[pos - 1].id, history);
             }
             else bot.moderateDeleteChat(chatid);

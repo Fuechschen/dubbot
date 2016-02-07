@@ -2,7 +2,7 @@ module.exports = function (sequelize, Sequelize) {
     return sequelize.define('user', {
         id: {type: Sequelize.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true, allowNull:false},
         username: {type: Sequelize.STRING, allowNull: false},
-        userid: {type: Sequelize.STRING, defaultValue: 0},
+        userid: {type: Sequelize.STRING, allowNull: false},
         dubs: {type: Sequelize.INTEGER.UNSIGNED, defaultValue: 0},
         points: {type: Sequelize.INTEGER.UNSIGNED, defaultValue: 0},
         last_active: {type: Sequelize.DATE, defaultValue: Sequelize.NOW},

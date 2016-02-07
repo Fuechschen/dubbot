@@ -1,4 +1,7 @@
 module.exports = {
+    momentjs: {
+      locale: 'en'
+    },
     blacklist: {
         blacklisted: "@&{dj}, the track '&{track}' was blacklisted by &{moderator}",
         blacklisted_reason: "@&{dj}, the track '&{track}' was blacklisted by &{moderator} for: &{reason}",
@@ -174,7 +177,8 @@ module.exports = {
         commands: "List all commands/Provides their descriptions.",
         afkreset: "Resets AFK-time for the given user.",
         points: "Commands to use for points.",
-        afkmsg: "Commands for managing the integrated afkmessage."
+        afkmsg: "Commands for managing the integrated afkmessage.",
+        queueban: "Command for managing QueueBans."
     },
     points: {
         award: "&{username} was arwarded &{amount} &{points_name}.",
@@ -196,6 +200,24 @@ module.exports = {
     },
     queueban: {
         banned: "@&{username}, you are banned from joining the queue and you will therefore be removed!",
-        banned_reason: "@&{username}, you are banned from joining the queue for \"&{reason}\" and you will therefore be removed!"
+        banned_reason: "@&{username}, you are banned from joining the queue for \"&{reason}\" and you will therefore be removed!",
+        check: {
+            negative: "@&{username}, you are not banned from the queue.",
+            positive_reason: "@&{username}, you are currently banned from the queue for: &{reason}.",
+            positive: "@&{username}, you are currently banned from the queue.",
+            expires: {
+                never: "The ban is permanent.",
+                time: "The ban will expire in &{time}"
+            }
+        },
+        mod: {
+            unban: "Removeing all queuebans from &{username}.",
+            ban: {
+                permanent: "&{banned} was permanently banned from the queue by &{mod}.",
+                permanent_reason: "&{banned} was permanently banned from the queue by &{mod} for: &{reason}.",
+                time: "&{banned} was banned from the queue by &{mod}. Run !qban to check your ban!",
+                time_reason: "&{banned} was banned from the queue by &{mod} for: \"&{reason}\". Run !qban to check your ban!"
+            }
+        }
     }
 };
