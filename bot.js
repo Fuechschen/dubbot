@@ -1416,12 +1416,12 @@ new DubAPI(config.login, function (err, bot) {
                 else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
                 bot.sendChat(S(langfile.queuecheck.length).replaceAll('&{username}', queueobject.user.username).s);
             } else {
-                QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function (ban) {
+               /* QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function (ban) {
                     if (ban !== undefined && ban !== null) {
                         bot.moderateRemoveDJ(ban.dub_user_id);
                         if (ban.reason !== null && ban.reason !== undefined) bot.sendChat(S(langfile.queueban.banned_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{reason}', ban.reason).s);
                         else bot.sendChat(S(langfile.queueban.banned).replaceAll('&{username}', queueobject.user.username).s);
-                    } else {
+                    } else {*/
                         var trackdata = {
                             name: queueobject.media.name,
                             dub_id: queueobject.media.id,
@@ -1453,8 +1453,8 @@ new DubAPI(config.login, function (err, bot) {
                                 //todo add label when working
                             }
                         });
-                    }
-                });
+                    //}
+                //});
             }
         });
     }
