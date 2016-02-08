@@ -1,7 +1,7 @@
 {
   "name": "dubbot",
   "description": "A (simple) bot for dubtrack running with node.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "keywords": [
     "bot",
     "dubtrack",
