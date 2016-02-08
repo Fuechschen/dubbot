@@ -12,6 +12,7 @@
 |!clearqueue|||Mod|Locks and clears the queue|
 |!lock|||Mod|Locks the queue|
 |!unlock|||Mod|Unlocks the queue|
+|!kick||username [reason]|Mod|Kicks the given user, unsetting the role if necessary|
 |!delchat||username|Mod|Deletes all messages from specified user in the last 512 messages since bot joined|
 |!queueban|!qban|[ban username duration [reason]/unban [username]]|User/Mod|Checks if you are banned from the queue when used without arguments. Bans or unbans a user from the queue (Use either 'permanent' or '(amount)(s/m/h/d/w/m)' as duration|
 |!sudo||various|Manager|Let the bot send your arguments in chat|
