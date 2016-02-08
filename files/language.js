@@ -81,14 +81,6 @@ module.exports = {
             mute: "@&{username} was muted for spamming."
         }
     },
-    labels: {
-        default: "Set label '&{label}' for &{track}",
-        override: "Overrode label to '&{label}' for &{track}",
-        existing_label: "&{track} is already labeld with '&{label}'. If you wan't to override it, use !olbl. The current id is &{id}",
-        argument_error: "You are using wrong arguments!",
-        no_label: "The track '&{track}' has no labels!",
-        labels_found: "The track '&{track}' has the following labels: '&{labels}'"
-    },
     clearchat: {
         default: "&{username} cleared the chat."
     },
