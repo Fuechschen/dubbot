@@ -1142,17 +1142,18 @@ new DubAPI(config.login, function (err, bot) {
                                     }
                                 }, function (err, req, body) {
                                     if (!err && req.statusCode === 200) {
-                                        if (body == 'ok') bot.sendChat(langfile.callmod.mod_called);
-                                        else bot.sendChat(langfile.callmod.errors.request);
+                                        if (body == 'ok') {
+                                            bot.sendChat(langfile.callmod.mod_called);
+                                            commandtimeout.callmod = true;
+                                            setTimeout(function () {
+                                                commandtimeout.callmod = false
+                                            }, 2 * 60 * 1000);
+                                        } else bot.sendChat(langfile.callmod.errors.request);
                                     }
                                 });
                             }
                         } else bot.sendChat(langfile.callmod.errors.unconfigured);
                     }
-                    commandtimeout.callmod = true;
-                    setTimeout(function () {
-                        commandtimeout.callmod = false
-                    }, 2 * 60 * 1000);
                 }
             }
         });
