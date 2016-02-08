@@ -220,5 +220,13 @@ module.exports = {
                 time_reason: "&{banned} was banned from the queue by &{mod} for: \"&{reason}\". Run !qban to check your ban!"
             }
         }
+    },
+    customtext: {
+        add: "CustomText successfully added.",
+        delete: "Customtext successfully deleted.",
+        disable: "Customtext successfully disabled.",
+        enable: "Customtext successfully enabled.",
+        update: "Customtext successfully updated.",
+        append: "Customtext successfully updated.",
     }
 };
