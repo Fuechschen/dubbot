@@ -178,7 +178,8 @@ module.exports = {
         afkreset: "Resets AFK-time for the given user.",
         points: "Commands to use for points.",
         afkmsg: "Commands for managing the integrated afkmessage.",
-        queueban: "Command for managing QueueBans."
+        queueban: "Command for managing QueueBans.",
+        kick: "Kicks the given user, reomving his rank if necessaray"
     },
     points: {
         award: "&{username} was arwarded &{amount} &{points_name}.",

@@ -621,6 +621,36 @@ new DubAPI(config.login, function (err, bot) {
         });
 
         commands.push({
+            names: ['!kick'],
+            hidden: true,
+            enabled: true,
+           matchStart: true,
+            desc: langfile.commanddesc.kick,
+            perm: 'kick',
+            handler: function(data){
+                if(bot.hasPermission(data.user, 'kick')){
+                    var split = data.message.trim().split(' ');
+                    if(split.length >= 2){
+                        User.find({where: {username: {$like: S(split[1]).chompLeft('@').s}}}).then(function(user){
+                           if(user !== undefined && user !== null && user.status === true){
+                               if(bot.isStaff(bot.getUser(user.userid))){
+                                   var role = user.role;
+                                   bot.moderateUnsetRole(user.userid, role, function (err) {
+                                       if (!err) {
+                                           bot.moderateKickUser(user.userid, _.rest(split, 2).join(' ').trim(), function (err) {
+                                               if (!err)bot.moderateSetRole(user.userid, role);
+                                           });
+                                       }
+                                   });
+                               } else got.moderateKickUser(user.userid, _.rest(split, 2).join(' ').trim());
+                           } else bot.sendChat(langfile.error.argument);
+                        });
+                    } else bot.sendChat(langfile.error.argument);
+                }
+            }
+        });
+
+        commands.push({
             names: ['!queueban', '!qban'],
             hidden: true,
             enabled: true,
@@ -885,7 +915,7 @@ new DubAPI(config.login, function (err, bot) {
             enabled: true,
             matchStart: false,
             desc: langfile.commanddesc.ping,
-            perm: 'set-dj',
+            perm: 'set-dj'
         });
 
         commands.push({
