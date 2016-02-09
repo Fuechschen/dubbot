@@ -883,7 +883,7 @@ new DubAPI(config.login, function (err, bot) {
                         var mover = queue[_.random(0, queue.length - 1)];
                         if (mover === undefined) bot.sendChat(langfile.lottery.no_winner);
                         else {
-                            bot.sendChat(S(langfile.lottery.victory).replaceAll('&{username}', mover.user.username));
+                            bot.sendChat(S(langfile.lottery.victory).replaceAll('&{username}', mover.user.username).s);
                             bot.moderateMoveDJ(mover.uid, 0);
                             if (config.points.enabled && config.points.lottery) points_manipulator("award", config.points.lottery_reward, [mover.user]);
                         }
@@ -911,7 +911,7 @@ new DubAPI(config.login, function (err, bot) {
                         var mover = queue[moverpos];
                         if (mover === undefined) bot.sendChat(langfile.roulette.no_winner);
                         else {
-                            bot.sendChat(S(langfile.roulette.victory).replaceAll('&{username}', mover.user.username));
+                            bot.sendChat(S(langfile.roulette.victory).replaceAll('&{username}', mover.user.username).s);
                             bot.moderateMoveDJ(mover.uid, _.random(0, moverpos));
                             if (config.points.enabled && config.points.roulette) points_manipulator("award", config.points.roulette_reward, [mover.user]);
                         }
