@@ -1498,7 +1498,7 @@ new DubAPI(config.login, function (err, bot) {
                 if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
                 else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
                 else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                bot.sendChat(S(langfile.queuecheck.length).replaceAll('&{username}', queueobject.user.username).s);
+                bot.sendChat(S(langfile.queuecheck.length).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', queueobject.media.name).s);
             } else if (queueobject.user !== undefined) {
                 QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function (ban) {
                     if (ban !== undefined && ban !== null) {
