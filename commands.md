@@ -35,6 +35,7 @@
 |!duell| |accept/decline/username|User|Accepts a duell, declines a duell or starts one|
 |!commands| |[command]|User|Lists unhidden commands and provides their description when used with argument|
 |!afkmsg||enable/clear/set (msg)|User|Enables/edits the afk-message|
+|!points||[gift user amount/add user amount/remove user amount]|User/Mod|Prints your current balance/gifts points to an user/gives points to an user/takes points from an user|
 
 
 [  ] = optional argument
