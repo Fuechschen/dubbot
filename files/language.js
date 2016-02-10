@@ -172,7 +172,8 @@ module.exports = {
         afkmsg: "Commands for managing the integrated afkmessage.",
         queueban: "Command for managing QueueBans.",
         kick: "Kicks the given user, reomving his rank if necessaray",
-        lastplayed: "Gives the last time a song was played."
+        lastplayed: "Gives the last time a song was played.",
+        shufflequeue: "Suffles the room queue."
     },
     points: {
         award: "&{username} was arwarded &{amount} &{points_name}.",
@@ -226,5 +227,8 @@ module.exports = {
         error: "Track wasn't found in database.",
         not_played_before: "This track wasn't played before.",
         default: "This track was played &{time} before."
+    },
+    sufflequeue: {
+        default: "@djs, the queue will be shuffled in a few moments. Prepare..."
     }
 };

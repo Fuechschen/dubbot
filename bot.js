@@ -828,6 +828,26 @@ new DubAPI(config.login, function (err, bot) {
         });
 
         commands.push({
+            names: ['!shufflequeue'],
+            hidden: true,
+            enabled: true,
+            matchStart: false,
+            desc: langfile.commanddesc.shufflequeue,
+            perm: 'queue-order',
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'queue-order')) {
+                    bot.sendChat(S(langfile.shufflequeue.default).replaceAll('&{mod}', data.user.username));
+                    var queue = bot.getQueue();
+                    queue.forEach(function (queueobj) {
+                       setTimeout(function(){
+                           bot.moderateMoveDJ(queueobj.user.id, _.random(0, queue.length - 1));
+                       }, _.random(1, 8) * 1000);
+                    });
+                }
+            }
+        });
+
+        commands.push({
             names: ['!afkcheck'],
             hidden: true,
             enabled: true,
@@ -1496,10 +1516,10 @@ new DubAPI(config.login, function (err, bot) {
     }
 
     function checkactivemods() {
-        bot.getStaff().forEach(function(staffmem){
-           User.find({where: {userid: staffmem.id}}).then(function(staff){
-               if(staff.afk === false) activemods = activemods + 1;
-           }) ;
+        bot.getStaff().forEach(function (staffmem) {
+            User.find({where: {userid: staffmem.id}}).then(function (staff) {
+                if (staff.afk === false) activemods = activemods + 1;
+            });
         });
     }
 
