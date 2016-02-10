@@ -333,7 +333,12 @@ new DubAPI(config.login, function (err, bot) {
             command.handler(data, bot);
             console.log('[COMMAND] Executed command ' + command.names[0] + ' (' + data.message + ')');
         } else if (S(data.message).startsWith(config.options.customtext_trigger) === true) {
-            CustomText.find({where: {trigger: S(data.message).chompLeft(config.options.customtext_trigger).s, active: true}}).then(function (row) {
+            CustomText.find({
+                where: {
+                    trigger: S(data.message).chompLeft(config.options.customtext_trigger).s,
+                    active: true
+                }
+            }).then(function (row) {
                 if (row !== undefined && row !== null) bot.sendChat(S(row.response).replaceAll('&{username}', data.user.username).s);
             });
         } else if (config.cleverbot.enabled === true && S(data.message).contains('@' + bot.getSelf().username) === true) {
@@ -1090,6 +1095,38 @@ new DubAPI(config.login, function (err, bot) {
                         } else bot.sendChat(S(langfile.autoskip.resdjskip.not_enough_votes).replaceAll('&{more}', config.autoskip.resdjskip.condition.votes - skipvotes.length).s);
 
                     }
+                }
+            }
+
+        });
+
+        commands.push({
+            names: ['!lastplayed'],
+            hidden: false,
+            enabled: true,
+            matchStart: false,
+            desc: langfile.commanddesc.lastplayed,
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'skip')) {
+                    var split = data.message.trim().split(' ');
+                    if (split.length === 1) {
+                        Track.find({where: {dub_id: bot.getMedia().id}}).then(function (track) {
+                            if (track !== null && track !== undefined) {
+                                if (track.last_played !== null && track.last_played !== undefined)bot.sendChat(S(langfile.lastplayed.default).replaceAll('&{time}', moment(track.last_played).to(moment())).s);
+                                else bot.sendChat(langfile.lastplayed.not_played_before);
+                            } else bot.sendChat(langfile.lastplayed.error);
+                        });
+                    } else if (split.length === 2) {
+                        var tid = parseInt(split[1]);
+                        if (tid !== undefined && isNaN(tid) === false) {
+                            Track.find({where: {id: tid}}).then(function (track) {
+                                if (track !== null && track !== undefined) {
+                                    if (track.last_played !== null && track.last_played !== undefined)bot.sendChat(S(langfile.lastplayed.default).replaceAll('&{time}', moment(track.last_played).to(moment())).s);
+                                    else bot.sendChat(langfile.lastplayed.not_played_before);
+                                } else bot.sendChat(langfile.lastplayed.error);
+                            });
+                        } else bot.sendChat(langfile.error.argument);
+                    } else bot.sendChat(langfile.error.argument);
                 }
             }
 
