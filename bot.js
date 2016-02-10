@@ -1544,6 +1544,9 @@ new DubAPI(config.login, function (err, bot) {
                     } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined) {
                         bot.moderateSkip();
                         bot.sendChat(S(langfile.autoskip.history).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
+                        if(config.autoskip.history.move_to !== -1){
+                            bot.moderateMoveDJ(dj.id, config.autoskip.history.move_to);
+                        }
                     }
                 }
             });
