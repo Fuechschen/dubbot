@@ -861,8 +861,8 @@ new DubAPI(config.login, function (err, bot) {
                         rows.forEach(function (user, index) {
                             afks += user.username;
                             if (index !== rows.length - 1) afks += ', ';
-                            if (afks.length > 2) bot.sendChat(S(langfile.afk.check).replaceAll('&{afks}', afks).s);
                         });
+                        if (afks.length > 2) bot.sendChat(S(langfile.afk.check).replaceAll('&{afks}', afks).s);
                     });
                 }
             }
@@ -950,14 +950,14 @@ new DubAPI(config.login, function (err, bot) {
         //tech commands
         commands.push({
             names: ['!ping'],
-            handler: function (data) {
-                if (bot.hasPermission(data.user, 'set-dj')) bot.sendChat(langfile.ping.default);
-            },
             hidden: true,
             enabled: true,
             matchStart: false,
             desc: langfile.commanddesc.ping,
-            perm: 'set-dj'
+            perm: 'set-dj',
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'set-dj')) bot.sendChat(langfile.ping.default);
+            }
         });
 
         commands.push({
@@ -1105,7 +1105,6 @@ new DubAPI(config.login, function (err, bot) {
                     else if (_.contains(skipvotes, data.user.id)) bot.sendChat(langfile.autoskip.resdjskip.already_voted);
                     else {
                         skipvotes.push(data.user.id);
-
                         if (skipvotes.length >= config.autoskip.resdjskip.condition.votes) {
                             bot.moderateSkip();
                             bot.sendChat(langfile.autoskip.resdjskip.skip);
@@ -1154,6 +1153,9 @@ new DubAPI(config.login, function (err, bot) {
         commands.push({
             names: ['!help'],
             desc: langfile.commanddesc.help,
+            hidden: false,
+            enabled: true,
+            matchStart: false,
             handler: function () {
                 if (commandtimeout.help === false) {
                     var mods = '';
@@ -1167,10 +1169,7 @@ new DubAPI(config.login, function (err, bot) {
                         commandtimeout.help = false
                     }, 10 * 1000);
                 }
-            },
-            hidden: false,
-            enabled: true,
-            matchStart: false
+            }
         });
 
         commands.push({
@@ -1215,6 +1214,10 @@ new DubAPI(config.login, function (err, bot) {
 
         commands.push({
             names: ['!link'],
+            hidden: false,
+            enabled: true,
+            matchStart: false,
+            desc: langfile.commanddesc.link,
             handler: function () {
                 if (bot.getRoomMeta().roomType === 'room') {
                     var media = bot.getMedia();
@@ -1229,16 +1232,10 @@ new DubAPI(config.login, function (err, bot) {
                                 } else bot.sendChat(langfile.error.default);
                             });
                         } else bot.sendChat(langfile.error.default);
-
                     } else bot.sendChat(langfile.link.no_media);
-
                 } else if (bot.getRoomMeta().roomType === 'iframe') bot.sendChat(S(langfile.link.iframe).replaceAll('&{link}', bot.getRoomMeta().roomEmbed).s);
                 else bot.sendChat(langfile.error.default);
-            },
-            hidden: false,
-            enabled: true,
-            matchStart: false,
-            desc: langfile.commanddesc.link
+            }
         });
 
         commands.push({
@@ -1418,7 +1415,6 @@ new DubAPI(config.login, function (err, bot) {
     }
 
     function timings() {
-
         afkcheck();
         checkactivemods();
         if (config.afkremoval.enabled === true) {
@@ -1432,7 +1428,6 @@ new DubAPI(config.login, function (err, bot) {
                 if (rows.length !== 0) bot.sendChat(rows[_.random(0, rows.length - 1)].message);
             });
         }
-
         var minutes = _.random(2, 10);
         autotimer = setTimeout(function () {
             timings();
@@ -1478,7 +1473,6 @@ new DubAPI(config.login, function (err, bot) {
                     User.update({removed_for_afk: true}, {where: {id: user.id}});
                 }
             });
-
             if (afks.length !== 0) bot.sendChat(afks.join(' ').trim() + langfile.afk.remove);
         });
     }
@@ -1499,7 +1493,7 @@ new DubAPI(config.login, function (err, bot) {
                 bot.sendChat(afk_names.join(' ').trim() + langfile.afk.kick);
 
                 afks.forEach(function (user) {
-                    if (bot.isStaff(user)) {
+                    if (bot.isStaff(user) && !bot.hasPermission(data.user, config.afkremoval.kick_ignore_permission)) {
                         var role = user.role;
                         bot.moderateUnsetRole(user.id, role, function (err) {
                             if (!err) {
@@ -1508,7 +1502,7 @@ new DubAPI(config.login, function (err, bot) {
                                 });
                             }
                         });
-                    }
+                    } else bot.moderateKickUser(user.id, langfile.afk.kick_msg);
                 });
             }
         });
@@ -1610,7 +1604,6 @@ new DubAPI(config.login, function (err, bot) {
                     thumbnail: queueobject.media.thumbnail,
                     songLength: queueobject.media.songLength
                 };
-
                 Track.findOrCreate({
                     where: {dub_id: queueobject.media.id},
                     defaults: trackdata
@@ -1676,7 +1669,6 @@ new DubAPI(config.login, function (err, bot) {
                                 bot.sendChat(S(langfile.points.command.gift).replaceAll('&{points_name}', config.points.name).replaceAll('&{amount}', amount).replaceAll('&{gifter}', gifter.username).replaceAll('&{reciever}', reciever.username).s);
                             });
                         } else bot.sendChat(S(langfile.points.command.gift_failed).replaceAll('&{points_name}', config.points.name).s);
-
                     });
                 }
                 break;
