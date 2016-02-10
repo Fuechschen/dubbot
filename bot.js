@@ -18,6 +18,8 @@ var duells = [];
 var skipable = true;
 var skipvotes = [];
 
+var activemods = 0;
+
 var commandtimeout = {
     callmod: false,
     help: false
@@ -113,7 +115,6 @@ new DubAPI(config.login, function (err, bot) {
                         bot.sendChat(S(langfile.chatfilter.link_protection).replaceAll('&{username}', data.user.username).s);
                         return;
                     } else if (config.chatfilter.images.enabled && config.chatfilter.images.regex.test(data.message.toLowerCase())) {
-                        console.log(2, config.chatfilter.images.regex.test(data.message.toLowerCase()));
                         setTimeout(function () {
                             deleteChatMessage(data.id, bot.getChatHistory())
                         }, config.chatfilter.images.timeout * 1000);
@@ -333,7 +334,12 @@ new DubAPI(config.login, function (err, bot) {
             command.handler(data, bot);
             console.log('[COMMAND] Executed command ' + command.names[0] + ' (' + data.message + ')');
         } else if (S(data.message).startsWith(config.options.customtext_trigger) === true) {
-            CustomText.find({where: {trigger: S(data.message).chompLeft(config.options.customtext_trigger).s, active: true}}).then(function (row) {
+            CustomText.find({
+                where: {
+                    trigger: S(data.message).chompLeft(config.options.customtext_trigger).s,
+                    active: true
+                }
+            }).then(function (row) {
                 if (row !== undefined && row !== null) bot.sendChat(S(row.response).replaceAll('&{username}', data.user.username).s);
             });
         } else if (config.cleverbot.enabled === true && S(data.message).contains('@' + bot.getSelf().username) === true) {
@@ -821,6 +827,26 @@ new DubAPI(config.login, function (err, bot) {
         });
 
         commands.push({
+            names: ['!shufflequeue'],
+            hidden: true,
+            enabled: true,
+            matchStart: false,
+            desc: langfile.commanddesc.shufflequeue,
+            perm: 'queue-order',
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'queue-order')) {
+                    bot.sendChat(S(langfile.shufflequeue.default).replaceAll('&{mod}', data.user.username));
+                    var queue = bot.getQueue();
+                    queue.forEach(function (queueobj) {
+                       setTimeout(function(){
+                           bot.moderateMoveDJ(queueobj.user.id, _.random(0, queue.length - 1));
+                       }, _.random(1, 8) * 1000);
+                    });
+                }
+            }
+        });
+
+        commands.push({
             names: ['!afkcheck'],
             hidden: true,
             enabled: true,
@@ -835,8 +861,8 @@ new DubAPI(config.login, function (err, bot) {
                         rows.forEach(function (user, index) {
                             afks += user.username;
                             if (index !== rows.length - 1) afks += ', ';
-                            if (afks.length > 2) bot.sendChat(S(langfile.afk.check).replaceAll('&{afks}', afks).s);
                         });
+                        if (afks.length > 2) bot.sendChat(S(langfile.afk.check).replaceAll('&{afks}', afks).s);
                     });
                 }
             }
@@ -924,14 +950,14 @@ new DubAPI(config.login, function (err, bot) {
         //tech commands
         commands.push({
             names: ['!ping'],
-            handler: function (data) {
-                if (bot.hasPermission(data.user, 'set-dj')) bot.sendChat(langfile.ping.default);
-            },
             hidden: true,
             enabled: true,
             matchStart: false,
             desc: langfile.commanddesc.ping,
-            perm: 'set-dj'
+            perm: 'set-dj',
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'set-dj')) bot.sendChat(langfile.ping.default);
+            }
         });
 
         commands.push({
@@ -1047,8 +1073,9 @@ new DubAPI(config.login, function (err, bot) {
                 if (bot.hasPermission(data.user, 'skip')) {
                     var split = data.message.trim().split(' ');
                     if (split.length > 1) {
+                        var query = _.rest(split, 1).join(' ').trim() + '%';
                         Track.findAll({
-                            where: {name: {$like: '%' + _.rest(split, 1).join(' ').trim() + '%'}},
+                            where: {$or: [{name: {$like: query}}, {source_id: query}]},
                             order: [['id', 'ASC']],
                             limit: 15
                         }).then(function (rows) {
@@ -1074,16 +1101,10 @@ new DubAPI(config.login, function (err, bot) {
             desc: langfile.commanddesc.voteskip,
             handler: function (data) {
                 if (config.autoskip.resdjskip.enabled === true && data.user.role !== undefined) {
-                    var staff = [];
-                    bot.getStaff().forEach(function (user) {
-                        if (bot.hasPermission(user, 'delete-chat') && user.id !== bot.getSelf.id) staff.push(user);
-                    });
-
-                    if (config.autoskip.resdjskip.condition.mods_online <= staff.length - 1) bot.sendChat(langfile.autoskip.resdjskip.too_many_mods);
+                    if (config.autoskip.resdjskip.condition.mods_online <= activemods) bot.sendChat(langfile.autoskip.resdjskip.too_many_mods);
                     else if (_.contains(skipvotes, data.user.id)) bot.sendChat(langfile.autoskip.resdjskip.already_voted);
                     else {
                         skipvotes.push(data.user.id);
-
                         if (skipvotes.length >= config.autoskip.resdjskip.condition.votes) {
                             bot.moderateSkip();
                             bot.sendChat(langfile.autoskip.resdjskip.skip);
@@ -1095,10 +1116,46 @@ new DubAPI(config.login, function (err, bot) {
 
         });
 
+        commands.push({
+            names: ['!lastplayed'],
+            hidden: false,
+            enabled: true,
+            matchStart: false,
+            desc: langfile.commanddesc.lastplayed,
+            perm: 'skip',
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'skip')) {
+                    var split = data.message.trim().split(' ');
+                    if (split.length === 1) {
+                        Track.find({where: {dub_id: bot.getMedia().id}}).then(function (track) {
+                            if (track !== null && track !== undefined) {
+                                if (track.last_played !== null && track.last_played !== undefined)bot.sendChat(S(langfile.lastplayed.default).replaceAll('&{time}', moment(track.last_played).to(moment())).s);
+                                else bot.sendChat(langfile.lastplayed.not_played_before);
+                            } else bot.sendChat(langfile.lastplayed.error);
+                        });
+                    } else if (split.length === 2) {
+                        var tid = parseInt(split[1]);
+                        if (tid !== undefined && isNaN(tid) === false) {
+                            Track.find({where: {id: tid}}).then(function (track) {
+                                if (track !== null && track !== undefined) {
+                                    if (track.last_played !== null && track.last_played !== undefined)bot.sendChat(S(langfile.lastplayed.default).replaceAll('&{time}', moment(track.last_played).to(moment())).s);
+                                    else bot.sendChat(langfile.lastplayed.not_played_before);
+                                } else bot.sendChat(langfile.lastplayed.error);
+                            });
+                        } else bot.sendChat(langfile.error.argument);
+                    } else bot.sendChat(langfile.error.argument);
+                }
+            }
+
+        });
+
         //user commands
         commands.push({
             names: ['!help'],
             desc: langfile.commanddesc.help,
+            hidden: false,
+            enabled: true,
+            matchStart: false,
             handler: function () {
                 if (commandtimeout.help === false) {
                     var mods = '';
@@ -1112,10 +1169,7 @@ new DubAPI(config.login, function (err, bot) {
                         commandtimeout.help = false
                     }, 10 * 1000);
                 }
-            },
-            hidden: false,
-            enabled: true,
-            matchStart: false
+            }
         });
 
         commands.push({
@@ -1160,6 +1214,10 @@ new DubAPI(config.login, function (err, bot) {
 
         commands.push({
             names: ['!link'],
+            hidden: false,
+            enabled: true,
+            matchStart: false,
+            desc: langfile.commanddesc.link,
             handler: function () {
                 if (bot.getRoomMeta().roomType === 'room') {
                     var media = bot.getMedia();
@@ -1174,16 +1232,10 @@ new DubAPI(config.login, function (err, bot) {
                                 } else bot.sendChat(langfile.error.default);
                             });
                         } else bot.sendChat(langfile.error.default);
-
                     } else bot.sendChat(langfile.link.no_media);
-
                 } else if (bot.getRoomMeta().roomType === 'iframe') bot.sendChat(S(langfile.link.iframe).replaceAll('&{link}', bot.getRoomMeta().roomEmbed).s);
                 else bot.sendChat(langfile.error.default);
-            },
-            hidden: false,
-            enabled: true,
-            matchStart: false,
-            desc: langfile.commanddesc.link
+            }
         });
 
         commands.push({
@@ -1363,9 +1415,9 @@ new DubAPI(config.login, function (err, bot) {
     }
 
     function timings() {
-
+        afkcheck();
+        checkactivemods();
         if (config.afkremoval.enabled === true) {
-            afkcheck();
             if (config.afkremoval.kick === true) kickforafk();
             warnafk();
             removeafk();
@@ -1376,7 +1428,6 @@ new DubAPI(config.login, function (err, bot) {
                 if (rows.length !== 0) bot.sendChat(rows[_.random(0, rows.length - 1)].message);
             });
         }
-
         var minutes = _.random(2, 10);
         autotimer = setTimeout(function () {
             timings();
@@ -1422,7 +1473,6 @@ new DubAPI(config.login, function (err, bot) {
                     User.update({removed_for_afk: true}, {where: {id: user.id}});
                 }
             });
-
             if (afks.length !== 0) bot.sendChat(afks.join(' ').trim() + langfile.afk.remove);
         });
     }
@@ -1443,7 +1493,7 @@ new DubAPI(config.login, function (err, bot) {
                 bot.sendChat(afk_names.join(' ').trim() + langfile.afk.kick);
 
                 afks.forEach(function (user) {
-                    if (bot.isStaff(user)) {
+                    if (bot.isStaff(user) && !bot.hasPermission(data.user, config.afkremoval.kick_ignore_permission)) {
                         var role = user.role;
                         bot.moderateUnsetRole(user.id, role, function (err) {
                             if (!err) {
@@ -1452,9 +1502,17 @@ new DubAPI(config.login, function (err, bot) {
                                 });
                             }
                         });
-                    }
+                    } else bot.moderateKickUser(user.id, langfile.afk.kick_msg);
                 });
             }
+        });
+    }
+
+    function checkactivemods() {
+        bot.getStaff().forEach(function (staffmem) {
+            User.find({where: {userid: staffmem.id}}).then(function (staff) {
+                if (staff.afk === false) activemods = activemods + 1;
+            });
         });
     }
 
@@ -1546,7 +1604,6 @@ new DubAPI(config.login, function (err, bot) {
                     thumbnail: queueobject.media.thumbnail,
                     songLength: queueobject.media.songLength
                 };
-
                 Track.findOrCreate({
                     where: {dub_id: queueobject.media.id},
                     defaults: trackdata
@@ -1612,7 +1669,6 @@ new DubAPI(config.login, function (err, bot) {
                                 bot.sendChat(S(langfile.points.command.gift).replaceAll('&{points_name}', config.points.name).replaceAll('&{amount}', amount).replaceAll('&{gifter}', gifter.username).replaceAll('&{reciever}', reciever.username).s);
                             });
                         } else bot.sendChat(S(langfile.points.command.gift_failed).replaceAll('&{points_name}', config.points.name).s);
-
                     });
                 }
                 break;

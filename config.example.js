@@ -53,6 +53,7 @@ module.exports = {
         enabled: true,
         timeout: 3600,   //time in seconds
         kick: true,
+        kick_ignore_permission: 'skip',  //Permission to not be kicked for being afk
         chat_ignore_phrase: "[AFK]",   //bot will ignore messages that include this
         action: "REMOVEDJ",  //"REMOVEDJ" to remove the dj and clear his queue, "PAUSEUSERQUEUE" to remove the DJ without clearing his queue
         afk_message: {       //activate integrated afk message
