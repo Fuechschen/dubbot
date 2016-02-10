@@ -115,7 +115,6 @@ new DubAPI(config.login, function (err, bot) {
                         bot.sendChat(S(langfile.chatfilter.link_protection).replaceAll('&{username}', data.user.username).s);
                         return;
                     } else if (config.chatfilter.images.enabled && config.chatfilter.images.regex.test(data.message.toLowerCase())) {
-                        console.log(2, config.chatfilter.images.regex.test(data.message.toLowerCase()));
                         setTimeout(function () {
                             deleteChatMessage(data.id, bot.getChatHistory())
                         }, config.chatfilter.images.timeout * 1000);
