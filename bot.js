@@ -18,6 +18,8 @@ var duells = [];
 var skipable = true;
 var skipvotes = [];
 
+var activemods = 0;
+
 var commandtimeout = {
     callmod: false,
     help: false
@@ -1079,12 +1081,7 @@ new DubAPI(config.login, function (err, bot) {
             desc: langfile.commanddesc.voteskip,
             handler: function (data) {
                 if (config.autoskip.resdjskip.enabled === true && data.user.role !== undefined) {
-                    var staff = [];
-                    bot.getStaff().forEach(function (user) {
-                        if (bot.hasPermission(user, 'delete-chat') && user.id !== bot.getSelf.id) staff.push(user);
-                    });
-
-                    if (config.autoskip.resdjskip.condition.mods_online <= staff.length - 1) bot.sendChat(langfile.autoskip.resdjskip.too_many_mods);
+                    if (config.autoskip.resdjskip.condition.mods_online <= activemods) bot.sendChat(langfile.autoskip.resdjskip.too_many_mods);
                     else if (_.contains(skipvotes, data.user.id)) bot.sendChat(langfile.autoskip.resdjskip.already_voted);
                     else {
                         skipvotes.push(data.user.id);
@@ -1106,6 +1103,7 @@ new DubAPI(config.login, function (err, bot) {
             enabled: true,
             matchStart: false,
             desc: langfile.commanddesc.lastplayed,
+            perm: 'skip',
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'skip')) {
                     var split = data.message.trim().split(' ');
@@ -1401,8 +1399,9 @@ new DubAPI(config.login, function (err, bot) {
 
     function timings() {
 
+        afkcheck();
+        checkactivemods();
         if (config.afkremoval.enabled === true) {
-            afkcheck();
             if (config.afkremoval.kick === true) kickforafk();
             warnafk();
             removeafk();
@@ -1492,6 +1491,14 @@ new DubAPI(config.login, function (err, bot) {
                     }
                 });
             }
+        });
+    }
+
+    function checkactivemods() {
+        bot.getStaff().forEach(function(staffmem){
+           User.find({where: {userid: staffmem.id}}).then(function(staff){
+               if(staff.afk === false) activemods = activemods + 1;
+           }) ;
         });
     }
 
