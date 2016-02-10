@@ -1054,8 +1054,9 @@ new DubAPI(config.login, function (err, bot) {
                 if (bot.hasPermission(data.user, 'skip')) {
                     var split = data.message.trim().split(' ');
                     if (split.length > 1) {
+                        var query = _.rest(split, 1).join(' ').trim() + '%';
                         Track.findAll({
-                            where: {name: {$like: '%' + _.rest(split, 1).join(' ').trim() + '%'}},
+                            where: {$or: [{name: {$like: query}}, {source_id: query}]},
                             order: [['id', 'ASC']],
                             limit: 15
                         }).then(function (rows) {
