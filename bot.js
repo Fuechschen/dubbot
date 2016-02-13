@@ -218,9 +218,9 @@ new DubAPI(config.login, function (err, bot) {
 
         if (config.autodj.enabled === true && config.autodj.playlistid !== '') {
             if (bot.getQueue().length - 1 >= config.autodj.limits.max && bot.getQueue().length - 1 <= config.autodj.limits.min) {
-                queuePlaylist(config.autodj.playlistid);
-                shufflePlaylist();
-            } else clearQueue();
+                bot.queuePlaylist(config.autodj.playlistid);
+                bot.joinQueue(true);
+            } else bot.joinQueue(false);
         }
     });
 
@@ -469,7 +469,7 @@ new DubAPI(config.login, function (err, bot) {
                     if (split.length === 1) bot.sendChat(langfile.error.argument);
                     else {
                         var trackid = parseInt(split[1]);
-                        if (trackid !== undefined && isNaN(id) === false) {
+                        if (trackid !== undefined && isNaN(trackid) === false) {
                             Track.find({where: {id: trackid}}).then(function (row) {
                                 if (split.length === 2) {
                                     Track.update({blacklisted: true}, {where: {id: trackid}});
@@ -1695,34 +1695,6 @@ new DubAPI(config.login, function (err, bot) {
             }
             else bot.moderateDeleteChat(chatid);
         } else bot.moderateDeleteChat(chatid);
-    }
-
-
-    function queuePlaylist(playlistid) {
-        bot._.reqHandler.queue({
-            method: 'POST',
-            url: 'https://api.dubtrack.fm/room/%RID%/queueplaylist/' + playlistid
-        }, function (err) {
-            return !err;
-        });
-    }
-
-    function clearQueue() {
-        bot._.reqHandler.queue({
-            method: 'DELETE',
-            url: 'https://api.dubtrack.fm/user/session/room/%RID%/queue/order'
-        }, function (err) {
-            return !err;
-        });
-    }
-
-    function shufflePlaylist() {
-        bot._.reqHandler.queue({
-            method: 'ORDER',
-            url: 'https://api.dubtrack.fm/user/session/room/%RID%/queue/order'
-        }, function (err) {
-            return !err;
-        });
     }
 });
 
