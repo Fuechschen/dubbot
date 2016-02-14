@@ -271,6 +271,7 @@ new DubAPI(config.login, function (err, bot) {
             removed_for_afk: false,
             status: false
         }, {where: {userid: data.user.id}});
+        if(config.queuecheck.remove_left_djs && bot.getQueuePosition(data.user.id) !== -1) bot.moderatePauseDJ(data.user.id);
     });
 
     bot.on('room-update', function (data) {

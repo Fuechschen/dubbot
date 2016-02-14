@@ -66,7 +66,8 @@ module.exports = {
         blacklisted_reason: "@&{username}, your song is on our blacklist for \"&{reason}\" and will be removed!",
         blacklisted: "@&{username}, your song is on our blacklist and will be removed!",
         history: "@&{username}, the track &{track} was played recently and will be removed!",
-        length: "@&{username}, your song '&{track}' is too long and will be removed!"
+        length: "@&{username}, your song '&{track}' is too long and will be removed!",
+        removed_for_leave: "&{username} will be removed from the queue because he left the room."
     },
     link: {
         default: "Link to the current song: &{link}",
