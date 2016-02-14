@@ -25,6 +25,8 @@ var commandtimeout = {
     help: false
 };
 
+var allowvoteskip = true;
+
 var spamfilterdata = {};
 
 var sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
@@ -289,7 +291,7 @@ new DubAPI(config.login, function (err, bot) {
     });
 
     bot.on('room_playlist-dub', function () {
-        if (config.autoskip.votes.enabled) {
+        if (config.autoskip.votes.enabled && allowvoteskip) {
             var dj = bot.getDJ();
             var track = bot.getMedia();
             var score = bot.getScore();
@@ -888,6 +890,22 @@ new DubAPI(config.login, function (err, bot) {
                         });
                     } else bot.sendChat(langfile.error.argument);
 
+                }
+            }
+        });
+
+        commands.push({
+            names: ['!togglevoteskip'],
+            hidden: true,
+            enabled: true,
+            matchStart: true,
+            desc: langfile.commanddesc.togglevoteskip,
+            perm: 'queue-order',
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'queue-order')) {
+                    allowvoteskip = !allowvoteskip;
+                    if(allowvoteskip) bot.sendChat(langfile.autoskip.vote.enable);
+                    else bot.sendChat(langfile.autoskip.vote.disable);
                 }
             }
         });
