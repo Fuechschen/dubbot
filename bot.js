@@ -320,6 +320,12 @@ new DubAPI(config.login, function (err, bot) {
         }
     });
 
+    bot.on('room_playlist-queue-update-dub', function(data){
+        User.update({in_queue: false}, {where: {in_queue: true}});
+        data.queue.forEach(function(qobj){
+            User.update({in_queue: true}, {where: {userid: qobj.uid}});
+        });
+    });
 
     //functions
 
@@ -923,14 +929,14 @@ new DubAPI(config.login, function (err, bot) {
                     var time = 2;
                     if (split.length === 2) time = parseInt(split[1].trim());
                     setTimeout(function () {
-                        var queue = bot.getQueue();
-                        var mover = queue[_.random(0, queue.length - 1)];
-                        if (mover === undefined) bot.sendChat(langfile.lottery.no_winner);
-                        else {
-                            bot.sendChat(S(langfile.lottery.victory).replaceAll('&{username}', mover.user.username).s);
-                            bot.moderateMoveDJ(mover.uid, 0);
-                            if (config.points.enabled && config.points.lottery) points_manipulator("award", config.points.lottery_reward, [mover.user]);
-                        }
+                        User.findAll({where: {in_queue: true, status: true}}).then(function(users){
+                            var mover = users[_.random(0, users.length - 1)];
+                            if (mover !== undefined) {
+                                bot.sendChat(S(langfile.lottery.victory).replaceAll('&{username}', mover.username).s);
+                                bot.moderateMoveDJ(mover.userid, 0);
+                                if (config.points.enabled && config.points.lottery) points_manipulator("award", config.points.lottery_reward, [bot.getUser(mover.userid)]);
+                            } else bot.sendChat(langfile.lottery.no_winner);
+                        });
                     }, time * 60 * 1000);
                     bot.sendChat(S(langfile.lottery.started).replaceAll('&{time}', time).s);
                 }
@@ -950,15 +956,14 @@ new DubAPI(config.login, function (err, bot) {
                     var time = 2;
                     if (split.length === 2) time = parseInt(split[1].trim());
                     setTimeout(function () {
-                        var queue = bot.getQueue();
-                        var moverpos = _.random(1, queue.length - 1);
-                        var mover = queue[moverpos];
-                        if (mover === undefined) bot.sendChat(langfile.roulette.no_winner);
-                        else {
-                            bot.sendChat(S(langfile.roulette.victory).replaceAll('&{username}', mover.user.username).s);
-                            bot.moderateMoveDJ(mover.uid, _.random(0, moverpos));
-                            if (config.points.enabled && config.points.roulette) points_manipulator("award", config.points.roulette_reward, [mover.user]);
-                        }
+                        User.findAll({where: {in_queue: true, status: true}}).then(function(users){
+                            var mover = users[_.random(0, users.length - 1)];
+                            if (mover !== undefined) {
+                                bot.sendChat(S(langfile.roulette.victory).replaceAll('&{username}', mover.username).s);
+                                bot.moderateMoveDJ(mover.userid,  _.random(0, bot.getQueuePosition(mover.userid)));
+                                if (config.points.enabled && config.points.lottery) points_manipulator("award", config.points.roulette_reward, [bot.getUser(mover.userid)]);
+                            } else bot.sendChat(langfile.roulette.no_winner);
+                        });
                     }, time * 60 * 1000);
                     bot.sendChat(S(langfile.roulette.started).replaceAll('&{time}', time).s);
                 }
