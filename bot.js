@@ -25,6 +25,8 @@ var commandtimeout = {
     help: false
 };
 
+var allowvoteskip = true;
+
 var spamfilterdata = {};
 
 var sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
@@ -218,9 +220,9 @@ new DubAPI(config.login, function (err, bot) {
 
         if (config.autodj.enabled === true && config.autodj.playlistid !== '') {
             if (bot.getQueue().length - 1 >= config.autodj.limits.max && bot.getQueue().length - 1 <= config.autodj.limits.min) {
-                queuePlaylist(config.autodj.playlistid);
-                shufflePlaylist();
-            } else clearQueue();
+                bot.queuePlaylist(config.autodj.playlistid);
+                bot.joinQueue(true);
+            } else bot.joinQueue(false);
         }
     });
 
@@ -269,6 +271,7 @@ new DubAPI(config.login, function (err, bot) {
             removed_for_afk: false,
             status: false
         }, {where: {userid: data.user.id}});
+        if(config.queuecheck.remove_left_djs && bot.getQueuePosition(data.user.id) !== -1) bot.moderatePauseDJ(data.user.id);
     });
 
     bot.on('room-update', function (data) {
@@ -289,7 +292,7 @@ new DubAPI(config.login, function (err, bot) {
     });
 
     bot.on('room_playlist-dub', function () {
-        if (config.autoskip.votes.enabled) {
+        if (config.autoskip.votes.enabled && allowvoteskip) {
             var dj = bot.getDJ();
             var track = bot.getMedia();
             var score = bot.getScore();
@@ -469,7 +472,7 @@ new DubAPI(config.login, function (err, bot) {
                     if (split.length === 1) bot.sendChat(langfile.error.argument);
                     else {
                         var trackid = parseInt(split[1]);
-                        if (trackid !== undefined && isNaN(id) === false) {
+                        if (trackid !== undefined && isNaN(trackid) === false) {
                             Track.find({where: {id: trackid}}).then(function (row) {
                                 if (split.length === 2) {
                                     Track.update({blacklisted: true}, {where: {id: trackid}});
@@ -888,6 +891,22 @@ new DubAPI(config.login, function (err, bot) {
                         });
                     } else bot.sendChat(langfile.error.argument);
 
+                }
+            }
+        });
+
+        commands.push({
+            names: ['!togglevoteskip'],
+            hidden: true,
+            enabled: true,
+            matchStart: true,
+            desc: langfile.commanddesc.togglevoteskip,
+            perm: 'queue-order',
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'queue-order')) {
+                    allowvoteskip = !allowvoteskip;
+                    if(allowvoteskip) bot.sendChat(langfile.autoskip.vote.enable);
+                    else bot.sendChat(langfile.autoskip.vote.disable);
                 }
             }
         });
@@ -1544,6 +1563,9 @@ new DubAPI(config.login, function (err, bot) {
                     } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined) {
                         bot.moderateSkip();
                         bot.sendChat(S(langfile.autoskip.history).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
+                        if(config.autoskip.history.move_to !== -1){
+                            bot.moderateMoveDJ(dj.id, config.autoskip.history.move_to);
+                        }
                     }
                 }
             });
@@ -1692,34 +1714,6 @@ new DubAPI(config.login, function (err, bot) {
             }
             else bot.moderateDeleteChat(chatid);
         } else bot.moderateDeleteChat(chatid);
-    }
-
-
-    function queuePlaylist(playlistid) {
-        bot._.reqHandler.queue({
-            method: 'POST',
-            url: 'https://api.dubtrack.fm/room/%RID%/queueplaylist/' + playlistid
-        }, function (err) {
-            return !err;
-        });
-    }
-
-    function clearQueue() {
-        bot._.reqHandler.queue({
-            method: 'DELETE',
-            url: 'https://api.dubtrack.fm/user/session/room/%RID%/queue/order'
-        }, function (err) {
-            return !err;
-        });
-    }
-
-    function shufflePlaylist() {
-        bot._.reqHandler.queue({
-            method: 'ORDER',
-            url: 'https://api.dubtrack.fm/user/session/room/%RID%/queue/order'
-        }, function (err) {
-            return !err;
-        });
     }
 });
 

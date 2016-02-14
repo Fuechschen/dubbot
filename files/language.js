@@ -49,6 +49,8 @@ module.exports = {
         stuck_song: "&{track} seems to broken. Skipping...",
         vote: {
             reach_limit: "@&{username}, your track &{track} has reached the downvotelimit.",
+            disable: "Voteskip is now disabled!",
+            enable: "Voteskip is now enabled!"
         },
         timelimit: {
             default: "@&{username}, your track &{track}is too long!"
@@ -64,7 +66,8 @@ module.exports = {
         blacklisted_reason: "@&{username}, your song is on our blacklist for \"&{reason}\" and will be removed!",
         blacklisted: "@&{username}, your song is on our blacklist and will be removed!",
         history: "@&{username}, the track &{track} was played recently and will be removed!",
-        length: "@&{username}, your song '&{track}' is too long and will be removed!"
+        length: "@&{username}, your song '&{track}' is too long and will be removed!",
+        removed_for_leave: "&{username} will be removed from the queue because he left the room."
     },
     link: {
         default: "Link to the current song: &{link}",
@@ -173,7 +176,8 @@ module.exports = {
         queueban: "Command for managing QueueBans.",
         kick: "Kicks the given user, reomving his rank if necessaray",
         lastplayed: "Gives the last time a song was played.",
-        shufflequeue: "Suffles the room queue."
+        shufflequeue: "Suffles the room queue.",
+        togglevoteskip: "Toggles voteskip."
     },
     points: {
         award: "&{username} was arwarded &{amount} &{points_name}.",

@@ -23,8 +23,8 @@ module.exports = {
     autoskip: {
         history: {
             enabled: true,
-            labeled: true,
-            time: 120   //time in minutes
+            time: 120,   //time in minutes
+            move_to: 2   //moves skipped djs back to this position, set to -1 to disable
         },
         timelimit: {
             enabled: true,
