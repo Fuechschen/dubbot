@@ -278,7 +278,6 @@ new DubAPI(config.login, function (err, bot) {
         console.log('[ROOM-UPDATE]', JSON.stringify(data));
     });
 
-
     bot.on('user-unmute', function (data) {
         if (data.user && spamfilterdata[data.user.id]) spamfilterdata[data.user.id].setMuted(false);
     });
@@ -651,7 +650,7 @@ new DubAPI(config.login, function (err, bot) {
                                             });
                                         }
                                     });
-                                } else got.moderateKickUser(user.userid, _.rest(split, 2).join(' ').trim());
+                                } else bot.moderateKickUser(user.userid, _.rest(split, 2).join(' ').trim());
                             } else bot.sendChat(langfile.error.argument);
                         });
                     } else bot.sendChat(langfile.error.argument);
@@ -765,7 +764,7 @@ new DubAPI(config.login, function (err, bot) {
                             CustomText.update({active: false}, {where: {trigger: split[2]}});
                             bot.sendChat(langfile.customtext.disable);
                         } else bot.sendChat(langfile.error.argument);
-                    } else if (split.lenght >= 4) {
+                    } else if (split.length >= 4) {
                         if (split[1] === 'add') {
                             CustomText.create({trigger: split[2], response: _.rest(split, 3).join(' ').trim()});
                             bot.sendChat(langfile.customtext.add);
@@ -774,7 +773,7 @@ new DubAPI(config.login, function (err, bot) {
                             bot.sendChat(langfile.customtext.update);
                         } else if (split[1] === 'append') {
                             CustomText.find({where: {trigger: split[2]}}).then(function (ct) {
-                                CustomText.update({response: ct.response + _.rest(split, 3).join(' ')});
+                                CustomText.update({response: ct.response + _.rest(split, 3).join(' ')}, {where: {trigger: split[2]}});
                                 bot.sendChat(langfile.customtext.append);
                             });
                         } else bot.sendChat(langfile.error.argument);
@@ -1512,7 +1511,7 @@ new DubAPI(config.login, function (err, bot) {
                 bot.sendChat(afk_names.join(' ').trim() + langfile.afk.kick);
 
                 afks.forEach(function (user) {
-                    if (bot.isStaff(user) && !bot.hasPermission(data.user, config.afkremoval.kick_ignore_permission)) {
+                    if (bot.isStaff(user) && !bot.hasPermission(user, config.afkremoval.kick_ignore_permission)) {
                         var role = user.role;
                         bot.moderateUnsetRole(user.id, role, function (err) {
                             if (!err) {
