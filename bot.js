@@ -25,7 +25,11 @@ var commandtimeout = {
     help: false
 };
 
-var allowvoteskip = true;
+var toggle = {
+    voteskip: true,
+    historyskip: true,
+    rdjskip: true
+};
 
 var spamfilterdata = {};
 
@@ -294,7 +298,7 @@ new DubAPI(config.login, function (err, bot) {
     });
 
     bot.on('room_playlist-dub', function () {
-        if (config.autoskip.votes.enabled && allowvoteskip) {
+        if (config.autoskip.votes.enabled && toggle.voteskip) {
             var dj = bot.getDJ();
             var track = bot.getMedia();
             var score = bot.getScore();
@@ -400,6 +404,17 @@ new DubAPI(config.login, function (err, bot) {
                         }, 3 * 1000);
                     } else {
                         Reputation.create({user_id: dj.id, mod_id: data.user.id, type: 'modskip', message: 'Skipped by ' + data.user.username});
+                    }
+                } else if (config.autoskip.resdjskip.enabled && bot.hasPermission(data.user, 'set-dj') && toggle.rdjskip) {
+                    if (config.autoskip.resdjskip.condition.mods_online <= activemods) bot.sendChat(langfile.autoskip.resdjskip.too_many_mods);
+                    else if (_.contains(skipvotes, data.user.id)) bot.sendChat(langfile.autoskip.resdjskip.already_voted);
+                    else {
+                        skipvotes.push(data.user.id);
+                        if (skipvotes.length >= config.autoskip.resdjskip.condition.votes) {
+                            bot.moderateSkip();
+                            bot.sendChat(langfile.autoskip.resdjskip.skip);
+                        } else bot.sendChat(S(langfile.autoskip.resdjskip.not_enough_votes).replaceAll('&{more}', config.autoskip.resdjskip.condition.votes - skipvotes.length).s);
+
                     }
                 }
             }
@@ -595,8 +610,8 @@ new DubAPI(config.login, function (err, bot) {
                 if (bot.hasPermission(data.user, 'delete-chat')) {
                     var split = data.message.trim().split(' ');
                     if (split.length === 2) {
-                        User.find({where: {username: S(split[1]).replaceAll('@', '').s}}).then(function (user) {
-                            if (user !== undefined && user !== null) cleanchat(user.id);
+                        User.find({where: {username: {$like: S(split[1]).replaceAll('@', '').s}}}).then(function (user) {
+                            if (user !== undefined && user !== null) cleanchat(user.userid);
                             else bot.sendChat(langfile.error.argument);
                         });
                     } else bot.sendChat(langfile.error.argument);
@@ -915,17 +930,35 @@ new DubAPI(config.login, function (err, bot) {
         });
 
         commands.push({
-            names: ['!togglevoteskip'],
+            names: ['!toggle'],
             hidden: true,
             enabled: true,
             matchStart: true,
-            desc: langfile.commanddesc.togglevoteskip,
+            desc: langfile.commanddesc.toggle,
             perm: 'queue-order',
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'queue-order')) {
-                    allowvoteskip = !allowvoteskip;
-                    if(allowvoteskip) bot.sendChat(langfile.autoskip.vote.enable);
-                    else bot.sendChat(langfile.autoskip.vote.disable);
+                    var split = data.message.trim().split(' ');
+                    switch (split[1]){
+                        case 'voteskip':
+                            toggle.voteskip = !toggle.voteskip;
+                            if(toggle.voteskip) bot.sendChat(langfile.autoskip.vote.enable);
+                            else bot.sendChat(langfile.autoskip.vote.disable);
+                            break;
+                        case 'historyskip':
+                            toggle.historyskip = !toggle.historyskip;
+                            if(toggle.historyskip) bot.sendChat(langfile.autoskip.history.enable);
+                            else bot.sendChat(langfile.autoskip.history.disable);
+                            break;
+                        case 'rdjskip':
+                            toggle.rdjskip = !toggle.rdjskip;
+                            if(toggle.rdjskip) bot.sendChat(langfile.autoskip.resdjskip.enable);
+                            else bot.sendChat(langfile.autoskip.resdjskip.disable);
+                            break;
+                        default:
+                            bot.sendChat(langfile.error.argument);
+                            break;
+                    }
                 }
             }
         });
@@ -1136,8 +1169,9 @@ new DubAPI(config.login, function (err, bot) {
             enabled: true,
             matchStart: false,
             desc: langfile.commanddesc.voteskip,
+            perm: 'set-dj',
             handler: function (data) {
-                if (config.autoskip.resdjskip.enabled && data.user.role !== undefined) {
+                if (config.autoskip.resdjskip.enabled && bot.hasPermission(data.user, 'set-dj') && toggle.rdjskip) {
                     if (config.autoskip.resdjskip.condition.mods_online <= activemods) bot.sendChat(langfile.autoskip.resdjskip.too_many_mods);
                     else if (_.contains(skipvotes, data.user.id)) bot.sendChat(langfile.autoskip.resdjskip.already_voted);
                     else {
@@ -1579,9 +1613,9 @@ new DubAPI(config.login, function (err, bot) {
                         bot.moderateSkip();
                         if (track.bl_reason !== undefined && track.bl_reason !== null) bot.sendChat(S(langfile.blacklisted.is_blacklisted).replaceAll('&{track}', track.name).replaceAll('&{dj}', dj.username).replaceAll('&{reason}', track.bl_reason).s);
                         else bot.sendChat(S(langfile.blacklisted.is_blacklisted).replaceAll('&{track}', track.name).replaceAll('&{dj}', dj.username).s);
-                    } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined) {
+                    } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined && toggle.historyskip) {
                         bot.moderateSkip();
-                        bot.sendChat(S(langfile.autoskip.history).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
+                        bot.sendChat(S(langfile.autoskip.history.default).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
                         if(config.autoskip.history.move_to !== -1){
                             bot.moderateMoveDJ(dj.id, config.autoskip.history.move_to);
                         }
@@ -1626,7 +1660,7 @@ new DubAPI(config.login, function (err, bot) {
                                     else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
                                     if (track.bl_reason !== undefined && track.bl_reason !== null) bot.sendChat(S(langfile.queuecheck.blacklisted_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).replaceAll('&{reason}', track.bl_reason).s);
                                     else bot.sendChat(S(langfile.queuecheck.blacklisted).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
-                                } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined) {
+                                } else if (config.autoskip.history.enabled && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined && toggle.historyskip) {
                                     if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
                                     else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
                                     else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);

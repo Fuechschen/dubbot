@@ -1,6 +1,6 @@
 module.exports = {
     momentjs: {
-      locale: 'en'
+        locale: 'en'
     },
     blacklist: {
         blacklisted: "@&{dj}, the track '&{track}' was blacklisted by &{moderator}",
@@ -45,7 +45,11 @@ module.exports = {
         definition_found: "[ &{word} ] &{definition}"
     },
     autoskip: {
-        history: "@&{username}, your track &{track} was already played recently.",
+        history: {
+            default: "@&{username}, your track &{track} was already played recently.",
+            enable: "Historyskip is now enabled!",
+            disable: "Historyskip is now disabled!"
+        },
         stuck_song: "&{track} seems to broken. Skipping...",
         vote: {
             reach_limit: "@&{username}, your track &{track} has reached the downvotelimit.",
@@ -59,7 +63,9 @@ module.exports = {
             not_enough_votes: "&{more} more votes required to skip.",
             skip: "Our residents decided to skip.",
             too_many_mods: "Currently, the amount of mods in the room is high enough, so this function is disabled",
-            already_voted: "You already voted to skip!"
+            already_voted: "You already voted to skip!",
+            enable: "ResDjSkip is now enabled!",
+            disable: "ResDjSkip is now disabled!"
         }
     },
     queuecheck: {
@@ -136,7 +142,7 @@ module.exports = {
         default: "@djs, &{moderator} cleared and locked the queue. You will be removed within the next few seconds. If you don't want to loose your personal queue, pause it NOW!"
     },
     commands: {
-      default: "Available commands: &{commands}",
+        default: "Available commands: &{commands}",
         desc: "Alias: '&{alias}', &{desc}",
         not_found: "Command not found."
     },
@@ -177,7 +183,7 @@ module.exports = {
         kick: "Kicks the given user, reomving his rank if necessaray",
         lastplayed: "Gives the last time a song was played.",
         shufflequeue: "Suffles the room queue.",
-        togglevoteskip: "Toggles voteskip."
+        toggle: "Toggles various functions."
     },
     points: {
         award: "&{username} was arwarded &{amount} &{points_name}.",
