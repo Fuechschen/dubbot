@@ -162,5 +162,9 @@ module.exports = {
             mute: true,    //delete users chat if muted
             kick: true     //delete users chat if kicked
         }
+    },
+    exemptions: {
+        welcome: [],     //put userids here, which shouldn't be welcomed by the bot
+        chatfilter: []   //pu userids here, which shouldn't be affected by the chatfilter
     }
 };
