@@ -47,6 +47,7 @@ var RandomMessage = sequelize.import(__dirname + '/models/RandomMessage');
 var Track = sequelize.import(__dirname + '/models/Track');
 var User = sequelize.import(__dirname + '/models/User');
 var QueueBan = sequelize.import(__dirname + '/models/QueueBan');
+var Reputation = sequelize.import(__dirname + '/models/Reputaion');
 
 QueueBan.belongsTo(User, {as: 'mod', foreignKey: 'mod_id'});
 QueueBan.belongsTo(User, {as: 'user', foreignKey: 'user_id'});
@@ -301,14 +302,17 @@ new DubAPI(config.login, function (err, bot) {
                 if (score.downdubs > config.autoskip.votes.condition) {
                     bot.moderateSkip();
                     bot.sendChat(S(langfile.autoskip.vote.reach_limit).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
+                    Reputation.create({user_id: dj.id, mod_id: bot.getSelf().id, type: 'RoomVoteskip', message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)});
                 }
             } else if (typeof config.autoskip.votes.condition === 'object') {
                 if (score.downdubs >= config.autoskip.votes.condition.max) {
                     bot.moderateSkip();
                     bot.sendChat(S(langfile.autoskip.vote.reach_limit).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
+                    Reputation.create({user_id: dj.id, mod_id: bot.getSelf().id, type: 'RoomVoteskip', message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)});
                 } else if (score.downdubs >= config.autoskip.votes.condition.min && (bot.getUsers().length) / score.downdubs > config.autoskip.votes.condition.ratio) {
                     bot.moderateSkip();
                     bot.sendChat(S(langfile.autoskip.vote.reach_limit).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
+                    Reputation.create({user_id: dj.id, mod_id: bot.getSelf().id, type: 'RoomVoteskip', message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)});
                 }
             } else if (typeof config.autoskip.votes.condition === 'function') {
                 score.usercount = bot.getUsers.length;
@@ -317,6 +321,7 @@ new DubAPI(config.login, function (err, bot) {
                 if (config.autoskip.votes.condition(score)) {
                     bot.moderateSkip();
                     bot.sendChat(S(langfile.autoskip.vote.reach_limit).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
+                    Reputation.create({user_id: dj.id, mod_id: bot.getSelf().id, type: 'RoomVoteskip', message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)});
                 }
             }
         }
@@ -391,7 +396,10 @@ new DubAPI(config.login, function (err, bot) {
                         var msg = split[1].trim();
                         setTimeout(function () {
                             bot.sendChat(S(_.findWhere(config.skipreasons, {reason: msg}).msg).replaceAll('&{dj}', dj.username).s);
+                            Reputation.create({user_id: dj.id, mod_id: data.user.id, type: 'modskip', message: 'Skipped by ' + data.user.username + ' with reason: ' + _.findWhere(config.skipreasons, {reason: msg}).msg});
                         }, 3 * 1000);
+                    } else {
+                        Reputation.create({user_id: dj.id, mod_id: data.user.id, type: 'modskip', message: 'Skipped by ' + data.user.username});
                     }
                 }
             }
@@ -417,10 +425,12 @@ new DubAPI(config.login, function (err, bot) {
                     if (split.length === 1) {
                         Track.update({blacklisted: true}, {where: {dub_id: track.id}});
                         bot.sendChat(S(langfile.blacklist.blacklisted).replaceAll('&{track}', track.name).replaceAll('&{moderator}', data.user.username).replaceAll('&{dj}', dj.username).s);
+                        Reputation.create({user_id: dj.id, mod_id: data.user.id, type: 'blacklist', message: data.user.username + ' blacklisted played track ' + track.name});
                     } else {
                         var reason = _.rest(split, 1).join(' ').trim();
                         Track.update({blacklisted: true, bl_reason: reason}, {where: {dub_id: track.id}});
                         bot.sendChat(S(langfile.blacklist.blacklisted_reason).replaceAll('&{track}', track.name).replaceAll('&{moderator}', data.user.username).replaceAll('&{dj}', dj.username).replaceAll('&{reason}', reason).s);
+                        Reputation.create({user_id: dj.id, mod_id: data.user.id, type: 'blacklist', message: data.user.username + ' blacklisted played track ' + track.name + ' for ' + reason});
                     }
                 }
             }
@@ -455,9 +465,11 @@ new DubAPI(config.login, function (err, bot) {
                                     track[0].updateAttributes({bl_reason: _.rest(split, 2).join(' ').trim()});
                                     bot.moderateRemoveSong(queueobj.user.id);
                                     bot.sendChat(S(langfile.blacklist.queueblacklist_reason).replaceAll('&{dj}', queueobj.user.username).replaceAll('&{track}', queueobj.media.name).replaceAll('&{moderator}', data.user.username).replaceAll('&{reason}', _.rest(split, 2).join(' ').trim()).s);
+                                    Reputation.create({user_id: queueobj.user.id, mod_id: data.user.id, type: 'queueblacklist', message: data.user.username + ' blacklisted ' + queueobj.media.name + ' for ' + _.rest(split, 2).join(' ').trim()});
                                 } else {
                                     bot.moderateRemoveSong(queueobj.user.id);
                                     bot.sendChat(S(langfile.blacklist.queueblacklist).replaceAll('&{dj}', queueobj.user.username).replaceAll('&{track}', queueobj.media.name).replaceAll('&{moderator}', data.user.username).s);
+                                    Reputation.create({user_id: queueobj.user.id, mod_id: data.user.id, type: 'queueblacklist', message: data.user.username + ' blacklisted ' + queueobj.media.name});
                                 }
                             });
                         } else bot.sendChat(langfile.error.argument);
