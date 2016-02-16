@@ -360,7 +360,7 @@ new DubAPI(config.login, function (err, bot) {
 
     //functions
 
-    function handleCommand(data) {
+    function handleCommand (data) {
         var command = commands.filter(function (cmd) {
             var found = false;
             for (var i = 0; i < cmd.names.length; i++) {
@@ -398,7 +398,7 @@ new DubAPI(config.login, function (err, bot) {
         }
     }
 
-    function loadCommands() {
+    function loadCommands () {
         //moderation commands
         commands.push({
             names: ['!fs', '!skip'],
@@ -661,7 +661,15 @@ new DubAPI(config.login, function (err, bot) {
                     var split = data.message.trim().split(' ');
                     if (split.length === 2) {
                         User.find({where: {username: {$like: S(split[1]).replaceAll('@', '').s}}}).then(function (user) {
-                            if (user !== undefined && user !== null) cleanchat(user.userid);
+                            if (user !== undefined && user !== null) {
+                                cleanchat(user.userid);
+                                Reputation.create({
+                                    user_id: user.userid,
+                                    mod_id: data.user.id,
+                                    type: 'delchat',
+                                    message: 'All messages were deleted.'
+                                });
+                            }
                             else bot.sendChat(langfile.error.argument);
                         });
                     } else bot.sendChat(langfile.error.argument);
@@ -736,6 +744,12 @@ new DubAPI(config.login, function (err, bot) {
                                         }
                                     });
                                 } else bot.moderateKickUser(user.userid, _.rest(split, 2).join(' ').trim());
+                                Reputation.create({
+                                    user_id: user.userid,
+                                    mod_id: data.user.id,
+                                    type: 'kick',
+                                    message: 'User was kicked for ' + _.rest(split, 2).join(' ').trim()
+                                });
                             } else bot.sendChat(langfile.error.argument);
                         });
                     } else bot.sendChat(langfile.error.argument);
@@ -1535,7 +1549,7 @@ new DubAPI(config.login, function (err, bot) {
         });
     }
 
-    function timings() {
+    function timings () {
         afkcheck();
         checkactivemods();
         if (config.afkremoval.enabled) {
@@ -1557,7 +1571,7 @@ new DubAPI(config.login, function (err, bot) {
         console.log('[INFO] Executed timings, next execution in ' + minutes + ' minutes.');
     }
 
-    function afkcheck() {
+    function afkcheck () {
         bot.getUsers().forEach(function (user) {
             User.find({where: {userid: user.id}}).then(function (row) {
                 var now = moment();
@@ -1568,7 +1582,7 @@ new DubAPI(config.login, function (err, bot) {
         });
     }
 
-    function warnafk() {
+    function warnafk () {
         User.findAll({where: {afk: true, warned_for_afk: false}}).then(function (users) {
             var afks = [];
             var queue = bot.getQueue();
@@ -1582,7 +1596,7 @@ new DubAPI(config.login, function (err, bot) {
         });
     }
 
-    function removeafk() {
+    function removeafk () {
         User.findAll({where: {warned_for_afk: true}}).then(function (users) {
             var afks = [];
             var queue = bot.getQueue();
@@ -1592,13 +1606,18 @@ new DubAPI(config.login, function (err, bot) {
                     if (config.afkremoval.action === "REMOVEDJ") bot.moderateRemoveDJ(user.userid);
                     else if (config.afkremoval.action === "PAUSEUSERQUEUE") bot.moderatePauseDj(user.userid);
                     User.update({removed_for_afk: true}, {where: {id: user.id}});
+                    Reputation.create({
+                        user_id: user.userid,
+                        mod_id: bot.getSelf().id,
+                        type: 'afkremove'
+                    });
                 }
             });
             if (afks.length !== 0) bot.sendChat(afks.join(' ').trim() + langfile.afk.remove);
         });
     }
 
-    function kickforafk() {
+    function kickforafk () {
         User.findAll({where: {removed_for_afk: true}}).then(function (users) {
             var afks = [];
             var afk_names = [];
@@ -1612,7 +1631,6 @@ new DubAPI(config.login, function (err, bot) {
 
             if (afks.length > 0) {
                 bot.sendChat(afk_names.join(' ').trim() + langfile.afk.kick);
-
                 afks.forEach(function (user) {
                     if (bot.isStaff(user) && !bot.hasPermission(user, config.afkremoval.kick_ignore_permission)) {
                         var role = user.role;
@@ -1624,12 +1642,17 @@ new DubAPI(config.login, function (err, bot) {
                             }
                         });
                     } else bot.moderateKickUser(user.id, langfile.afk.kick_msg);
+                    Reputation.create({
+                       user_id: user.id,
+                        mod_id: bot.getSelf().id,
+                        type: 'afkkick'
+                    });
                 });
             }
         });
     }
 
-    function checkactivemods() {
+    function checkactivemods () {
         activemods = 0;
         bot.getStaff().forEach(function (staffmem) {
             User.find({where: {userid: staffmem.id}}).then(function (staff) {
@@ -1638,10 +1661,17 @@ new DubAPI(config.login, function (err, bot) {
         });
     }
 
-    function checksong(media, playid) {
+    function checksong (media, playid) {
+        var dj = bot.getDJ();
         if (media.songLength > config.autoskip.timelimit.limit * 1000 && config.autoskip.timelimit.enabled) {
             bot.moderateSkip();
             bot.sendChat(langfile.autoskip.timelimit.default);
+            Reputation.create({
+               user_id:  dj.id,
+                mod_id: bot.getSelf().id,
+                type: 'songlenght-skip',
+                message: media.name
+            });
         } else {
             var trackdata = {
                 name: media.name,
@@ -1663,12 +1693,24 @@ new DubAPI(config.login, function (err, bot) {
                         bot.moderateSkip();
                         if (track.bl_reason !== undefined && track.bl_reason !== null) bot.sendChat(S(langfile.blacklisted.is_blacklisted).replaceAll('&{track}', track.name).replaceAll('&{dj}', dj.username).replaceAll('&{reason}', track.bl_reason).s);
                         else bot.sendChat(S(langfile.blacklisted.is_blacklisted).replaceAll('&{track}', track.name).replaceAll('&{dj}', dj.username).s);
+                        Reputation.create({
+                            user_id: dj.id,
+                            mod_id: bot.getSelf().id,
+                            type: 'play-blacklist',
+                            message: track.name
+                        });
                     } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined && toggle.historyskip) {
                         bot.moderateSkip();
                         bot.sendChat(S(langfile.autoskip.history.default).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
                         if (config.autoskip.history.move_to !== -1) {
                             bot.moderateMoveDJ(dj.id, config.autoskip.history.move_to);
                         }
+                        Reputation.create({
+                            user_id: dj.id,
+                            mod_id: bot.getSelf().id,
+                            type: 'history-skip',
+                            message: track.name
+                        });
                     }
                 }
 
@@ -1691,6 +1733,12 @@ new DubAPI(config.login, function (err, bot) {
                                             bot.moderateSkip();
                                             bot.sendChat(S(langfile.countryblocks.play.blacklist).replaceAll('&{username}', dj.username).replaceAll('&{track}', media.name).replaceAll('&{countries}', intersection.join(' ').trim()).s);
                                         }
+                                        Reputation.create({
+                                            user_id: dj.id,
+                                            mod_id: bot.getSelf().id,
+                                            type: 'skip-blocked',
+                                            message: media.name + ' [' + media.fkid + ']'
+                                        });
                                     }
                                 }
                             }
@@ -1703,7 +1751,7 @@ new DubAPI(config.login, function (err, bot) {
         }
     }
 
-    function checkQueue(queue) {
+    function checkQueue (queue) {
         queue.forEach(function (queueobject, index) {
             if (queueobject.media.songLength > config.autoskip.timelimit.limit * 1000 && config.autoskip.timelimit.enabled) {
                 if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
@@ -1841,7 +1889,7 @@ new DubAPI(config.login, function (err, bot) {
         });
     }
 
-    function cleanchat(userid) {
+    function cleanchat (userid) {
         if (typeof userid === 'string') {
             bot.getChatHistory().forEach(function (chat) {
                 if (chat.user.id === userid) {
@@ -1853,7 +1901,7 @@ new DubAPI(config.login, function (err, bot) {
         }
     }
 
-    function points_manipulator(action, amount, users) {
+    function points_manipulator (action, amount, users) {
         if (typeof action !== 'string' || typeof amount !== 'number') return;
         switch (action) {
             case "award":
@@ -1897,7 +1945,7 @@ new DubAPI(config.login, function (err, bot) {
         }
     }
 
-    function deleteChatMessage(chatid, history) {
+    function deleteChatMessage (chatid, history) {
         var pos = _.findIndex(history, {id: chatid});
         if (history[pos - 1] !== undefined) {
             if (history[pos - 1].user.id === history[pos].user.id) {
