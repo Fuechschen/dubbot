@@ -295,6 +295,14 @@ new DubAPI(config.login, function (err, bot) {
 
     bot.on('user-kick', function (data) {
         if (config.automation.delete_chat.kick && data.mod.id !== bot.getSelf().id) cleanchat(data.user.id);
+        if (data.mod.id !== bot.getSelf.id) {
+            Reputation.create({
+                user_id: data.user.id,
+                mod_id: data.mod.id,
+                type: 'kick',
+                message: 'Kicked by a moderator.'
+            });
+        }
     });
 
     bot.on('room_playlist-dub', function () {
@@ -357,6 +365,7 @@ new DubAPI(config.login, function (err, bot) {
             User.update({in_queue: true}, {where: {userid: qobj.uid}});
         });
     });
+
 
     //functions
 
@@ -1643,7 +1652,7 @@ new DubAPI(config.login, function (err, bot) {
                         });
                     } else bot.moderateKickUser(user.id, langfile.afk.kick_msg);
                     Reputation.create({
-                       user_id: user.id,
+                        user_id: user.id,
                         mod_id: bot.getSelf().id,
                         type: 'afkkick'
                     });
@@ -1667,7 +1676,7 @@ new DubAPI(config.login, function (err, bot) {
             bot.moderateSkip();
             bot.sendChat(langfile.autoskip.timelimit.default);
             Reputation.create({
-               user_id:  dj.id,
+                user_id: dj.id,
                 mod_id: bot.getSelf().id,
                 type: 'songlenght-skip',
                 message: media.name
