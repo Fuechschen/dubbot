@@ -240,5 +240,16 @@ module.exports = {
     },
     sufflequeue: {
         default: "@djs, the queue will be shuffled in a few moments. Prepare..."
+    },
+    countryblocks: {
+        play: {
+            skip: "@&{username}, your track '&{track}' was skipped, because it's blocked in the following countries: &{countries}",
+            blacklist: "@&{username}, you track '&{track}' was added to the blacklist because it's blocked in one of the following countries: &{countries}"
+        },
+        queue: {
+            remove: "@&{username}, your track '&{track}' was removed from the queue because it's blocked in one of the following countries: &{countries}",
+            blacklist: "@&{username} you track '&{track}' was added to the blacklist and removed from the queue because it's blocked in one of the following countries: &{countries}"
+        },
+        blacklist_reason: "Blocked in one of the following countries: &{countries}"
     }
 };

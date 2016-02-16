@@ -65,7 +65,8 @@ module.exports = {
     },
     apiKeys: {
         wordnik: "",      //wordnik api-key for !define
-        soundcloud: ""    //soundcloud-api-key, required for !link with soundcloud-tracks
+        soundcloud: "",    //soundcloud-api-key, required for !link with soundcloud-tracks
+        youtube: ""       //key to access youtube data api to resolve country blocks
     },
     chatfilter: {
         enabled: true,
@@ -165,6 +166,17 @@ module.exports = {
     },
     exemptions: {
         welcome: [],     //put userids here, which shouldn't be welcomed by the bot
-        chatfilter: []   //pu userids here, which shouldn't be affected by the chatfilter
+        chatfilter: []   //put userids here, which shouldn't be affected by the chatfilter
+    },
+    countryblocks: {
+        enabled: true,    //this will skip blocked videos automatically, remember to provide a vaild youtube-api-key
+        actions: {
+            play: "BLACKLIST",  //action, if played video is blocked in one of the specified countries, use "SKIP" or "BLACKLIST"
+            queue: {
+                action: "REMOVESONG",   //action, if played video is blocked in one of the specified countries, use "REMOVESONG", "REMOVEDJ" or "PAUSEUSERQUEUE"
+                blacklist: true
+            }
+        },
+        countries: ['DE']    //specify countries here
     }
 };

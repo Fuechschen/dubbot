@@ -260,7 +260,7 @@ new DubAPI(config.login, function (err, bot) {
 
         setTimeout(function () {
             User.findOrCreate({where: {userid: userdata.userid}, defaults: userdata}).spread(function (usr, created) {
-                if(!_.contains(config.exemptions.welcome, data.user.id)){
+                if (!_.contains(config.exemptions.welcome, data.user.id)) {
                     if (created) bot.sendChat(S(langfile.welcome_users.new).replaceAll('&{username}', data.user.username).s);
                     else bot.sendChat(S(langfile.welcome_users.default).replaceAll('&{username}', data.user.username).s);
                 }
@@ -278,7 +278,7 @@ new DubAPI(config.login, function (err, bot) {
             removed_for_afk: false,
             status: false
         }, {where: {userid: data.user.id}});
-        if(config.queuecheck.remove_left_djs && bot.getQueuePosition(data.user.id) !== -1) bot.moderatePauseDJ(data.user.id);
+        if (config.queuecheck.remove_left_djs && bot.getQueuePosition(data.user.id) !== -1) bot.moderatePauseDJ(data.user.id);
     });
 
     bot.on('room-update', function (data) {
@@ -306,17 +306,32 @@ new DubAPI(config.login, function (err, bot) {
                 if (score.downdubs > config.autoskip.votes.condition) {
                     bot.moderateSkip();
                     bot.sendChat(S(langfile.autoskip.vote.reach_limit).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
-                    Reputation.create({user_id: dj.id, mod_id: bot.getSelf().id, type: 'RoomVoteskip', message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)});
+                    Reputation.create({
+                        user_id: dj.id,
+                        mod_id: bot.getSelf().id,
+                        type: 'RoomVoteskip',
+                        message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)
+                    });
                 }
             } else if (typeof config.autoskip.votes.condition === 'object') {
                 if (score.downdubs >= config.autoskip.votes.condition.max) {
                     bot.moderateSkip();
                     bot.sendChat(S(langfile.autoskip.vote.reach_limit).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
-                    Reputation.create({user_id: dj.id, mod_id: bot.getSelf().id, type: 'RoomVoteskip', message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)});
+                    Reputation.create({
+                        user_id: dj.id,
+                        mod_id: bot.getSelf().id,
+                        type: 'RoomVoteskip',
+                        message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)
+                    });
                 } else if (score.downdubs >= config.autoskip.votes.condition.min && (bot.getUsers().length) / score.downdubs > config.autoskip.votes.condition.ratio) {
                     bot.moderateSkip();
                     bot.sendChat(S(langfile.autoskip.vote.reach_limit).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
-                    Reputation.create({user_id: dj.id, mod_id: bot.getSelf().id, type: 'RoomVoteskip', message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)});
+                    Reputation.create({
+                        user_id: dj.id,
+                        mod_id: bot.getSelf().id,
+                        type: 'RoomVoteskip',
+                        message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)
+                    });
                 }
             } else if (typeof config.autoskip.votes.condition === 'function') {
                 score.usercount = bot.getUsers.length;
@@ -325,15 +340,20 @@ new DubAPI(config.login, function (err, bot) {
                 if (config.autoskip.votes.condition(score)) {
                     bot.moderateSkip();
                     bot.sendChat(S(langfile.autoskip.vote.reach_limit).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
-                    Reputation.create({user_id: dj.id, mod_id: bot.getSelf().id, type: 'RoomVoteskip', message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)});
+                    Reputation.create({
+                        user_id: dj.id,
+                        mod_id: bot.getSelf().id,
+                        type: 'RoomVoteskip',
+                        message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)
+                    });
                 }
             }
         }
     });
 
-    bot.on('room_playlist-queue-update-dub', function(data){
+    bot.on('room_playlist-queue-update-dub', function (data) {
         User.update({in_queue: false}, {where: {in_queue: true}});
-        data.queue.forEach(function(qobj){
+        data.queue.forEach(function (qobj) {
             User.update({in_queue: true}, {where: {userid: qobj.uid}});
         });
     });
@@ -400,10 +420,20 @@ new DubAPI(config.login, function (err, bot) {
                         var msg = split[1].trim();
                         setTimeout(function () {
                             bot.sendChat(S(_.findWhere(config.skipreasons, {reason: msg}).msg).replaceAll('&{dj}', dj.username).s);
-                            Reputation.create({user_id: dj.id, mod_id: data.user.id, type: 'modskip', message: 'Skipped by ' + data.user.username + ' with reason: ' + _.findWhere(config.skipreasons, {reason: msg}).msg});
+                            Reputation.create({
+                                user_id: dj.id,
+                                mod_id: data.user.id,
+                                type: 'modskip',
+                                message: 'Skipped by ' + data.user.username + ' with reason: ' + _.findWhere(config.skipreasons, {reason: msg}).msg
+                            });
                         }, 3 * 1000);
                     } else {
-                        Reputation.create({user_id: dj.id, mod_id: data.user.id, type: 'modskip', message: 'Skipped by ' + data.user.username});
+                        Reputation.create({
+                            user_id: dj.id,
+                            mod_id: data.user.id,
+                            type: 'modskip',
+                            message: 'Skipped by ' + data.user.username
+                        });
                     }
                 } else if (config.autoskip.resdjskip.enabled && bot.hasPermission(data.user, 'set-dj') && toggle.rdjskip) {
                     if (config.autoskip.resdjskip.condition.mods_online <= activemods) bot.sendChat(langfile.autoskip.resdjskip.too_many_mods);
@@ -440,12 +470,22 @@ new DubAPI(config.login, function (err, bot) {
                     if (split.length === 1) {
                         Track.update({blacklisted: true}, {where: {dub_id: track.id}});
                         bot.sendChat(S(langfile.blacklist.blacklisted).replaceAll('&{track}', track.name).replaceAll('&{moderator}', data.user.username).replaceAll('&{dj}', dj.username).s);
-                        Reputation.create({user_id: dj.id, mod_id: data.user.id, type: 'blacklist', message: data.user.username + ' blacklisted played track ' + track.name});
+                        Reputation.create({
+                            user_id: dj.id,
+                            mod_id: data.user.id,
+                            type: 'blacklist',
+                            message: data.user.username + ' blacklisted played track ' + track.name
+                        });
                     } else {
                         var reason = _.rest(split, 1).join(' ').trim();
                         Track.update({blacklisted: true, bl_reason: reason}, {where: {dub_id: track.id}});
                         bot.sendChat(S(langfile.blacklist.blacklisted_reason).replaceAll('&{track}', track.name).replaceAll('&{moderator}', data.user.username).replaceAll('&{dj}', dj.username).replaceAll('&{reason}', reason).s);
-                        Reputation.create({user_id: dj.id, mod_id: data.user.id, type: 'blacklist', message: data.user.username + ' blacklisted played track ' + track.name + ' for ' + reason});
+                        Reputation.create({
+                            user_id: dj.id,
+                            mod_id: data.user.id,
+                            type: 'blacklist',
+                            message: data.user.username + ' blacklisted played track ' + track.name + ' for ' + reason
+                        });
                     }
                 }
             }
@@ -480,11 +520,21 @@ new DubAPI(config.login, function (err, bot) {
                                     track[0].updateAttributes({bl_reason: _.rest(split, 2).join(' ').trim()});
                                     bot.moderateRemoveSong(queueobj.user.id);
                                     bot.sendChat(S(langfile.blacklist.queueblacklist_reason).replaceAll('&{dj}', queueobj.user.username).replaceAll('&{track}', queueobj.media.name).replaceAll('&{moderator}', data.user.username).replaceAll('&{reason}', _.rest(split, 2).join(' ').trim()).s);
-                                    Reputation.create({user_id: queueobj.user.id, mod_id: data.user.id, type: 'queueblacklist', message: data.user.username + ' blacklisted ' + queueobj.media.name + ' for ' + _.rest(split, 2).join(' ').trim()});
+                                    Reputation.create({
+                                        user_id: queueobj.user.id,
+                                        mod_id: data.user.id,
+                                        type: 'queueblacklist',
+                                        message: data.user.username + ' blacklisted ' + queueobj.media.name + ' for ' + _.rest(split, 2).join(' ').trim()
+                                    });
                                 } else {
                                     bot.moderateRemoveSong(queueobj.user.id);
                                     bot.sendChat(S(langfile.blacklist.queueblacklist).replaceAll('&{dj}', queueobj.user.username).replaceAll('&{track}', queueobj.media.name).replaceAll('&{moderator}', data.user.username).s);
-                                    Reputation.create({user_id: queueobj.user.id, mod_id: data.user.id, type: 'queueblacklist', message: data.user.username + ' blacklisted ' + queueobj.media.name});
+                                    Reputation.create({
+                                        user_id: queueobj.user.id,
+                                        mod_id: data.user.id,
+                                        type: 'queueblacklist',
+                                        message: data.user.username + ' blacklisted ' + queueobj.media.name
+                                    });
                                 }
                             });
                         } else bot.sendChat(langfile.error.argument);
@@ -875,9 +925,9 @@ new DubAPI(config.login, function (err, bot) {
                     bot.sendChat(S(langfile.shufflequeue.default).replaceAll('&{mod}', data.user.username));
                     var queue = bot.getQueue();
                     queue.forEach(function (queueobj) {
-                       setTimeout(function(){
-                           bot.moderateMoveDJ(queueobj.user.id, _.random(0, queue.length - 1));
-                       }, _.random(1, 8) * 1000);
+                        setTimeout(function () {
+                            bot.moderateMoveDJ(queueobj.user.id, _.random(0, queue.length - 1));
+                        }, _.random(1, 8) * 1000);
                     });
                 }
             }
@@ -939,20 +989,20 @@ new DubAPI(config.login, function (err, bot) {
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'queue-order')) {
                     var split = data.message.trim().split(' ');
-                    switch (split[1]){
+                    switch (split[1]) {
                         case 'voteskip':
                             toggle.voteskip = !toggle.voteskip;
-                            if(toggle.voteskip) bot.sendChat(langfile.autoskip.vote.enable);
+                            if (toggle.voteskip) bot.sendChat(langfile.autoskip.vote.enable);
                             else bot.sendChat(langfile.autoskip.vote.disable);
                             break;
                         case 'historyskip':
                             toggle.historyskip = !toggle.historyskip;
-                            if(toggle.historyskip) bot.sendChat(langfile.autoskip.history.enable);
+                            if (toggle.historyskip) bot.sendChat(langfile.autoskip.history.enable);
                             else bot.sendChat(langfile.autoskip.history.disable);
                             break;
                         case 'rdjskip':
                             toggle.rdjskip = !toggle.rdjskip;
-                            if(toggle.rdjskip) bot.sendChat(langfile.autoskip.resdjskip.enable);
+                            if (toggle.rdjskip) bot.sendChat(langfile.autoskip.resdjskip.enable);
                             else bot.sendChat(langfile.autoskip.resdjskip.disable);
                             break;
                         default:
@@ -976,7 +1026,7 @@ new DubAPI(config.login, function (err, bot) {
                     var time = 2;
                     if (split.length === 2) time = parseInt(split[1].trim());
                     setTimeout(function () {
-                        User.findAll({where: {in_queue: true, status: true}}).then(function(users){
+                        User.findAll({where: {in_queue: true, status: true}}).then(function (users) {
                             var mover = users[_.random(0, users.length - 1)];
                             if (mover !== undefined) {
                                 bot.sendChat(S(langfile.lottery.victory).replaceAll('&{username}', mover.username).s);
@@ -1003,11 +1053,11 @@ new DubAPI(config.login, function (err, bot) {
                     var time = 2;
                     if (split.length === 2) time = parseInt(split[1].trim());
                     setTimeout(function () {
-                        User.findAll({where: {in_queue: true, status: true}}).then(function(users){
+                        User.findAll({where: {in_queue: true, status: true}}).then(function (users) {
                             var mover = users[_.random(0, users.length - 1)];
                             if (mover !== undefined) {
                                 bot.sendChat(S(langfile.roulette.victory).replaceAll('&{username}', mover.username).s);
-                                bot.moderateMoveDJ(mover.userid,  _.random(0, bot.getQueuePosition(mover.userid)));
+                                bot.moderateMoveDJ(mover.userid, _.random(0, bot.getQueuePosition(mover.userid)));
                                 if (config.points.enabled && config.points.lottery) points_manipulator("award", config.points.roulette_reward, [bot.getUser(mover.userid)]);
                             } else bot.sendChat(langfile.roulette.no_winner);
                         });
@@ -1606,8 +1656,8 @@ new DubAPI(config.login, function (err, bot) {
                 where: {dub_id: trackdata.dub_id},
                 defaults: trackdata
             }).then(function (trackl, created) {
+                var track = trackl[0];
                 if (!created && bot.getPlayID() === playid) {
-                    var track = trackl[0];
                     var dj = bot.getDJ();
                     if (track.blacklisted) {
                         bot.moderateSkip();
@@ -1616,10 +1666,38 @@ new DubAPI(config.login, function (err, bot) {
                     } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined && toggle.historyskip) {
                         bot.moderateSkip();
                         bot.sendChat(S(langfile.autoskip.history.default).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
-                        if(config.autoskip.history.move_to !== -1){
+                        if (config.autoskip.history.move_to !== -1) {
                             bot.moderateMoveDJ(dj.id, config.autoskip.history.move_to);
                         }
                     }
+                }
+
+                if (config.countryblocks.enabled && media.type === 'youtube' && config.apiKeys.youtube !== '' && bot.getPlayID() === playid) {
+                    request.get('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + media.fkid + '&key=' + config.apiKeys.youtube, function (error, resp, body) {
+                        if (!error && resp.status === 200) {
+                            body = JSON.parse(body);
+                            if (body.items.length > 0 && bot.getPlayID() === playid) {
+                                if (body.items[0].contentDetails.regionRestriction !== undefined) {
+                                    var intersection = _.intersection(body.items[0].contentDetails.regionRestriction, config.countryblocks.countries);
+                                    if (intersection.length !== 0) {
+                                        if (config.countryblocks.actions.play === 'SKIP') {
+                                            bot.moderateSkip();
+                                            bot.sendChat(S(langfile.countryblocks.play.skip).replaceAll('&{username}', dj.username).replaceAll('&{track}', media.name).replaceAll('&{countries}', intersection.join(' ').trim()).s);
+                                        } else if (config.countryblocks.actions.play === 'BLACKLIST') {
+                                            Track.update({
+                                                blacklisted: true,
+                                                bl_reason: S(langfile.countryblocks.blacklist_reason).replaceAll('&{countries}', intersection.join(' ').trim()).s
+                                            }, {where: {id: track.id}});
+                                            bot.moderateSkip();
+                                            bot.sendChat(S(langfile.countryblocks.play.blacklist).replaceAll('&{username}', dj.username).replaceAll('&{track}', media.name).replaceAll('&{countries}', intersection.join(' ').trim()).s);
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            console.log('Error during youtube-api call.', error, resp);
+                        }
+                    });
                 }
             });
         }
@@ -1665,6 +1743,36 @@ new DubAPI(config.login, function (err, bot) {
                                     else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
                                     else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
                                     bot.sendChat(S(langfile.queuecheck.history).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
+                                } else if (config.countryblocks.enabled && queueobject.media.type === 'youtube' && config.apiKeys.youtube !== '') {
+                                    request.get('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + queueobject.media.fkid + '&key=' + config.apiKeys.youtube, function (error, resp, body) {
+                                        if (!error && resp.status === 200) {
+                                            body = JSON.parse(body);
+                                            if (body.items.length > 0 && bot.getQueue()[index].media.id === track.id) {
+                                                if (body.items[0].contentDetails.regionRestriction !== undefined) {
+                                                    var intersection = _.intersection(body.items[0].contentDetails.regionRestriction, config.countryblocks.countries);
+                                                    if (intersection.length !== 0) {
+                                                        if (config.countryblocks.actions.queue.blacklist) {
+                                                            bot.sendChat(S(langfile.countryblocks.queue.blacklist).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', queueobject.media.name).replaceAll('&{countries}', intersection.join(' ').trim()).s);
+                                                            Track.update({
+                                                                blacklisted: true,
+                                                                bl_reason: S(langfile.countryblocks.blacklist_reason).replaceAll('&{countries}', intersection.join(' ').trim()).s
+                                                            }, {where: {id: track.id}});
+                                                            if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
+                                                            else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
+                                                            else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
+                                                        } else {
+                                                            bot.sendChat(S(langfile.countryblocks.queue.remove).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', queueobject.media.name).replaceAll('&{countries}', intersection.join(' ').trim()).s);
+                                                            if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
+                                                            else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
+                                                            else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            console.log('Error during youtube-api call.', error, resp);
+                                        }
+                                    });
                                 }
                             }
                         });
@@ -1696,6 +1804,36 @@ new DubAPI(config.login, function (err, bot) {
                             else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
                             else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
                             bot.sendChat(S(langfile.queuecheck.history).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
+                        } else if (config.countryblocks.enabled && queueobject.media.type === 'youtube' && config.apiKeys.youtube !== '') {
+                            request.get('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + queueobject.media.fkid + '&key=' + config.apiKeys.youtube, function (error, resp, body) {
+                                if (!error && resp.status === 200) {
+                                    body = JSON.parse(body);
+                                    if (body.items.length > 0 && bot.getQueue()[index].media.id === track.id) {
+                                        if (body.items[0].contentDetails.regionRestriction !== undefined) {
+                                            var intersection = _.intersection(body.items[0].contentDetails.regionRestriction, config.countryblocks.countries);
+                                            if (intersection.length !== 0) {
+                                                if (config.countryblocks.actions.queue.blacklist) {
+                                                    bot.sendChat(S(langfile.countryblocks.queue.blacklist).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', queueobject.media.name).replaceAll('&{countries}', intersection.join(' ').trim()).s);
+                                                    Track.update({
+                                                        blacklisted: true,
+                                                        bl_reason: S(langfile.countryblocks.blacklist_reason).replaceAll('&{countries}', intersection.join(' ').trim()).s
+                                                    }, {where: {id: track.id}});
+                                                    if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
+                                                    else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
+                                                    else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
+                                                } else {
+                                                    bot.sendChat(S(langfile.countryblocks.queue.remove).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', queueobject.media.name).replaceAll('&{countries}', intersection.join(' ').trim()).s);
+                                                    if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
+                                                    else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
+                                                    else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    console.log('Error during youtube-api call.', error, resp);
+                                }
+                            });
                         }
                     }
                 });
