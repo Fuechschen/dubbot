@@ -1,5 +1,3 @@
-var _ = require('underscore');
-var S = require('string');
 var moment = require('moment');
 
 function SpamProtection(userid) {

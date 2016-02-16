@@ -1,5 +1,4 @@
 var _ = require('underscore');
-var S = require('string');
 
 function Duell(challenger, challenged) {
     this.challenger = challenger;
@@ -10,7 +9,7 @@ function Duell(challenger, challenged) {
     this.active = true;
 
     setTimeout(function () {
-        this.active = false
+        this.active = false;
     }, 5 * 60 * 1000);
 }
 
