@@ -22,7 +22,8 @@ var activemods = 0;
 
 var commandtimeout = {
     callmod: false,
-    help: false
+    help: false,
+    link: false
 };
 
 var toggle = {
@@ -291,7 +292,7 @@ new DubAPI(config.login, function (err, bot) {
 
     bot.on('user-mute', function (data) {
         if (config.automation.delete_chat.mute && data.mod.id !== bot.getSelf().id) cleanchat(data.user.id);
-        if(data.mod.id !== bot.getSelf().id){
+        if (data.mod.id !== bot.getSelf().id) {
             Reputation.create({
                 user_id: data.user.id,
                 mod_id: data.mod.id,
@@ -373,10 +374,10 @@ new DubAPI(config.login, function (err, bot) {
         });
     });
 
-    bot.on('delete-chat-message', function (data){
-        if(data.user.id !== bot.getSelf().id){
+    bot.on('delete-chat-message', function (data) {
+        if (data.user.id !== bot.getSelf().id) {
             var msg = _.findWhere(bot.getChatHistory(), {id: data.id});
-            if(msg){
+            if (msg) {
                 Reputation.create({
                     user_id: msg.user.id,
                     mod_id: data.user.id,
@@ -387,10 +388,10 @@ new DubAPI(config.login, function (err, bot) {
         }
     });
 
-    bot.on('user-ban', function (data){
-        if(data.mod.id !== bot.getSelf().id){
+    bot.on('user-ban', function (data) {
+        if (data.mod.id !== bot.getSelf().id) {
             Reputation.create({
-               user_id: data.user.id,
+                user_id: data.user.id,
                 mod_id: data.mod.id,
                 type: 'ban',
                 message: 'Time: ' + data.time
@@ -399,7 +400,6 @@ new DubAPI(config.login, function (err, bot) {
     });
 
     //functions
-
     function handleCommand (data) {
         var command = commands.filter(function (cmd) {
             var found = false;
@@ -1394,22 +1394,28 @@ new DubAPI(config.login, function (err, bot) {
             matchStart: false,
             desc: langfile.commanddesc.link,
             handler: function () {
-                if (bot.getRoomMeta().roomType === 'room') {
-                    var media = bot.getMedia();
-                    if (media !== undefined) {
-                        if (media.type === 'youtube') {
-                            bot.sendChat(S(langfile.link.default).replaceAll('&{link}', 'https://youtu.be/' + media.fkid).s);
-                        } else if (media.type === 'soundcloud') {
-                            request.get('http://api.soundcloud.com/tracks/' + media.fkid + '?client_id=' + config.apiKeys.soundcloud, function (err, head, body) {
-                                if (!err && head.statusCode === 200) {
-                                    var sdata = JSON.parse(body);
-                                    bot.sendChat(S(langfile.link.default).replaceAll('&{link}', sdata.permalink_url).s);
-                                } else bot.sendChat(langfile.error.default);
-                            });
-                        } else bot.sendChat(langfile.error.default);
-                    } else bot.sendChat(langfile.link.no_media);
-                } else if (bot.getRoomMeta().roomType === 'iframe') bot.sendChat(S(langfile.link.iframe).replaceAll('&{link}', bot.getRoomMeta().roomEmbed).s);
-                else bot.sendChat(langfile.error.default);
+                if(!commandtimeout.link){
+                    if (bot.getRoomMeta().roomType === 'room') {
+                        var media = bot.getMedia();
+                        if (media !== undefined) {
+                            if (media.type === 'youtube') {
+                                bot.sendChat(S(langfile.link.default).replaceAll('&{link}', 'https://youtu.be/' + media.fkid).s);
+                            } else if (media.type === 'soundcloud') {
+                                request.get('http://api.soundcloud.com/tracks/' + media.fkid + '?client_id=' + config.apiKeys.soundcloud, function (err, head, body) {
+                                    if (!err && head.statusCode === 200) {
+                                        var sdata = JSON.parse(body);
+                                        bot.sendChat(S(langfile.link.default).replaceAll('&{link}', sdata.permalink_url).s);
+                                    } else bot.sendChat(langfile.error.default);
+                                });
+                            } else bot.sendChat(langfile.error.default);
+                        } else bot.sendChat(langfile.link.no_media);
+                    } else if (bot.getRoomMeta().roomType === 'iframe') bot.sendChat(S(langfile.link.iframe).replaceAll('&{link}', bot.getRoomMeta().roomEmbed).s);
+                    else bot.sendChat(langfile.error.default);
+                    commandtimeout.link = true;
+                    setTimeout(function (){
+                        commandtimeout.link = false;
+                    }, 60 * 1000);
+                }
             }
         });
 
@@ -1811,7 +1817,7 @@ new DubAPI(config.login, function (err, bot) {
                         if (ban.reason !== null && ban.reason !== undefined) bot.sendChat(S(langfile.queueban.banned_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{reason}', ban.reason).s);
                         else bot.sendChat(S(langfile.queueban.banned).replaceAll('&{username}', queueobject.user.username).s);
                         Reputation.create({
-                           user_id: queueobject.user.id,
+                            user_id: queueobject.user.id,
                             mod_id: bot.getSelf().id,
                             type: 'queueban-remove',
                             message: queueobject.user.username + ' joined the queue while being banned.'

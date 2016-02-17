@@ -9,7 +9,7 @@ function Duell(challenger, challenged) {
     this.active = true;
 
     setTimeout(function () {
-        this.active = false;
+        active = false;
     }, 5 * 60 * 1000);
 }
 
