@@ -1,38 +1,37 @@
-var DubAPI = require('dubapi');
-var fs = require('fs');
-var _ = require('underscore');
-var S = require('string');
-var request = require('request');
-var Sequelize = require('sequelize');
-var moment = require('moment');
-var Cleverbot = require('cleverbot-node');
+var DubAPI = require('dubapi'),
+    fs = require('fs'),
+    _ = require('underscore'),
+    S = require('string'),
+    request = require('request'),
+    Sequelize = require('sequelize'),
+    moment = require('moment'),
+    Cleverbot = require('cleverbot-node');
 
-var commands = [];
-var config = require(__dirname + '/config.js');
-var SpamProtection = require(__dirname + '/objects/Spamprotection');
-var Duell = require(__dirname + '/objects/Duell');
-var langfile = require(__dirname + '/files/language.js');
+var config = require(__dirname + '/config.js'),
+    SpamProtection = require(__dirname + '/objects/Spamprotection'),
+    Duell = require(__dirname + '/objects/Duell'),
+    langfile = require(__dirname + '/files/language.js');
+
 var autotimer;
-var duells = [];
 
-var skipable = true;
-var skipvotes = [];
+var spamfilterdata = {},
+    duells = [],
+    skipvotes = [],
+    commands = [];
 
-var activemods = 0;
+var skipable = true,
+    activemods = 0;
 
 var commandtimeout = {
-    callmod: false,
-    help: false,
-    link: false
-};
-
-var toggle = {
-    voteskip: true,
-    historyskip: true,
-    rdjskip: true
-};
-
-var spamfilterdata = {};
+        callmod: false,
+        help: false,
+        link: false
+    },
+    toggle = {
+        voteskip: true,
+        historyskip: true,
+        rdjskip: true
+    };
 
 var sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
     dialect: config.db.dialect,
@@ -47,12 +46,12 @@ sequelize.authenticate().then(function (err) {
 
 });
 
-var CustomText = sequelize.import(__dirname + '/models/CustomText');
-var RandomMessage = sequelize.import(__dirname + '/models/RandomMessage');
-var Track = sequelize.import(__dirname + '/models/Track');
-var User = sequelize.import(__dirname + '/models/User');
-var QueueBan = sequelize.import(__dirname + '/models/QueueBan');
-var Reputation = sequelize.import(__dirname + '/models/Reputaion');
+var CustomText = sequelize.import(__dirname + '/models/CustomText'),
+    RandomMessage = sequelize.import(__dirname + '/models/RandomMessage'),
+    Track = sequelize.import(__dirname + '/models/Track'),
+    User = sequelize.import(__dirname + '/models/User'),
+    QueueBan = sequelize.import(__dirname + '/models/QueueBan'),
+    Reputation = sequelize.import(__dirname + '/models/Reputaion');
 
 QueueBan.belongsTo(User, {as: 'mod', foreignKey: 'mod_id'});
 QueueBan.belongsTo(User, {as: 'user', foreignKey: 'user_id'});
@@ -827,11 +826,12 @@ new DubAPI(config.login, function (err, bot) {
                                         QueueBan.create({
                                             dub_user_id: banned.userid,
                                             dub_mod_id: mod.userid,
-                                            mod: mod,
-                                            user: banned,
                                             reason: r,
                                             permanent: true,
                                             active: true
+                                        }).then(function (qban) {
+                                            qban.setUser(banned);
+                                            qban.setMod(mod);
                                         });
                                         if (r) bot.sendChat(S(langfile.queueban.mod.ban.permanent_reason).replaceAll('&{banned}', banned.username).replaceAll('&{mod}', mod.username).replaceAll('&{reason}', r).s);
                                         else bot.sendChat(S(langfile.queueban.mod.ban.permanent).replaceAll('&{banned}', banned.username).replaceAll('&{mod}', mod.username).s);
@@ -850,6 +850,9 @@ new DubAPI(config.login, function (err, bot) {
                                                 expires: moment().add(time.amount, time.key),
                                                 permanent: false,
                                                 active: true
+                                            }).then(function (qban) {
+                                                qban.setUser(banned);
+                                                qban.setMod(mod);
                                             });
                                             if (r) bot.sendChat(S(langfile.queueban.mod.ban.time_reason).replaceAll('&{banned}', banned.username).replaceAll('&{mod}', mod.username).replaceAll('&{reason}', r).s);
                                             else bot.sendChat(S(langfile.queueban.mod.ban.time).replaceAll('&{banned}', banned.username).replaceAll('&{mod}', mod.username).s);
@@ -1164,6 +1167,26 @@ new DubAPI(config.login, function (err, bot) {
         });
 
         commands.push({
+           names: ['!reconnect'],
+            hidden: true,
+            enabled: true,
+            matchStart: false,
+            desc: langfile.commanddesc.reload,
+            perm: 'set-roles',
+            handler: function (data){
+                if(bot.hasPermission(data.user, 'set-roles')){
+                    bot.sendChat(langfile.reconnect.default);
+                    setTimeout(function (){
+                        bot.disconnect();
+                        setTimeout(function (){
+                            bot.connect(config.options.room);
+                        }, 5000);
+                    }, 2000);
+                }
+            }
+        });
+
+        commands.push({
             names: ['!reload'],
             hidden: true,
             enabled: true,
@@ -1394,7 +1417,7 @@ new DubAPI(config.login, function (err, bot) {
             matchStart: false,
             desc: langfile.commanddesc.link,
             handler: function () {
-                if(!commandtimeout.link){
+                if (!commandtimeout.link) {
                     if (bot.getRoomMeta().roomType === 'room') {
                         var media = bot.getMedia();
                         if (media !== undefined) {
@@ -1412,7 +1435,7 @@ new DubAPI(config.login, function (err, bot) {
                     } else if (bot.getRoomMeta().roomType === 'iframe') bot.sendChat(S(langfile.link.iframe).replaceAll('&{link}', bot.getRoomMeta().roomEmbed).s);
                     else bot.sendChat(langfile.error.default);
                     commandtimeout.link = true;
-                    setTimeout(function (){
+                    setTimeout(function () {
                         commandtimeout.link = false;
                     }, 60 * 1000);
                 }

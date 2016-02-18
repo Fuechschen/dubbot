@@ -183,7 +183,8 @@ module.exports = {
         kick: "Kicks the given user, reomving his rank if necessaray",
         lastplayed: "Gives the last time a song was played.",
         shufflequeue: "Suffles the room queue.",
-        toggle: "Toggles various functions."
+        toggle: "Toggles various functions.",
+        reconnect: "Disconnects the bot and reconnects it again. Useful to refresh the userlist."
     },
     points: {
         award: "&{username} was arwarded &{amount} &{points_name}.",
