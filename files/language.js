@@ -19,7 +19,8 @@ module.exports = {
     error: {
         argument: "Error in arguments",
         default: "An error occured while performing this command!",
-        track_not_found: "The track wasn't found!"
+        track_not_found: "The track wasn't found!",
+        check_console: "Error during execution. Check the console for more details."
     },
     ping: {
         default: "Pong!"

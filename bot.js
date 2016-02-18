@@ -1146,39 +1146,44 @@ new DubAPI(config.login, function (err, bot) {
             perm: 'set-roles',
             handler: function (data) {
                 if (bot.hasPermission(data.user, 'set-roles') && config.pm2.enabled) {
-                    var pm2 = require('pm2');
-                    pm2.connect(function (err) {
-                        if (err) bot.sendChat(langfile.error.default);
-                        else {
-                            var time = parseInt(S(data.message).replaceAll('!restart', '').s.trim()) || 0;
-                            if (time !== 0) bot.sendChat(S(langfile.pm2.restart_time).replaceAll('&{minutes}', time).s);
-                            setTimeout(function () {
-                                bot.sendChat(langfile.pm2.restart_now);
+                    try {
+                        var pm2 = require('pm2');
+                        pm2.connect(function (err) {
+                            if (err) bot.sendChat(langfile.error.default);
+                            else {
+                                var time = parseInt(S(data.message).replaceAll('!restart', '').s.trim()) || 0;
+                                if (time !== 0) bot.sendChat(S(langfile.pm2.restart_time).replaceAll('&{minutes}', time).s);
                                 setTimeout(function () {
-                                    pm2.restart(config.pm2.processname, function (err) {
-                                        if (err) bot.sendChat(langfile.error.default);
-                                    });
-                                }, 5 * 1000);
-                            }, time * 60 * 1000);
-                        }
-                    })
+                                    bot.sendChat(langfile.pm2.restart_now);
+                                    setTimeout(function () {
+                                        pm2.restart(config.pm2.processname, function (err) {
+                                            if (err) bot.sendChat(langfile.error.default);
+                                        });
+                                    }, 5 * 1000);
+                                }, time * 60 * 1000);
+                            }
+                        });
+                    } catch (e){
+                        console.log('Error during restart:', e);
+                        bot.sendChat(langfile.error.check_console);
+                    }
                 }
             }
         });
 
         commands.push({
-           names: ['!reconnect'],
+            names: ['!reconnect'],
             hidden: true,
             enabled: true,
             matchStart: false,
             desc: langfile.commanddesc.reload,
             perm: 'set-roles',
-            handler: function (data){
-                if(bot.hasPermission(data.user, 'set-roles')){
+            handler: function (data) {
+                if (bot.hasPermission(data.user, 'set-roles')) {
                     bot.sendChat(langfile.reconnect.default);
-                    setTimeout(function (){
+                    setTimeout(function () {
                         bot.disconnect();
-                        setTimeout(function (){
+                        setTimeout(function () {
                             bot.connect(config.options.room);
                         }, 5000);
                     }, 2000);
@@ -1203,7 +1208,8 @@ new DubAPI(config.login, function (err, bot) {
                             new_langfile = require(__dirname + '/files/language.js');
                             new_config = require(__dirname + '/config.js');
                         } catch (e) {
-                            bot.sendChat(langfile.error.default);
+                            bot.sendChat(langfile.error.check_console);
+                            console.log('Error while reloading:', e);
                             return;
                         }
                         config = new_config;
@@ -1213,7 +1219,8 @@ new DubAPI(config.login, function (err, bot) {
                             try {
                                 new_config = require(__dirname + '/config.js');
                             } catch (e) {
-                                bot.sendChat(langfile.error.default);
+                                bot.sendChat(langfile.error.check_console);
+                                console.log('Error while reloading:', e);
                                 return;
                             }
                             config = new_config;
@@ -1221,7 +1228,8 @@ new DubAPI(config.login, function (err, bot) {
                             try {
                                 new_langfile = require(__dirname + '/files/language.js');
                             } catch (e) {
-                                bot.sendChat(langfile.error.default);
+                                bot.sendChat(langfile.error.check_console);
+                                console.log('Error while reloading:', e);
                                 return;
                             }
                             langfile = new_langfile;
