@@ -10,7 +10,8 @@ module.exports = {
         room_state_file: true,  // wether to generate stats.json or not
         random_messages: true,     //send a random messages all 2-10 minutes, see !rndmsg
         upvote: false,              //upvote every song
-        custom_command_list: true   //generates the command list for every user based on permission, this ignores hidden commands
+        custom_command_list: true,   //generates the command list for every user based on permission, this ignores hidden commands
+        global_command_timeout: 30   //defines the global command timeout for all normal users
     },
     db: {   //your db config, fill in the path to database when usind sqlite (which is not recommended due to performance) Refer to http://sequelize.readthedocs.org/en/latest/api/sequelize/ for other dialects.
         dialect: "mysql",   //dialect for the db connection, required to run (remember to install the required packages if you are using something else than mysql/mariadb

@@ -15,6 +15,7 @@ var config = require(__dirname + '/config.js'),
 var autotimer;
 
 var spamfilterdata = {},
+    globalcmdtimeout = {},
     duells = [],
     skipvotes = [],
     commands = [];
@@ -96,6 +97,7 @@ new DubAPI(config.login, function (err, bot) {
             User.findOrCreate({where: {userid: userdata.userid}, defaults: userdata}).spread(function (usr) {
                 User.update(userdata, {where: {id: usr.id}});
             });
+            if(globalcmdtimeout[user.id] === undefined) globalcmdtimeout[user.id] = {};
         });
     });
 
@@ -408,9 +410,15 @@ new DubAPI(config.login, function (err, bot) {
             return found;
         })[0];
 
-        if (command && command.enabled) {
+        if (command && command.enabled && !globalcmdtimeout[data.user.id][command.names[0]]) {
             command.handler(data, bot);
             console.log('[COMMAND] Executed command ' + command.names[0] + ' (' + data.message + ')');
+            if(command.globalcmdtimeout && bot.hasPermission(data.user, 'skip')){
+                globalcmdtimeout[data.user.id][command.names[0]] = true;
+                setTimeout(function (){
+                    globalcmdtimeout[data.user.id][command.names[0]] = false;
+                }, config.options.global_command_timeout * 1000);
+            }
         } else if (S(data.message).startsWith(config.options.customtext_trigger)) {
             CustomText.find({
                 where: {
@@ -1456,6 +1464,7 @@ new DubAPI(config.login, function (err, bot) {
             enabled: true,
             matchStart: true,
             desc: langfile.commanddesc.define,
+            globalcmdtimeout: true,
             handler: function (data) {
                 var msg = _.rest(data.message.split(' '), 1).join(' ').trim();
                 if (msg.length > 0 && config.apiKeys.wordnik) {
@@ -1477,6 +1486,7 @@ new DubAPI(config.login, function (err, bot) {
             enabled: true,
             matchStart: true,
             desc: langfile.commanddesc.duell,
+            globalcmdtimeout: true,
             handler: function (data) {
                 var split = data.message.trim().split(' ');
                 if (_.findWhere(duells, {active: true, o_id: data.user.id}) === undefined) {
@@ -1525,6 +1535,7 @@ new DubAPI(config.login, function (err, bot) {
             enabled: true,
             matchStart: true,
             desc: langfile.commanddesc.commands,
+            globalcmdtimeout: true,
             handler: function (data) {
                 var split = data.message.trim().split(' ');
                 if (split.length === 1) {
@@ -1562,6 +1573,7 @@ new DubAPI(config.login, function (err, bot) {
             enabled: true,
             matchStart: true,
             desc: langfile.commanddesc.points,
+            globalcmdtimeout: true,
             handler: function (data) {
                 if (config.points.enabled) {
                     var split = data.message.trim().split(' ');
@@ -1595,6 +1607,7 @@ new DubAPI(config.login, function (err, bot) {
             enabled: true,
             matchStart: true,
             desc: langfile.commanddesc.afkmsg,
+            globalcmdtimeout: true,
             handler: function (data) {
                 if (config.afkremoval.afk_message.enabled) {
                     var split = data.message.trim().split(' ');
