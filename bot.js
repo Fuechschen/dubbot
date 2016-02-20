@@ -32,7 +32,9 @@ var commandtimeout = {
         voteskip: true,
         historyskip: true,
         rdjskip: true,
-        songlength: true
+        songlength: true,
+        afkremoval: true,
+        queuecheck: true
     };
 
 var sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
@@ -1076,6 +1078,16 @@ new DubAPI(config.login, function (err, bot) {
                             if (toggle.songlength) bot.sendChat(langfile.autoskip.timelimit.enable);
                             else bot.sendChat(langfile.autoskip.timelimit.disable);
                             break;
+                        case 'afkremoval':
+                            toggle.afkremoval = !toggle.afkremoval;
+                            if (toggle.afkremoval) bot.sendChat(langfile.afk.enable);
+                            else bot.sendChat(langfile.afk.disable);
+                            break;
+                        case 'queuecheck':
+                            toggle.queuecheck = !toggle.queuecheck;
+                            if (toggle.queuecheck) bot.sendChat(langfile.queuecheck.enable);
+                            else bot.sendChat(langfile.queuecheck.disable);
+                            break;
                         default:
                             bot.sendChat(langfile.error.argument);
                             break;
@@ -1648,12 +1660,12 @@ new DubAPI(config.login, function (err, bot) {
     function timings () {
         afkcheck();
         checkactivemods();
-        if (config.afkremoval.enabled) {
+        if (config.afkremoval.enabled && toggle.afkremoval) {
             if (config.afkremoval.kick) kickforafk();
             warnafk();
             removeafk();
         }
-        if (config.queuecheck.enabled) checkQueue(bot.getQueue());
+        if (config.queuecheck.enabled && toggle.queuecheck) checkQueue(bot.getQueue());
         if (config.options.random_messages) {
             RandomMessage.findAll({where: {status: true}}).then(function (rows) {
                 if (rows.length !== 0) bot.sendChat(rows[_.random(0, rows.length - 1)].message);
@@ -2100,4 +2112,3 @@ new DubAPI(config.login, function (err, bot) {
         } else bot.moderateDeleteChat(chatid);
     }
 });
-

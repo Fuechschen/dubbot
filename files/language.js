@@ -35,7 +35,9 @@ module.exports = {
         kick: "You have been removed from the queue for being AFK once. You will now be kicked out of the room!",
         kick_msg: "You have been removed from the queue for being AFK once. You now have been kicked out of the room!",
         check: "Currently AFK: &{afks}",
-        reset: "Time reset for '&{username}."
+        reset: "Time reset for '&{username}.",
+        enable: "Afk-Removal is now enabled!",
+        disable: "Afk-Removal is now disabled!"
     },
     help: {
         default: "Need help? @mods",
@@ -76,7 +78,9 @@ module.exports = {
         blacklisted: "@&{username}, your song is on our blacklist and will be removed!",
         history: "@&{username}, the track &{track} was played recently and will be removed!",
         length: "@&{username}, your song '&{track}' is too long and will be removed!",
-        removed_for_leave: "&{username} will be removed from the queue because he left the room."
+        removed_for_leave: "&{username} will be removed from the queue because he left the room.",
+        enable: "Queuecheck is now enabled!",
+        disable: "Queuecheck is now disabled!"
     },
     link: {
         default: "Link to the current song: &{link}",

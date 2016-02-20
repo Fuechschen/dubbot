@@ -24,7 +24,7 @@
 |!findtrack| |name|VIP|Searches the databse for the given songname|
 |!afkcheck| | |VIP|Lists all afks in the community|
 |!afkreset| |username|Mod|Resets AFK-time for the given user|
-|!toggle| |voteskip/historyskip|Mod|Toggles voteskip.|
+|!toggle| |voteskip/historyskip/rdjskip/songlength/afkremoval/queuecheck|Mod|Toggles corresponding setting until next restart.|
 |!lottery| |[time]|Mod|Starts a lottery with the given time in minutes. Time defaults to 2 minutes|
 |!roulette| |[time]|Mod|Starts a roulette with the given time in minutes. Time defaults to 2 minutes|
 |!lastplayed| |[trackid]|VIP|Gives the time since the track was played the last time.|
