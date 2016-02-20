@@ -58,7 +58,9 @@ module.exports = {
             enable: "Voteskip is now enabled!"
         },
         timelimit: {
-            default: "@&{username}, your track &{track}is too long!"
+            default: "@&{username}, your track &{track}is too long!",
+            disable: "Timeguard is now disabled!",
+            enable: "Timeguard is now enabled!"
         },
         resdjskip: {
             not_enough_votes: "&{more} more votes required to skip.",

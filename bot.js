@@ -31,7 +31,8 @@ var commandtimeout = {
     toggle = {
         voteskip: true,
         historyskip: true,
-        rdjskip: true
+        rdjskip: true,
+        songlength: true
     };
 
 var sequelize = new Sequelize(config.db.database, config.db.username, config.db.password, {
@@ -1070,6 +1071,11 @@ new DubAPI(config.login, function (err, bot) {
                             if (toggle.rdjskip) bot.sendChat(langfile.autoskip.resdjskip.enable);
                             else bot.sendChat(langfile.autoskip.resdjskip.disable);
                             break;
+                        case 'songlength':
+                            toggle.songlength = !toggle.songlength;
+                            if (toggle.songlength) bot.sendChat(langfile.autoskip.timelimit.enable);
+                            else bot.sendChat(langfile.autoskip.timelimit.disable);
+                            break;
                         default:
                             bot.sendChat(langfile.error.argument);
                             break;
@@ -1753,7 +1759,7 @@ new DubAPI(config.login, function (err, bot) {
 
     function checksong (media, playid) {
         var dj = bot.getDJ();
-        if (media.songLength > config.autoskip.timelimit.limit * 1000 && config.autoskip.timelimit.enabled) {
+        if (media.songLength > config.autoskip.timelimit.limit * 1000 && config.autoskip.timelimit.enabled && toggle.songlength) {
             bot.moderateSkip();
             bot.sendChat(langfile.autoskip.timelimit.default);
             Reputation.create({
@@ -1843,7 +1849,7 @@ new DubAPI(config.login, function (err, bot) {
 
     function checkQueue (queue) {
         queue.forEach(function (queueobject, index) {
-            if (queueobject.media.songLength > config.autoskip.timelimit.limit * 1000 && config.autoskip.timelimit.enabled) {
+            if (queueobject.media.songLength > config.autoskip.timelimit.limit * 1000 && config.autoskip.timelimit.enabled && toggle.songlength) {
                 if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
                 else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
                 else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
