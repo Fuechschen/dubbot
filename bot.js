@@ -67,8 +67,8 @@ cleverbot.prepare();
 
 moment.locale(langfile.momentjs.locale);
 
-new DubAPI(config.login, function (err, bot) {
-    if (err) return console.error(err);
+new DubAPI(config.login, function (apierror, bot) {
+    if (apierror) return console.error(apierror);
 
     console.log('Using DubApi ' + bot.version);
 
@@ -1850,9 +1850,7 @@ new DubAPI(config.login, function (err, bot) {
                                     }
                                 }
                             }
-                        } else {
-                            console.log('Error during youtube-api call.', error, resp);
-                        }
+                        } else console.log('Error during youtube-api call.', error, resp);
                     });
                 }
             });
@@ -1955,9 +1953,7 @@ new DubAPI(config.login, function (err, bot) {
                                                     }
                                                 }
                                             }
-                                        } else {
-                                            console.log('Error during youtube-api call.', error, resp);
-                                        }
+                                        } else console.log('Error during youtube-api call.', error, resp);
                                     });
                                 }
                             }
@@ -2035,9 +2031,7 @@ new DubAPI(config.login, function (err, bot) {
                                             }
                                         }
                                     }
-                                } else {
-                                    console.log('Error during youtube-api call.', error, resp);
-                                }
+                                } else console.log('Error during youtube-api call.', error, resp);
                             });
                         }
                     }
@@ -2105,9 +2099,7 @@ new DubAPI(config.login, function (err, bot) {
     function deleteChatMessage (chatid, history) {
         var pos = _.findIndex(history, {id: chatid});
         if (history[pos - 1] !== undefined) {
-            if (history[pos - 1].user.id === history[pos].user.id) {
-                deleteChatMessage(history[pos - 1].id, history);
-            }
+            if (history[pos - 1].user.id === history[pos].user.id) deleteChatMessage(history[pos - 1].id, history);
             else bot.moderateDeleteChat(chatid);
         } else bot.moderateDeleteChat(chatid);
     }
