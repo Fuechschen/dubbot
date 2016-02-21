@@ -189,7 +189,7 @@ new DubAPI(config.login, function (apierror, bot) {
         try {
             console.log('[ADVANCE]', data.user.username, ': [', data.media.name, '|', data.media.id, '|', data.media.fkid, '|', data.media.type, '|', data.media.songLength, ']');
         } catch (e) {
-
+            console.log('[ADVANCE]', JSON.stringify(data));
         }
 
         if (config.autoskip.resdjskip.enabled) skipvotes = [];
@@ -367,6 +367,8 @@ new DubAPI(config.login, function (apierror, bot) {
                         message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)
                     });
                 }
+            } else {
+                console.log('Either provide a valid skip-condition or deactivate voteskip.');
             }
         }
     });
@@ -408,7 +410,7 @@ new DubAPI(config.login, function (apierror, bot) {
         var command = commands.filter(function (cmd) {
             var found = false;
             for (var i = 0; i < cmd.names.length; i++) {
-                if (!found) found = (cmd.names[i] == data.message.toLowerCase() || (cmd.matchStart && data.message.toLowerCase().indexOf(cmd.names[i]) == 0));
+                if (!found) found = (cmd.names[i] === data.message.toLowerCase() || (cmd.matchStart && data.message.toLowerCase().indexOf(cmd.names[i]) === 0));
             }
             return found;
         })[0];
