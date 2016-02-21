@@ -1731,7 +1731,7 @@ new DubAPI(config.login, function (apierror, bot) {
             var afk_names = [];
             var queue = bot.getQueue();
             users.forEach(function (user) {
-                if (_.contains(queue, bot.getUser(user.userid)) && bot.hasPermission(bot.getUser(user.userid), 'queue-order') === false) {
+                if (_.contains(queue, bot.getUser(user.userid)) && !bot.hasPermission(bot.getUser(user.userid), 'queue-order')) {
                     afks.push(bot.getUser(user.userid));
                     afk_names.push('@' + user.username);
                 }
@@ -1807,7 +1807,7 @@ new DubAPI(config.login, function (apierror, bot) {
                             type: 'play-blacklist',
                             message: track.name
                         });
-                    } else if (config.autoskip.history.enabled === true && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined && toggle.historyskip) {
+                    } else if (config.autoskip.history.enabled && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined && toggle.historyskip) {
                         bot.moderateSkip();
                         bot.sendChat(S(langfile.autoskip.history.default).replaceAll('&{username}', dj.username).replaceAll('&{track}', track.name).s);
                         if (config.autoskip.history.move_to !== -1) {
