@@ -248,7 +248,7 @@ new DubAPI(config.login, function (apierror, bot) {
             spamfilterdata[data.user.id] = new SpamProtection(data.user.id);
             spamfilterdata[data.user.id].setpostLink(false);
             setTimeout(function () {
-                spamfilterdata[data.user.id].setpostLink(true)
+                spamfilterdata[data.user.id].setpostLink(true);
             }, config.chatfilter.link_protection.timeout * 60 * 1000);
         }
 
@@ -274,7 +274,7 @@ new DubAPI(config.login, function (apierror, bot) {
                 }
                 usr.updateAttributes(userdata);
             });
-        }, 10 * 1000)
+        }, 10 * 1000);
     });
 
     bot.on('user-leave', function (data) {
@@ -1403,7 +1403,7 @@ new DubAPI(config.login, function (apierror, bot) {
                     else bot.sendChat(langfile.help.no_one_here);
                     commandtimeout.help = true;
                     setTimeout(function () {
-                        commandtimeout.help = false
+                        commandtimeout.help = false;
                     }, 10 * 1000);
                 }
             }
@@ -1437,7 +1437,7 @@ new DubAPI(config.login, function (apierror, bot) {
                                             bot.sendChat(langfile.callmod.mod_called);
                                             commandtimeout.callmod = true;
                                             setTimeout(function () {
-                                                commandtimeout.callmod = false
+                                                commandtimeout.callmod = false;
                                             }, 2 * 60 * 1000);
                                         } else bot.sendChat(langfile.callmod.errors.request);
                                     }
