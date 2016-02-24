@@ -14,7 +14,7 @@ Since dubbot is still under development, there will be features added in future.
 * History Skipping
 * Ban users from joining the queue
 
-A full list of commands can be found [here](/commands.md).
+A full list of commands can be found [here](/docs/commands.md).
 
 ### Requirements
 
@@ -31,7 +31,7 @@ Also, a mysql, postgresql or a sqlite db is required.
 1. Clone this repo.
 2. Run ```npm install``` in the folder of this repo.
 3. Create a Database and ensure dubbot's host can connect to it.
-4. Rename config.example.js to config.js and fill in you data.
+4. Rename config.example.js to config.js and fill in you data. ([How to get the API-Keys](/docs/keys.md))
 5. Run bot.js with ```node bot.js```
 
 #### Language
