@@ -55,7 +55,7 @@ var CustomText = sequelize.import(__dirname + '/models/CustomText'),
     Track = sequelize.import(__dirname + '/models/Track'),
     User = sequelize.import(__dirname + '/models/User'),
     QueueBan = sequelize.import(__dirname + '/models/QueueBan'),
-    Reputation = sequelize.import(__dirname + '/models/Reputaion');
+    Reputation = sequelize.import(__dirname + '/models/Reputation');
 
 QueueBan.belongsTo(User, {as: 'mod', foreignKey: 'mod_id'});
 QueueBan.belongsTo(User, {as: 'user', foreignKey: 'user_id'});
