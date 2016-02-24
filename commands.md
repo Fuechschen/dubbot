@@ -7,6 +7,7 @@
 |!queueblacklist|!qbl|position [reason]|Mod|Adds the track at the given position to the blacklist and removes it|
 |!idblacklist|!idbl|id [reason]|Mod|Adds the given song to the blacklist|
 |!unblacklist|!unbl|db_id|Mod|Removes the given song from the blacklist|
+<<<<<<< HEAD
 |!move| |username position|Mod|Moves the specified user to the specified position|
 |!clearchat| | |Mod|Deletes last 512 messages sinc bot joined the room|
 |!clearqueue| | |Mod|Locks and clears the queue|
@@ -19,6 +20,20 @@
 |!reload| |[config/lang]|Manager|Reloads config/langfile|
 |!restart| |[time]|Manager|Restarts the bot (requires pm2)|
 |!addcustomtext|!addct|trigger message|Manager|Adds a custom chat command which is triggers when .trigger is send in chat|
+=======
+|!move||username position|Mod|Moves the specified user to the specified position|
+|!clearchat|||Mod|Deletes last 512 messages sinc bot joined the room|
+|!clearqueue|||Mod|Locks and clears the queue|
+|!lock|||Mod|Locks the queue|
+|!unlock|||Mod|Unlocks the queue|
+|!kick||username [reason]|Mod|Kicks the given user, unsetting the role if necessary|
+|!delchat||username|Mod|Deletes all messages from specified user in the last 512 messages since bot joined|
+|!queueban|!qban|[ban username duration [reason]/unban [username]]|User/Mod|Checks if you are banned from the queue when used without arguments. Bans or unbans a user from the queue (Use either 'permanent' or '(amount)(s/m/h/d/w/m)' as duration|
+|!sudo||various|Manager|Let the bot send your arguments in chat|
+|!reload||[config/lang]|Manager|Reloads config/langfile|
+|!restart||[time]|Manager|Restarts the bot (requires pm2)|
+|!addcustomtext|!addct|Manager|trigger message|Adds a custom chat command which is triggers when .trigger is send in chat|
+>>>>>>> origin/master
 |!randommessage|!rndmsg|list/add/del/disable/enable|Manager|Edits random messages sent all 2-10 Minutes|
 |!resetplay| |id|Mod|Resets the last play for the given song|
 |!findtrack| |name|VIP|Searches the databse for the given songname|
