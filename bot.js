@@ -1739,9 +1739,7 @@ new DubAPI(config.login, function (apierror, bot) {
             users.forEach(function (user) {
                 if (_.contains(queue, bot.getUser(user.userid))) {
                     afks.push('@' + user.username);
-                    if (config.afkremoval.action === "REMOVEDJ") bot.moderateRemoveDJ(user.userid);
-                    else if (config.afkremoval.action === "PAUSEUSERQUEUE") bot.moderatePauseDj(user.userid);
-                    else console.log('Provide action for removeafk!');
+                    removeUserFromQueue(user.userid, config.afkremoval.action);
                     User.update({removed_for_afk: true}, {where: {id: user.id}});
                     Reputation.create({
                         user_id: user.userid,
@@ -1889,10 +1887,7 @@ new DubAPI(config.login, function (apierror, bot) {
     function checkQueue(queue) {
         queue.forEach(function (queueobject, index) {
             if (queueobject.media.songLength > config.autoskip.timelimit.limit * 1000 && config.autoskip.timelimit.enabled && toggle.songlength) {
-                if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
-                else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
-                else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                else console.log('Provide action for queuecheck!');
+                removeUserFromQueue(queueobject.user.id, config.queuecheck.action);
                 Reputation.create({
                     user_id: queueobject.user.id,
                     mod_id: bot.getSelf().id,
@@ -1929,10 +1924,7 @@ new DubAPI(config.login, function (apierror, bot) {
                     var track = tracks[0];
                     if (!created && bot.getQueue()[index].media.id === track.id) {
                         if (track.blacklisted) {
-                            if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
-                            else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
-                            else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                            else console.log('Provide action for queuecheck!');
+                            removeUserFromQueue(queueobject.user.id, config.queuecheck.action);
                             if (track.bl_reason !== undefined && track.bl_reason !== null) bot.sendChat(S(langfile.queuecheck.blacklisted_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).replaceAll('&{reason}', track.bl_reason).s);
                             else bot.sendChat(S(langfile.queuecheck.blacklisted).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
                             Reputation.create({
@@ -1942,10 +1934,7 @@ new DubAPI(config.login, function (apierror, bot) {
                                 message: queueobject.media.name
                             });
                         } else if (config.autoskip.history.enabled && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined && toggle.historyskip) {
-                            if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
-                            else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
-                            else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                            else console.log('Provide action for queuecheck!');
+                            removeUserFromQueue(queueobject.user.id, config.queuecheck.action);
                             bot.sendChat(S(langfile.queuecheck.history).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
                             Reputation.create({
                                 user_id: queueobject.user.id,
@@ -1967,16 +1956,10 @@ new DubAPI(config.login, function (apierror, bot) {
                                                         blacklisted: true,
                                                         bl_reason: S(langfile.countryblocks.blacklist_reason).replaceAll('&{countries}', intersection.join(' ').trim()).s
                                                     }, {where: {id: track.id}});
-                                                    if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
-                                                    else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
-                                                    else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                                                    else console.log('Provide action for queuecheck!');
+                                                    removeUserFromQueue(queueobject.user.id, config.queuecheck.action);
                                                 } else {
                                                     bot.sendChat(S(langfile.countryblocks.queue.remove).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', queueobject.media.name).replaceAll('&{countries}', intersection.join(' ').trim()).s);
-                                                    if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
-                                                    else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
-                                                    else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                                                    else console.log('Provide action for queuecheck!');
+                                                    removeUserFromQueue(queueobject.user.id, config.queuecheck.action);
                                                 }
                                                 Reputation.create({
                                                     user_id: queueobject.user.id,
@@ -2064,5 +2047,12 @@ new DubAPI(config.login, function (apierror, bot) {
         QueueBan.find({where: {dub_user_id: user_id, active: true}}).then(function (qban) {
             return !!(qban !== undefined && qban !== null);
         });
+    }
+
+    function removeUserFromQueue(userid, action){
+        if (action === 'REMOVESONG') bot.moderateRemoveSong(userid);
+        else if (action === 'REMOVEDJ') bot.moderateRemoveDJ(userid);
+        else if (action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(userid);
+        else console.log('You misconfigured an action in your config! Please check!');
     }
 });
