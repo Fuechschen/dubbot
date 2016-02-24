@@ -261,6 +261,6 @@ module.exports = {
         blacklist_reason: "Blocked in one of the following countries: &{countries}"
     },
     userinfo: {
-        default: ""
+        default: "&{username} | &{userid} | &{dubs} | &{points} &{points_name} | &{last_seen}"
     }
 };

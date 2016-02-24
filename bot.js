@@ -1663,6 +1663,7 @@ new DubAPI(config.login, function (apierror, bot) {
             enabled: true,
             matchStart: true,
             desc: langfile.commanddesc.info,
+            globalcmdtimeout: true,
             handler: function (data) {
                 var split = data.message.trim().split(' ');
                 var usr;
@@ -1673,7 +1674,7 @@ new DubAPI(config.login, function (apierror, bot) {
                 else {
                     User.find({where: {userid: usr.id}}).then(function (user) {
                         if (user !== undefined && user !== null) {
-                            bot.sendChat(S(langfile.userinfo.default).replaceAll('&{username}', user.username).replaceAll('&{dubs}', user.dubs)).replaceAll('&{points}', user.points).replaceAll('&{points_name}', config.points.name).replaceAll('&{last_seen}', moment().diff(moment(user.last_active), 'minutes').s);
+                            bot.sendChat(S(langfile.userinfo.default).replaceAll('&{username}', user.username).replaceAll('&{userid}', user.userid).replaceAll('&{dubs}', user.dubs)).replaceAll('&{points}', user.points).replaceAll('&{points_name}', config.points.name).replaceAll('&{last_seen}', moment().diff(moment(user.last_active), 'minutes').s);
                         } else bot.sendChat(langfile.error.argument);
                     });
                 }
