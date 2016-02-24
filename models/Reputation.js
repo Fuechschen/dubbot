@@ -9,6 +9,6 @@ module.exports = function (sequelize, Sequelize) {
         timestamp: {type: Sequelize.DATE, defaultValue: Sequelize.NOW}
     }, {
         underscored: true,
-        tableName: 'reputaion'
+        tableName: 'reputation'
     });
 };
