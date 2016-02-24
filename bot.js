@@ -1848,7 +1848,7 @@ new DubAPI(config.login, function (apierror, bot) {
 
                 if (config.countryblocks.enabled && media.type === 'youtube' && config.apiKeys.youtube !== '' && bot.getPlayID() === playid) {
                     request.get('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + media.fkid + '&key=' + config.apiKeys.youtube, function (error, resp, body) {
-                        if (!error && resp.status === 200) {
+                        if (!error && resp.statusCode === 200) {
                             body = JSON.parse(body);
                             if (body.items.length > 0 && bot.getPlayID() === playid) {
                                 if (body.items[0].contentDetails.regionRestriction !== undefined) {
