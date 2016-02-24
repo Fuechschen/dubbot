@@ -1,6 +1,6 @@
 module.exports = {
     momentjs: {
-      locale: 'en'
+        locale: 'en'
     },
     blacklist: {
         blacklisted: "@&{dj}, the track '&{track}' was blacklisted by &{moderator}",
@@ -19,7 +19,8 @@ module.exports = {
     error: {
         argument: "Error in arguments",
         default: "An error occured while performing this command!",
-        track_not_found: "The track wasn't found!"
+        track_not_found: "The track wasn't found!",
+        check_console: "Error during execution. Check the console for more details."
     },
     ping: {
         default: "Pong!"
@@ -34,7 +35,9 @@ module.exports = {
         kick: "You have been removed from the queue for being AFK once. You will now be kicked out of the room!",
         kick_msg: "You have been removed from the queue for being AFK once. You now have been kicked out of the room!",
         check: "Currently AFK: &{afks}",
-        reset: "Time reset for '&{username}."
+        reset: "Time reset for '&{username}.",
+        enable: "Afk-Removal is now enabled!",
+        disable: "Afk-Removal is now disabled!"
     },
     help: {
         default: "Need help? @mods",
@@ -45,26 +48,39 @@ module.exports = {
         definition_found: "[ &{word} ] &{definition}"
     },
     autoskip: {
-        history: "@&{username}, your track &{track} was already played recently.",
+        history: {
+            default: "@&{username}, your track &{track} was already played recently.",
+            enable: "Historyskip is now enabled!",
+            disable: "Historyskip is now disabled!"
+        },
         stuck_song: "&{track} seems to broken. Skipping...",
         vote: {
             reach_limit: "@&{username}, your track &{track} has reached the downvotelimit.",
+            disable: "Voteskip is now disabled!",
+            enable: "Voteskip is now enabled!"
         },
         timelimit: {
-            default: "@&{username}, your track &{track}is too long!"
+            default: "@&{username}, your track &{track}is too long!",
+            disable: "Timeguard is now disabled!",
+            enable: "Timeguard is now enabled!"
         },
         resdjskip: {
             not_enough_votes: "&{more} more votes required to skip.",
             skip: "Our residents decided to skip.",
             too_many_mods: "Currently, the amount of mods in the room is high enough, so this function is disabled",
-            already_voted: "You already voted to skip!"
+            already_voted: "You already voted to skip!",
+            enable: "ResDjSkip is now enabled!",
+            disable: "ResDjSkip is now disabled!"
         }
     },
     queuecheck: {
         blacklisted_reason: "@&{username}, your song is on our blacklist for \"&{reason}\" and will be removed!",
         blacklisted: "@&{username}, your song is on our blacklist and will be removed!",
         history: "@&{username}, the track &{track} was played recently and will be removed!",
-        length: "@&{username}, your song is too long and will be removed!"
+        length: "@&{username}, your song '&{track}' is too long and will be removed!",
+        removed_for_leave: "&{username} will be removed from the queue because he left the room.",
+        enable: "Queuecheck is now enabled!",
+        disable: "Queuecheck is now disabled!"
     },
     link: {
         default: "Link to the current song: &{link}",
@@ -80,14 +96,6 @@ module.exports = {
             warning: "@&{username} Please don't spam!",
             mute: "@&{username} was muted for spamming."
         }
-    },
-    labels: {
-        default: "Set label '&{label}' for &{track}",
-        override: "Overrode label to '&{label}' for &{track}",
-        existing_label: "&{track} is already labeld with '&{label}'. If you wan't to override it, use !olbl. The current id is &{id}",
-        argument_error: "You are using wrong arguments!",
-        no_label: "The track '&{track}' has no labels!",
-        labels_found: "The track '&{track}' has the following labels: '&{labels}'"
     },
     clearchat: {
         default: "&{username} cleared the chat."
@@ -141,7 +149,7 @@ module.exports = {
         default: "@djs, &{moderator} cleared and locked the queue. You will be removed within the next few seconds. If you don't want to loose your personal queue, pause it NOW!"
     },
     commands: {
-      default: "Available commands: &{commands}",
+        default: "Available commands: &{commands}",
         desc: "Alias: '&{alias}', &{desc}",
         not_found: "Command not found."
     },
@@ -178,7 +186,12 @@ module.exports = {
         afkreset: "Resets AFK-time for the given user.",
         points: "Commands to use for points.",
         afkmsg: "Commands for managing the integrated afkmessage.",
-        queueban: "Command for managing QueueBans."
+        queueban: "Command for managing QueueBans.",
+        kick: "Kicks the given user, reomving his rank if necessaray",
+        lastplayed: "Gives the last time a song was played.",
+        shufflequeue: "Suffles the room queue.",
+        toggle: "Toggles various functions.",
+        reconnect: "Disconnects the bot and reconnects it again. Useful to refresh the userlist."
     },
     points: {
         award: "&{username} was arwarded &{amount} &{points_name}.",
@@ -219,5 +232,35 @@ module.exports = {
                 time_reason: "&{banned} was banned from the queue by &{mod} for: \"&{reason}\". Run !qban to check your ban!"
             }
         }
+    },
+    customtext: {
+        add: "CustomText successfully added.",
+        delete: "Customtext successfully deleted.",
+        disable: "Customtext successfully disabled.",
+        enable: "Customtext successfully enabled.",
+        update: "Customtext successfully updated.",
+        append: "Customtext successfully updated."
+    },
+    lastplayed: {
+        error: "Track wasn't found in database.",
+        not_played_before: "This track wasn't played before.",
+        default: "This track was played &{time} before."
+    },
+    sufflequeue: {
+        default: "@djs, the queue will be shuffled in a few moments. Prepare..."
+    },
+    countryblocks: {
+        play: {
+            skip: "@&{username}, your track '&{track}' was skipped, because it's blocked in the following countries: &{countries}",
+            blacklist: "@&{username}, you track '&{track}' was added to the blacklist because it's blocked in one of the following countries: &{countries}"
+        },
+        queue: {
+            remove: "@&{username}, your track '&{track}' was removed from the queue because it's blocked in one of the following countries: &{countries}",
+            blacklist: "@&{username} you track '&{track}' was added to the blacklist and removed from the queue because it's blocked in one of the following countries: &{countries}"
+        },
+        blacklist_reason: "Blocked in one of the following countries: &{countries}"
+    },
+    userinfo: {
+        default: "&{username} | &{userid} | &{dubs} | &{points} &{points_name} | &{last_seen}"
     }
 };

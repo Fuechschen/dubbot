@@ -9,7 +9,9 @@ module.exports = {
         welcome_users: true,     //welcome users or not
         room_state_file: true,  // wether to generate stats.json or not
         random_messages: true,     //send a random messages all 2-10 minutes, see !rndmsg
-        upvote: false              //upvote every song
+        upvote: false,              //upvote every song
+        custom_command_list: true,   //generates the command list for every user based on permission, this ignores hidden commands
+        global_command_timeout: 30   //defines the global command timeout for all normal users
     },
     db: {   //your db config, fill in the path to database when usind sqlite (which is not recommended due to performance) Refer to http://sequelize.readthedocs.org/en/latest/api/sequelize/ for other dialects.
         dialect: "mysql",   //dialect for the db connection, required to run (remember to install the required packages if you are using something else than mysql/mariadb
@@ -22,8 +24,8 @@ module.exports = {
     autoskip: {
         history: {
             enabled: true,
-            labeled: true,
-            time: 120   //time in minutes
+            time: 120,   //time in minutes
+            move_to: 2   //moves skipped djs back to this position, set to -1 to disable
         },
         timelimit: {
             enabled: true,
@@ -46,12 +48,14 @@ module.exports = {
     },
     queuecheck: {    //checks the queue for blacklisted/recently played songs and removes them
         enabled: true,
-        action: "REMOVESONG"    //"REMOVESONG" for removing only the song, "REMOVEDJ" to remove the dj, "PAUSEUSERQUEUE" to remove the DJ without clearing his queue
+        action: "REMOVESONG", //"REMOVESONG" for removing only the song, "REMOVEDJ" to remove the dj, "PAUSEUSERQUEUE" to remove the DJ without clearing his queue
+        remove_left_djs: true //this will remove djs, who left the room from the queue
     },
     afkremoval: {
         enabled: true,
         timeout: 3600,   //time in seconds
         kick: true,
+        kick_ignore_permission: 'skip',  //Permission to not be kicked for being afk
         chat_ignore_phrase: "[AFK]",   //bot will ignore messages that include this
         action: "REMOVEDJ",  //"REMOVEDJ" to remove the dj and clear his queue, "PAUSEUSERQUEUE" to remove the DJ without clearing his queue
         afk_message: {       //activate integrated afk message
@@ -63,7 +67,8 @@ module.exports = {
     },
     apiKeys: {
         wordnik: "",      //wordnik api-key for !define
-        soundcloud: ""    //soundcloud-api-key, required for !link with soundcloud-tracks
+        soundcloud: "",    //soundcloud-api-key, required for !link with soundcloud-tracks
+        youtube: ""       //key to access youtube data api to resolve country blocks
     },
     chatfilter: {
         enabled: true,
@@ -160,5 +165,20 @@ module.exports = {
             mute: true,    //delete users chat if muted
             kick: true     //delete users chat if kicked
         }
+    },
+    exemptions: {
+        welcome: [],     //put userids here, which shouldn't be welcomed by the bot
+        chatfilter: []   //put userids here, which shouldn't be affected by the chatfilter
+    },
+    countryblocks: {
+        enabled: true,    //this will skip blocked videos automatically, remember to provide a vaild youtube-api-key
+        actions: {
+            play: "BLACKLIST",  //action, if played video is blocked in one of the specified countries, use "SKIP" or "BLACKLIST"
+            queue: {
+                action: "REMOVESONG",   //action, if played video is blocked in one of the specified countries, use "REMOVESONG", "REMOVEDJ" or "PAUSEUSERQUEUE"
+                blacklist: true
+            }
+        },
+        countries: ['DE']    //specify countries here
     }
 };
