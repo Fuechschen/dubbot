@@ -259,5 +259,8 @@ module.exports = {
             blacklist: "@&{username} you track '&{track}' was added to the blacklist and removed from the queue because it's blocked in one of the following countries: &{countries}"
         },
         blacklist_reason: "Blocked in one of the following countries: &{countries}"
+    },
+    userinfo: {
+        default: ""
     }
 };

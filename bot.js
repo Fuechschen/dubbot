@@ -100,7 +100,7 @@ new DubAPI(config.login, function (apierror, bot) {
             User.findOrCreate({where: {userid: userdata.userid}, defaults: userdata}).spread(function (usr) {
                 User.update(userdata, {where: {id: usr.id}});
             });
-            if(globalcmdtimeout[user.id] === undefined) globalcmdtimeout[user.id] = {};
+            if (globalcmdtimeout[user.id] === undefined) globalcmdtimeout[user.id] = {};
         });
     });
 
@@ -269,6 +269,9 @@ new DubAPI(config.login, function (apierror, bot) {
                     if (created) bot.sendChat(S(langfile.welcome_users.new).replaceAll('&{username}', data.user.username).s);
                     else bot.sendChat(S(langfile.welcome_users.default).replaceAll('&{username}', data.user.username).s);
                 }
+                if(usr.first_join == undefined || usr.first_join === null){
+                    User.update({first_join: new Date()}, {where: {id: usr.id}});
+                }
                 usr.updateAttributes(userdata);
             });
         }, 10 * 1000)
@@ -406,7 +409,7 @@ new DubAPI(config.login, function (apierror, bot) {
     });
 
     //functions
-    function handleCommand (data) {
+    function handleCommand(data) {
         var command = commands.filter(function (cmd) {
             var found = false;
             for (var i = 0; i < cmd.names.length; i++) {
@@ -418,9 +421,9 @@ new DubAPI(config.login, function (apierror, bot) {
         if (command && command.enabled && !globalcmdtimeout[data.user.id][command.names[0]]) {
             command.handler(data, bot);
             console.log('[COMMAND] Executed command ' + command.names[0] + ' (' + data.message + ')');
-            if(command.globalcmdtimeout && bot.hasPermission(data.user, 'skip')){
+            if (command.globalcmdtimeout && bot.hasPermission(data.user, 'skip')) {
                 globalcmdtimeout[data.user.id][command.names[0]] = true;
-                setTimeout(function (){
+                setTimeout(function () {
                     globalcmdtimeout[data.user.id][command.names[0]] = false;
                 }, config.options.global_command_timeout * 1000);
             }
@@ -450,7 +453,7 @@ new DubAPI(config.login, function (apierror, bot) {
         }
     }
 
-    function loadCommands () {
+    function loadCommands() {
         //moderation commands
         commands.push({
             names: ['!fs', '!skip'],
@@ -1191,7 +1194,7 @@ new DubAPI(config.login, function (apierror, bot) {
                                 }, time * 60 * 1000);
                             }
                         });
-                    } catch (e){
+                    } catch (e) {
                         console.log('Error during restart:', e);
                         bot.sendChat(langfile.error.check_console);
                     }
@@ -1657,9 +1660,32 @@ new DubAPI(config.login, function (apierror, bot) {
                 }
             }
         });
+
+        commands.push({
+            names: ['!info'],
+            hidden: false,
+            enabled: true,
+            matchStart: true,
+            desc: langfile.commanddesc.info,
+            handler: function (data) {
+                var split = data.message.trim().split(' ');
+                var usr;
+                if (split.length > 1) usr = bot.getUserByName(split[1].trim());
+                else usr = data.user;
+
+                if (usr === undefined) bot.sendChat(langfile.error.argument);
+                else {
+                    User.find({where: {userid: usr.id}}).then(function (user) {
+                        if (user !== undefined && user !== null) {
+                            bot.sendChat(S(langfile.userinfo.default).replaceAll('&{username}', user.username).replaceAll('&{dubs}', user.dubs)).replaceAll('&{points}', user.points).replaceAll('&{points_name}', config.points.name).replaceAll('&{last_seen}', moment().diff(moment(user.last_active), 'minutes').s);
+                        } else bot.sendChat(langfile.error.argument);
+                    });
+                }
+            }
+        });
     }
 
-    function timings () {
+    function timings() {
         afkcheck();
         checkactivemods();
         if (config.afkremoval.enabled && toggle.afkremoval) {
@@ -1681,7 +1707,7 @@ new DubAPI(config.login, function (apierror, bot) {
         console.log('[INFO] Executed timings, next execution in ' + minutes + ' minutes.');
     }
 
-    function afkcheck () {
+    function afkcheck() {
         bot.getUsers().forEach(function (user) {
             User.find({where: {userid: user.id}}).then(function (row) {
                 var now = moment();
@@ -1692,7 +1718,7 @@ new DubAPI(config.login, function (apierror, bot) {
         });
     }
 
-    function warnafk () {
+    function warnafk() {
         User.findAll({where: {afk: true, warned_for_afk: false}}).then(function (users) {
             var afks = [];
             var queue = bot.getQueue();
@@ -1706,7 +1732,7 @@ new DubAPI(config.login, function (apierror, bot) {
         });
     }
 
-    function removeafk () {
+    function removeafk() {
         User.findAll({where: {warned_for_afk: true}}).then(function (users) {
             var afks = [];
             var queue = bot.getQueue();
@@ -1728,7 +1754,7 @@ new DubAPI(config.login, function (apierror, bot) {
         });
     }
 
-    function kickforafk () {
+    function kickforafk() {
         User.findAll({where: {removed_for_afk: true}}).then(function (users) {
             var afks = [];
             var afk_names = [];
@@ -1763,7 +1789,7 @@ new DubAPI(config.login, function (apierror, bot) {
         });
     }
 
-    function checkactivemods () {
+    function checkactivemods() {
         activemods = 0;
         bot.getStaff().forEach(function (staffmem) {
             User.find({where: {userid: staffmem.id}}).then(function (staff) {
@@ -1772,7 +1798,7 @@ new DubAPI(config.login, function (apierror, bot) {
         });
     }
 
-    function checksong (media, playid) {
+    function checksong(media, playid) {
         var dj = bot.getDJ();
         if (media.songLength > config.autoskip.timelimit.limit * 1000 && config.autoskip.timelimit.enabled && toggle.songlength) {
             bot.moderateSkip();
@@ -1860,7 +1886,7 @@ new DubAPI(config.login, function (apierror, bot) {
         }
     }
 
-    function checkQueue (queue) {
+    function checkQueue(queue) {
         queue.forEach(function (queueobject, index) {
             if (queueobject.media.songLength > config.autoskip.timelimit.limit * 1000 && config.autoskip.timelimit.enabled && toggle.songlength) {
                 if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
@@ -1874,99 +1900,17 @@ new DubAPI(config.login, function (apierror, bot) {
                     message: 'Removed track ' + queueobject.media.name
                 });
                 bot.sendChat(S(langfile.queuecheck.length).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', queueobject.media.name).s);
-            } else if (queueobject.user !== undefined) {
-                QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function (ban) {
-                    if (ban !== undefined && ban !== null) {
-                        bot.moderateRemoveDJ(ban.dub_user_id);
-                        if (ban.reason !== null && ban.reason !== undefined) bot.sendChat(S(langfile.queueban.banned_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{reason}', ban.reason).s);
-                        else bot.sendChat(S(langfile.queueban.banned).replaceAll('&{username}', queueobject.user.username).s);
-                        Reputation.create({
-                            user_id: queueobject.user.id,
-                            mod_id: bot.getSelf().id,
-                            type: 'queueban-remove',
-                            message: queueobject.user.username + ' joined the queue while being banned.'
-                        });
-                    } else {
-                        var trackdata = {
-                            name: queueobject.media.name,
-                            dub_id: queueobject.media.id,
-                            type: queueobject.media.type,
-                            source_id: queueobject.media.fkid,
-                            thumbnail: queueobject.media.thumbnail,
-                            songLength: queueobject.media.songLength
-                        };
-
-                        Track.findOrCreate({
-                            where: {dub_id: queueobject.media.id},
-                            defaults: trackdata
-                        }).then(function (tracks, created) {
-                            var track = tracks[0];
-                            if (!created && bot.getQueue()[index].media.id === track.id) {
-                                if (track.blacklisted) {
-                                    if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
-                                    else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
-                                    else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                                    else console.log('Provide action for queuecheck!');
-                                    if (track.bl_reason !== undefined && track.bl_reason !== null) bot.sendChat(S(langfile.queuecheck.blacklisted_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).replaceAll('&{reason}', track.bl_reason).s);
-                                    else bot.sendChat(S(langfile.queuecheck.blacklisted).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
-                                    Reputation.create({
-                                        user_id: queueobject.user.id,
-                                        mod_id: bot.getSelf().id,
-                                        type: 'queue-blacklist',
-                                        message: queueobject.media.name
-                                    });
-                                } else if (config.autoskip.history.enabled && moment().diff(track.last_played, 'minutes') < config.autoskip.history.time && track.last_played !== undefined && toggle.historyskip) {
-                                    if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
-                                    else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
-                                    else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                                    else console.log('Provide action for queuecheck!');
-                                    bot.sendChat(S(langfile.queuecheck.history).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', track.name).s);
-                                    Reputation.create({
-                                        user_id: queueobject.user.id,
-                                        mod_id: bot.getSelf().id,
-                                        type: 'queue-history',
-                                        message: queueobject.media.name
-                                    });
-                                } else if (config.countryblocks.enabled && queueobject.media.type === 'youtube' && config.apiKeys.youtube !== '') {
-                                    request.get('https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=' + queueobject.media.fkid + '&key=' + config.apiKeys.youtube, function (error, resp, body) {
-                                        if (!error && resp.status === 200) {
-                                            body = JSON.parse(body);
-                                            if (body.items.length > 0 && bot.getQueue()[index].media.id === track.id) {
-                                                if (body.items[0].contentDetails.regionRestriction !== undefined) {
-                                                    var intersection = _.intersection(body.items[0].contentDetails.regionRestriction, config.countryblocks.countries);
-                                                    if (intersection.length !== 0) {
-                                                        if (config.countryblocks.actions.queue.blacklist) {
-                                                            bot.sendChat(S(langfile.countryblocks.queue.blacklist).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', queueobject.media.name).replaceAll('&{countries}', intersection.join(' ').trim()).s);
-                                                            Track.update({
-                                                                blacklisted: true,
-                                                                bl_reason: S(langfile.countryblocks.blacklist_reason).replaceAll('&{countries}', intersection.join(' ').trim()).s
-                                                            }, {where: {id: track.id}});
-                                                            if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
-                                                            else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
-                                                            else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                                                            else console.log('Provide action for queuecheck!');
-                                                        } else {
-                                                            bot.sendChat(S(langfile.countryblocks.queue.remove).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', queueobject.media.name).replaceAll('&{countries}', intersection.join(' ').trim()).s);
-                                                            if (config.queuecheck.action === 'REMOVESONG') bot.moderateRemoveSong(queueobject.user.id);
-                                                            else if (config.queuecheck.action === 'REMOVEDJ') bot.moderateRemoveDJ(queueobject.user.id);
-                                                            else if (config.queuecheck.action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(queueobject.user.id);
-                                                            else console.log('Provide action for queuecheck!');
-                                                        }
-                                                        Reputation.create({
-                                                            user_id: queueobject.user.id,
-                                                            mod_id: bot.getSelf().id,
-                                                            type: 'queue-blocked',
-                                                            message: queueobject.media.name + ' [' + queueobject.media.fkid + ']'
-                                                        });
-                                                    }
-                                                }
-                                            }
-                                        } else console.log('Error during youtube-api call.', error, resp);
-                                    });
-                                }
-                            }
-                        });
-                    }
+            } else if (queueobject.user !== undefined && user_isQueuebanned(queueobject.user.id)) {
+                QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function(ban){
+                    bot.moderateRemoveDJ(ban.dub_user_id);
+                    if (ban.reason !== null && ban.reason !== undefined) bot.sendChat(S(langfile.queueban.banned_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{reason}', ban.reason).s);
+                    else bot.sendChat(S(langfile.queueban.banned).replaceAll('&{username}', queueobject.user.username).s);
+                    Reputation.create({
+                        user_id: queueobject.user.id,
+                        mod_id: bot.getSelf().id,
+                        type: 'queueban-remove',
+                        message: queueobject.user.username + ' joined the queue while being banned.'
+                    });
                 });
             } else {
                 var trackdata = {
@@ -2052,7 +1996,7 @@ new DubAPI(config.login, function (apierror, bot) {
         });
     }
 
-    function cleanchat (userid) {
+    function cleanchat(userid) {
         if (typeof userid === 'string') {
             bot.getChatHistory().forEach(function (chat) {
                 if (chat.user.id === userid) {
@@ -2064,7 +2008,7 @@ new DubAPI(config.login, function (apierror, bot) {
         }
     }
 
-    function points_manipulator (action, amount, users) {
+    function points_manipulator(action, amount, users) {
         if (typeof action !== 'string' || typeof amount !== 'number') return;
         switch (action) {
             case "award":
@@ -2108,11 +2052,17 @@ new DubAPI(config.login, function (apierror, bot) {
         }
     }
 
-    function deleteChatMessage (chatid, history) {
+    function deleteChatMessage(chatid, history) {
         var pos = _.findIndex(history, {id: chatid});
         if (history[pos - 1] !== undefined) {
             if (history[pos - 1].user.id === history[pos].user.id) deleteChatMessage(history[pos - 1].id, history);
             else bot.moderateDeleteChat(chatid);
         } else bot.moderateDeleteChat(chatid);
+    }
+
+    function user_isQueuebanned(user_id) {
+        QueueBan.find({where: {dub_user_id: user_id, active: true}}).then(function (qban) {
+            return !!(qban !== undefined && qban !== null);
+        });
     }
 });

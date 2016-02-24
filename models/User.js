@@ -12,7 +12,8 @@ module.exports = function (sequelize, Sequelize) {
         warned_for_afk: {type: Sequelize.BOOLEAN, defaultValue: false},
         removed_for_afk: {type: Sequelize.BOOLEAN, defaultValue: false},
         afk_message_enabled: {type: Sequelize.BOOLEAN, defaultValue: false},
-        afk_message: {type: Sequelize.STRING, defaultValue: null}
+        afk_message: {type: Sequelize.STRING, defaultValue: null},
+        first_join: {type: Sequelize.DATE, allowNull: true}
     }, {
         underscored: true,
         tableName: 'users'
