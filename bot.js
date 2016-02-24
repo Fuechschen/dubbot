@@ -152,21 +152,17 @@ new DubAPI(config.login, function (apierror, bot) {
                             spamfilterdata[data.user.id].updateMessage(data.message);
                         } else spamfilterdata[data.user.id] = new SpamProtection(data.user.id);
                     }
-                    if (config.chatfilter.dubtrackroom) {
-                        if (S(data.message).contains('dubtrack.fm/join/')) {
-                            deleteChatMessage(data.id, bot.getChatHistory());
-                            bot.sendChat(S(langfile.chatfilter.dubtrackroom).replaceAll('&{username}', data.user.username).s);
-                            spamfilterdata[data.user.id].increaseScore();
-                            return;
-                        }
+                    if (config.chatfilter.dubtrackroom && S(data.message).contains('dubtrack.fm/join/')) {
+                        deleteChatMessage(data.id, bot.getChatHistory());
+                        bot.sendChat(S(langfile.chatfilter.dubtrackroom).replaceAll('&{username}', data.user.username).s);
+                        spamfilterdata[data.user.id].increaseScore();
+                        return;
                     }
-                    if (config.chatfilter.youtube) {
-                        if (S(data.message).contains('youtu.be') || (S(data.message).contains('http') && S(data.message).contains('youtube.'))) {
-                            deleteChatMessage(data.id, bot.getChatHistory());
-                            bot.sendChat(S(langfile.chatfilter.youtube).replaceAll('&{username}', data.user.username).s);
-                            spamfilterdata[data.user.id].increaseScore();
-                            return;
-                        }
+                    if (config.chatfilter.youtube && (S(data.message).contains('youtu.be') || (S(data.message).contains('http') && S(data.message).contains('youtube.')))) {
+                        deleteChatMessage(data.id, bot.getChatHistory());
+                        bot.sendChat(S(langfile.chatfilter.youtube).replaceAll('&{username}', data.user.username).s);
+                        spamfilterdata[data.user.id].increaseScore();
+                        return;
                     }
                     if (config.chatfilter.word_blacklist.enabled) {
                         var found = false;
