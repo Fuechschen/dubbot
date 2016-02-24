@@ -128,7 +128,7 @@ new DubAPI(config.login, function (apierror, bot) {
                         return;
                     } else if (config.chatfilter.images.enabled && config.chatfilter.images.regex.test(data.message.toLowerCase())) {
                         setTimeout(function () {
-                            deleteChatMessage(data.id, bot.getChatHistory())
+                            deleteChatMessage(data.id, bot.getChatHistory());
                         }, config.chatfilter.images.timeout * 1000);
                         return;
                     }
@@ -1119,7 +1119,7 @@ new DubAPI(config.login, function (apierror, bot) {
                             if (mover !== undefined) {
                                 bot.sendChat(S(langfile.lottery.victory).replaceAll('&{username}', mover.username).s);
                                 bot.moderateMoveDJ(mover.userid, 0);
-                                if (config.points.enabled && config.points.lottery) points_manipulator("award", config.points.lottery_reward, [bot.getUser(mover.userid)]);
+                                if (config.points.enabled && config.points.lottery) points_manipulator('award', config.points.lottery_reward, [bot.getUser(mover.userid)]);
                             } else bot.sendChat(langfile.lottery.no_winner);
                         });
                     }, time * 60 * 1000);
@@ -1146,7 +1146,7 @@ new DubAPI(config.login, function (apierror, bot) {
                             if (mover !== undefined) {
                                 bot.sendChat(S(langfile.roulette.victory).replaceAll('&{username}', mover.username).s);
                                 bot.moderateMoveDJ(mover.userid, _.random(0, bot.getQueuePosition(mover.userid)));
-                                if (config.points.enabled && config.points.lottery) points_manipulator("award", config.points.roulette_reward, [bot.getUser(mover.userid)]);
+                                if (config.points.enabled && config.points.lottery) points_manipulator('award', config.points.roulette_reward, [bot.getUser(mover.userid)]);
                             } else bot.sendChat(langfile.roulette.no_winner);
                         });
                     }, time * 60 * 1000);
@@ -1287,7 +1287,7 @@ new DubAPI(config.login, function (apierror, bot) {
                             if (id !== undefined && !isNaN(id)) {
                                 Track.find({where: {id: id}}).then(function (track) {
                                     if (track !== undefined && track !== null) {
-                                        Track.update({last_played: new Date("1990 01 01 01:01:01")}, {where: {id: track.id}});
+                                        Track.update({last_played: new Date('1990 01 01 01:01:01')}, {where: {id: track.id}});
                                         bot.sendChat(S(langfile.resetPlay.default).replaceAll('&{track}', track.name).s);
                                     } else bot.sendChat(langfile.error.track_not_found);
                                 });
@@ -1491,7 +1491,7 @@ new DubAPI(config.login, function (apierror, bot) {
             handler: function (data) {
                 var msg = _.rest(data.message.split(' '), 1).join(' ').trim();
                 if (msg.length > 0 && config.apiKeys.wordnik) {
-                    var uri = "http://api.wordnik.com:80/v4/word.json/" + msg + "/definitions?limit=200&includeRelated=true&useCanonical=true&includeTags=false&api_key=" + config.apiKeys.wordnik;
+                    var uri = 'http://api.wordnik.com:80/v4/word.json/' + msg + '/definitions?limit=200&includeRelated=true&useCanonical=true&includeTags=false&api_key=' + config.apiKeys.wordnik;
                     request.get(uri, function (error, response, body) {
                         if (!error && response.statusCode === 200) {
                             var definition = JSON.parse(body);
@@ -1538,7 +1538,7 @@ new DubAPI(config.login, function (apierror, bot) {
                                     if (duser.points - config.points.duell_cost.cost >= 0) {
                                         duells.push(new Duell(data.user, user));
                                         bot.sendChat(S(langfile.duell.start).replaceAll('&{challenged}', user.username).replaceAll('&{challenger}', data.user.username).s);
-                                        points_manipulator("duell", config.points.duell_cost, [data.user]);
+                                        points_manipulator('duell', config.points.duell_cost, [data.user]);
                                     } else bot.sendChat(S(langfile.duell.no_points).replaceAll('&{points_name}', config.points.name).s);
                                 });
                             } else {
@@ -1608,14 +1608,14 @@ new DubAPI(config.login, function (apierror, bot) {
                         var reciever = bot.getUserByName(split[2], true);
                         var amount = parseInt(split[3]);
                         if (split[1] === 'gift') {
-                            if (amount && reciever && amount > 0 && reciever !== data.user && data.user)points_manipulator("gift", amount, [data.user, reciever]);
+                            if (amount && reciever && amount > 0 && reciever !== data.user && data.user)points_manipulator('gift', amount, [data.user, reciever]);
                             else if (amount && amount <= 0)bot.sendChat(S(langfile.points.command.no_negative_gift).replaceAll('&{points_name}', config.points.name).s);
                         } else if (bot.hasPermission(data.user, 'queue-order')) {
                             if (split[1] === 'add') {
-                                if (amount && reciever && amount > 0) points_manipulator("award", amount, [reciever]);
+                                if (amount && reciever && amount > 0) points_manipulator('award', amount, [reciever]);
                                 else bot.sendChat(langfile.error.argument);
                             } else if (split[1] === 'remove') {
-                                if (amount && reciever && amount > 0)points_manipulator("remove", amount, [reciever]);
+                                if (amount && reciever && amount > 0)points_manipulator('remove', amount, [reciever]);
                                 else bot.sendChat(langfile.error.argument);
                             } else bot.sendChat(langfile.error.argument);
                         }
@@ -1994,7 +1994,7 @@ new DubAPI(config.login, function (apierror, bot) {
     function points_manipulator(action, amount, users) {
         if (typeof action !== 'string' || typeof amount !== 'number') return;
         switch (action) {
-            case "award":
+            case 'award':
                 if (users.length === 1) {
                     User.find({where: {userid: users[0].id}}).then(function (user) {
                         User.update({points: user.points + amount}, {where: {id: user.id}});
@@ -2002,7 +2002,7 @@ new DubAPI(config.login, function (apierror, bot) {
                     });
                 }
                 break;
-            case "remove":
+            case 'remove':
                 if (users.length === 1) {
                     User.find({where: {userid: users[0].id}}).then(function (user) {
                         User.update({points: user.points - amount}, {where: {id: user.id}});
@@ -2010,7 +2010,7 @@ new DubAPI(config.login, function (apierror, bot) {
                     });
                 }
                 break;
-            case "gift":
+            case 'gift':
                 if (users.length === 2) {
                     User.find({where: {userid: users[0].id}}).then(function (gifter) {
                         if (gifter.points - amount > -1) {
@@ -2023,7 +2023,7 @@ new DubAPI(config.login, function (apierror, bot) {
                     });
                 }
                 break;
-            case "duell":
+            case 'duell':
                 if (users.length === 1) {
                     User.find({where: {userid: users[0].id}}).then(function (user) {
                         user.update({points: user.points - amount}, {where: {id: user.id}});
