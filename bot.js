@@ -269,7 +269,7 @@ new DubAPI(config.login, function (apierror, bot) {
                     if (created) bot.sendChat(S(langfile.welcome_users.new).replaceAll('&{username}', data.user.username).s);
                     else bot.sendChat(S(langfile.welcome_users.default).replaceAll('&{username}', data.user.username).s);
                 }
-                if(usr.first_join == undefined || usr.first_join === null){
+                if(usr.first_join === undefined || usr.first_join === null){
                     User.update({first_join: new Date()}, {where: {id: usr.id}});
                 }
                 usr.updateAttributes(userdata);
@@ -1433,7 +1433,7 @@ new DubAPI(config.login, function (apierror, bot) {
                                     }
                                 }, function (err, req, body) {
                                     if (!err && req.statusCode === 200) {
-                                        if (body == 'ok') {
+                                        if (body === 'ok') {
                                             bot.sendChat(langfile.callmod.mod_called);
                                             commandtimeout.callmod = true;
                                             setTimeout(function () {
@@ -1493,7 +1493,7 @@ new DubAPI(config.login, function (apierror, bot) {
                 if (msg.length > 0 && config.apiKeys.wordnik) {
                     var uri = "http://api.wordnik.com:80/v4/word.json/" + msg + "/definitions?limit=200&includeRelated=true&useCanonical=true&includeTags=false&api_key=" + config.apiKeys.wordnik;
                     request.get(uri, function (error, response, body) {
-                        if (!error && response.statusCode == 200) {
+                        if (!error && response.statusCode === 200) {
                             var definition = JSON.parse(body);
                             if (definition.length === 0) bot.sendChat(S(langfile.define.no_definition_found).replaceAll('&{word}', msg).s);
                             else bot.sendChat(S(langfile.define.definition_found).replaceAll('&{word}', msg).replaceAll('&{definition}', definition[0].text).s);
@@ -1579,7 +1579,7 @@ new DubAPI(config.login, function (apierror, bot) {
                     var command = commands.filter(function (cmd) {
                         var found = false;
                         for (var i = 0; i < cmd.names.length; i++) {
-                            if (!found) found = (cmd.names[i] == split[1].toLowerCase() || (cmd.matchStart && split[1].toLowerCase().indexOf(cmd.names[i]) == 0));
+                            if (!found) found = (cmd.names[i] === split[1].toLowerCase() || (cmd.matchStart && split[1].toLowerCase().indexOf(cmd.names[i]) === 0));
                         }
                         return found;
                     })[0];
