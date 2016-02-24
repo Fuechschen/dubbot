@@ -1852,7 +1852,7 @@ new DubAPI(config.login, function (apierror, bot) {
                             body = JSON.parse(body);
                             if (body.items.length > 0 && bot.getPlayID() === playid) {
                                 if (body.items[0].contentDetails.regionRestriction !== undefined) {
-                                    var intersection = _.intersection(body.items[0].contentDetails.regionRestriction, config.countryblocks.countries);
+                                    var intersection = _.intersection(body.items[0].contentDetails.regionRestriction.blocked, config.countryblocks.countries);
                                     if (intersection.length !== 0) {
                                         if (config.countryblocks.actions.play === 'SKIP') {
                                             bot.moderateSkip();
@@ -1945,7 +1945,7 @@ new DubAPI(config.login, function (apierror, bot) {
                                     body = JSON.parse(body);
                                     if (body.items.length > 0 && bot.getQueue()[index].media.id === track.id) {
                                         if (body.items[0].contentDetails.regionRestriction !== undefined) {
-                                            var intersection = _.intersection(body.items[0].contentDetails.regionRestriction, config.countryblocks.countries);
+                                            var intersection = _.intersection(body.items[0].contentDetails.regionRestriction.blocked, config.countryblocks.countries);
                                             if (intersection.length !== 0) {
                                                 if (config.countryblocks.actions.queue.blacklist) {
                                                     bot.sendChat(S(langfile.countryblocks.queue.blacklist).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', queueobject.media.name).replaceAll('&{countries}', intersection.join(' ').trim()).s);
