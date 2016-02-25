@@ -1,4 +1,4 @@
-# dubbot [![Dependency Status](https://david-dm.org/Fuechschen/dubbot.svg?style=flat-square)](https://david-dm.org/Fuechschen/dubbot) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/Fuechschen/dubbot/master/LICENSE)
+# dubbot [![Dependency Status](https://david-dm.org/Fuechschen/dubbot.svg?style=flat-square)](https://david-dm.org/Fuechschen/dubbot) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/Fuechschen/dubbot/master/LICENSE) [![SonarQube Tech Debt](https://img.shields.io/sonar/http/sonar.fuechschen.org/dubbot/tech_debt.svg?style=flat-square)](https://sonar.fuechschen.org/dashboard/index/1)
 
 A (simple) bot for dubtrack running with node.js 
 
