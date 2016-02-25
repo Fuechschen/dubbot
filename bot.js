@@ -201,7 +201,7 @@ new DubAPI(config.login, function (apierror, bot) {
                 song_id: data.lastPlay.media.id,
                 user_id: data.lastPlay.user.id,
                 upvotes: data.lastPlay.score.updubs,
-                downvotes: data.lastPlay.score.downvotes,
+                downvotes: data.lastPlay.score.downdubs,
                 grabs: data.lastPlay.score.grabs,
                 listeners: bot.getUsers().length - 1,
                 time: new Date()
@@ -345,7 +345,7 @@ new DubAPI(config.login, function (apierror, bot) {
                         user_id: dj.id,
                         mod_id: bot.getSelf().id,
                         type: 'RoomVoteskip',
-                        message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)
+                        message: 'Skip caused by too many downvotes: ' + JSON.stringify(score)
                     });
                 }
             } else if (typeof config.autoskip.votes.condition === 'object') {
@@ -356,7 +356,7 @@ new DubAPI(config.login, function (apierror, bot) {
                         user_id: dj.id,
                         mod_id: bot.getSelf().id,
                         type: 'RoomVoteskip',
-                        message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)
+                        message: 'Skip caused by too many downvotes: ' + JSON.stringify(score)
                     });
                 } else if (score.downdubs >= config.autoskip.votes.condition.min && (bot.getUsers().length) / score.downdubs > config.autoskip.votes.condition.ratio) {
                     bot.moderateSkip();
@@ -365,7 +365,7 @@ new DubAPI(config.login, function (apierror, bot) {
                         user_id: dj.id,
                         mod_id: bot.getSelf().id,
                         type: 'RoomVoteskip',
-                        message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)
+                        message: 'Skip caused by too many downvotes: ' + JSON.stringify(score)
                     });
                 }
             } else if (typeof config.autoskip.votes.condition === 'function') {
@@ -379,7 +379,7 @@ new DubAPI(config.login, function (apierror, bot) {
                         user_id: dj.id,
                         mod_id: bot.getSelf().id,
                         type: 'RoomVoteskip',
-                        message: 'Skip caused by too many donwvotes: ' + JSON.stringify(score)
+                        message: 'Skip caused by too many downvotes: ' + JSON.stringify(score)
                     });
                 }
             } else {
