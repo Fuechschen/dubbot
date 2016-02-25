@@ -575,8 +575,9 @@ new DubAPI(config.login, function (apierror, bot) {
                     var split = data.message.trim().split(' ');
                     if (split.length > 1) {
                         var pos = parseInt(split[1]);
+                        var queueobj;
                         if (pos !== undefined && bot.getQueue().length >= pos - 1 && !isNaN(pos)) {
-                            var queueobj = bot.getQueue()[pos - 1];
+                            queueobj = bot.getQueue()[pos - 1];
                             Track.findOrCreate({
                                 where: {dub_id: queueobj.media.id}, defaults: {
                                     name: queueobj.media.name,
@@ -609,6 +610,41 @@ new DubAPI(config.login, function (apierror, bot) {
                                     });
                                 }
                             });
+                        } else if(bot.getUserByName(S(split[1]).chompLeft('@').s, true) !== undefined){
+                            var usr = bot.getUserByName(S(split[1]).chompLeft('@').s, true);
+                            if(bot.getQueuePosition(usr.id) !== -1){
+                                queueobj = _.findWhere(bot.getQueue(), {uid: usr.id});
+                                Track.findOrCreate({where: {dub_id: queueobj.media.id}, defaults: {
+                                    name: queueobj.media.name,
+                                    dub_id: queueobj.media.id,
+                                    type: queueobj.media.type,
+                                    source_id: queueobj.media.fkid,
+                                    thumbnail: queueobj.media.thumbnail,
+                                    blacklisted: true,
+                                    songLength: queueobj.media.songLength
+                                }}).then(function(track){
+                                    if (split.length > 2) {
+                                        track[0].updateAttributes({bl_reason: _.rest(split, 2).join(' ').trim()});
+                                        bot.moderateRemoveSong(queueobj.user.id);
+                                        bot.sendChat(S(langfile.blacklist.queueblacklist_reason).replaceAll('&{dj}', queueobj.user.username).replaceAll('&{track}', queueobj.media.name).replaceAll('&{moderator}', data.user.username).replaceAll('&{reason}', _.rest(split, 2).join(' ').trim()).s);
+                                        Reputation.create({
+                                            user_id: queueobj.user.id,
+                                            mod_id: data.user.id,
+                                            type: 'queueblacklist',
+                                            message: data.user.username + ' blacklisted ' + queueobj.media.name + ' for ' + _.rest(split, 2).join(' ').trim()
+                                        });
+                                    } else {
+                                        bot.moderateRemoveSong(queueobj.user.id);
+                                        bot.sendChat(S(langfile.blacklist.queueblacklist).replaceAll('&{dj}', queueobj.user.username).replaceAll('&{track}', queueobj.media.name).replaceAll('&{moderator}', data.user.username).s);
+                                        Reputation.create({
+                                            user_id: queueobj.user.id,
+                                            mod_id: data.user.id,
+                                            type: 'queueblacklist',
+                                            message: data.user.username + ' blacklisted ' + queueobj.media.name
+                                        });
+                                    }
+                                });
+                            } else bot.sendChat(langfile.error.user_not_in_queue);
                         } else bot.sendChat(langfile.error.argument);
                     }
                 }
@@ -742,7 +778,7 @@ new DubAPI(config.login, function (apierror, bot) {
                                     message: 'All messages were deleted.'
                                 });
                             }
-                            else bot.sendChat(langfile.error.argument);
+                            else bot.sendChat(langfile.error.user_not_found);
                         });
                     } else bot.sendChat(langfile.error.argument);
                 }
@@ -762,7 +798,7 @@ new DubAPI(config.login, function (apierror, bot) {
                     bot.sendChat(S(langfile.clearqueue.default).replaceAll('&{moderator}', data.user.username).s);
                     bot.getQueue().forEach(function (queueobject) {
                         setTimeout(function () {
-                            bot.moderateRemoveDJ(queueobject.user.id);
+                            bot.moderatePauseDJ(queueobject.user.id);
                         }, _.random(2, 10) * 1000);
                     });
                 }
@@ -822,7 +858,7 @@ new DubAPI(config.login, function (apierror, bot) {
                                     type: 'kick',
                                     message: 'User was kicked for ' + _.rest(split, 2).join(' ').trim()
                                 });
-                            } else bot.sendChat(langfile.error.argument);
+                            } else bot.sendChat(langfile.error.user_not_found);
                         });
                     } else bot.sendChat(langfile.error.argument);
                 }

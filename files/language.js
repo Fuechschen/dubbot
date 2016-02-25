@@ -20,7 +20,9 @@ module.exports = {
         argument: "Error in arguments",
         default: "An error occured while performing this command!",
         track_not_found: "The track wasn't found!",
-        check_console: "Error during execution. Check the console for more details."
+        check_console: "Error during execution. Check the console for more details.",
+        user_not_in_queue: "The given user wasn't found in the queue.",
+        user_not_found: "No user could be found for the given username"
     },
     ping: {
         default: "Pong!"
