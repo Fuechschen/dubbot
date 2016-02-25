@@ -1,5 +1,6 @@
-# dubbot
-A (simple) bot for dubtrack running with node.js
+# dubbot [![Dependency Status](https://david-dm.org/Fuechschen/dubbot.svg?style=flat-square)](https://david-dm.org/Fuechschen/dubbot) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/Fuechschen/dubbot/master/LICENSE)
+
+A (simple) bot for dubtrack running with node.js 
 
 ### Functionality
 

@@ -55,7 +55,8 @@ var CustomText = sequelize.import(__dirname + '/models/CustomText'),
     Track = sequelize.import(__dirname + '/models/Track'),
     User = sequelize.import(__dirname + '/models/User'),
     QueueBan = sequelize.import(__dirname + '/models/QueueBan'),
-    Reputation = sequelize.import(__dirname + '/models/Reputation');
+    Reputation = sequelize.import(__dirname + '/models/Reputation'),
+    Play = sequelize.import(__dirname + '/models/Play');
 
 QueueBan.belongsTo(User, {as: 'mod', foreignKey: 'mod_id'});
 QueueBan.belongsTo(User, {as: 'user', foreignKey: 'user_id'});
@@ -190,7 +191,22 @@ new DubAPI(config.login, function (apierror, bot) {
 
         if (config.autoskip.resdjskip.enabled) skipvotes = [];
 
-        if (data.lastPlay !== undefined) Track.update({last_played: new Date()}, {where: {dub_id: data.lastPlay.media.id}});
+        if (data.lastPlay !== undefined) {
+            Track.update({last_played: new Date()}, {where: {dub_id: data.lastPlay.media.id}});
+
+            //testing plays
+
+            Play.create({
+                play_id: data.lastPlay.id,
+                song_id: data.lastPlay.media.id,
+                user_id: data.lastPlay.user.id,
+                upvotes: data.lastPlay.score.updubs,
+                downvotes: data.lastPlay.score.downvotes,
+                grabs: data.lastPlay.score.grabs,
+                listeners: bot.getUsers().length - 1,
+                time: new Date()
+            });
+        }
 
         if (data.media !== undefined) {
             checksong(data.media, data.id);
@@ -265,7 +281,7 @@ new DubAPI(config.login, function (apierror, bot) {
                     if (created) bot.sendChat(S(langfile.welcome_users.new).replaceAll('&{username}', data.user.username).s);
                     else bot.sendChat(S(langfile.welcome_users.default).replaceAll('&{username}', data.user.username).s);
                 }
-                if(usr.first_join === undefined || usr.first_join === null){
+                if (usr.first_join === undefined || usr.first_join === null) {
                     User.update({first_join: new Date()}, {where: {id: usr.id}});
                 }
                 usr.updateAttributes(userdata);
@@ -402,6 +418,10 @@ new DubAPI(config.login, function (apierror, bot) {
                 message: 'Time: ' + data.time
             });
         }
+    });
+
+    bot.on('room_playlist-queue-update-dub', function(data){
+        if (config.queuecheck.enabled && toggle.queuecheck) checkQueue(data.queue);
     });
 
     //functions
@@ -1690,7 +1710,6 @@ new DubAPI(config.login, function (apierror, bot) {
             warnafk();
             removeafk();
         }
-        if (config.queuecheck.enabled && toggle.queuecheck) checkQueue(bot.getQueue());
         if (config.options.random_messages) {
             RandomMessage.findAll({where: {status: true}}).then(function (rows) {
                 if (rows.length !== 0) bot.sendChat(rows[_.random(0, rows.length - 1)].message);
@@ -1893,7 +1912,7 @@ new DubAPI(config.login, function (apierror, bot) {
                 });
                 bot.sendChat(S(langfile.queuecheck.length).replaceAll('&{username}', queueobject.user.username).replaceAll('&{track}', queueobject.media.name).s);
             } else if (queueobject.user !== undefined && user_isQueuebanned(queueobject.user.id)) {
-                QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function(ban){
+                QueueBan.find({where: {dub_user_id: queueobject.user.id, active: true}}).then(function (ban) {
                     bot.moderateRemoveDJ(ban.dub_user_id);
                     if (ban.reason !== null && ban.reason !== undefined) bot.sendChat(S(langfile.queueban.banned_reason).replaceAll('&{username}', queueobject.user.username).replaceAll('&{reason}', ban.reason).s);
                     else bot.sendChat(S(langfile.queueban.banned).replaceAll('&{username}', queueobject.user.username).s);
@@ -2046,7 +2065,7 @@ new DubAPI(config.login, function (apierror, bot) {
         });
     }
 
-    function removeUserFromQueue(userid, action){
+    function removeUserFromQueue(userid, action) {
         if (action === 'REMOVESONG') bot.moderateRemoveSong(userid);
         else if (action === 'REMOVEDJ') bot.moderateRemoveDJ(userid);
         else if (action === 'PAUSEUSERQUEUE') bot.moderatePauseDj(userid);
