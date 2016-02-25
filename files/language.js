@@ -262,5 +262,14 @@ module.exports = {
     },
     userinfo: {
         default: "&{username} | &{userid} | &{dubs} | &{points} &{points_name} | &{last_seen}"
+    },
+    event: {
+        no_event: "There is currently no event.",
+        event_running: "&{eventname} - &{eventdesc}",
+        no_sheduled_events: "No shedules events found.",
+        sheduled_events: {
+            default: "Upcoming events:",
+            event: "[&{#}] &{eventname} - &{eventdesc}"
+        }
     }
 };

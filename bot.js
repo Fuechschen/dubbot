@@ -56,7 +56,8 @@ var CustomText = sequelize.import(__dirname + '/models/CustomText'),
     User = sequelize.import(__dirname + '/models/User'),
     QueueBan = sequelize.import(__dirname + '/models/QueueBan'),
     Reputation = sequelize.import(__dirname + '/models/Reputation'),
-    Play = sequelize.import(__dirname + '/models/Play');
+    Play = sequelize.import(__dirname + '/models/Play'),
+    Event = sequelize.import(__dirname + '/models/Event');
 
 QueueBan.belongsTo(User, {as: 'mod', foreignKey: 'mod_id'});
 QueueBan.belongsTo(User, {as: 'user', foreignKey: 'user_id'});
@@ -420,7 +421,7 @@ new DubAPI(config.login, function (apierror, bot) {
         }
     });
 
-    bot.on('room_playlist-queue-update-dub', function(data){
+    bot.on('room_playlist-queue-update-dub', function (data) {
         if (config.queuecheck.enabled && toggle.queuecheck) checkQueue(data.queue);
     });
 
@@ -1003,6 +1004,42 @@ new DubAPI(config.login, function (apierror, bot) {
         });
 
         commands.push({
+            names: ['!event'],
+            hidden: false,
+            matchStart: true,
+            desc: langfile.commanddesc.event,
+            handler: function (data) {
+                var split = data.message.trim().split(' ');
+                if(split.length === 1){
+                    Event.find({where: {from: {$lte: new Date()}, to: {$gte: new Date()}, active: true}}).then(function(event){
+                        if(event !== null && event !== undefined){
+                            bot.sendChat(S(langfile.event.event_running).replaceAll('&{eventname}', event.name).replaceAll('&{eventdesc}', event.description).s);
+                        } else {
+                            bot.sendChat(langfile.event.no_event);
+                        }
+                    });
+                } else if(split.length === 2) {
+                    if(split[1] === 'scheduled'){
+                        Event.findAll({where: {from: {$gt: new Date()}, active: true}}).then(function(events){
+                           if(events.length === 0){
+                               bot.sendChat(langfile.event.no_sheduled_events);
+                           } else {
+                               bot.sendChat(langfile.event.sheduled_events.default);
+                               events.forEach(function(event, index){
+                                  bot.sendChat(S(langfile.event.sheduled_events.event).replaceAll('&{#}', index + 1).replaceAll('&{eventname}', event.name).replaceAll('&{eventdesc}', event.description).s);
+                               });
+                           }
+                        });
+                    }
+                } else {
+                    if(bot.hasPermission(data.user, 'set-roles')){
+                        //todo add create/alter/delete
+                    }
+                }
+            }
+        });
+
+        commands.push({
             names: ['!shufflequeue'],
             hidden: true,
             enabled: true,
@@ -1217,6 +1254,7 @@ new DubAPI(config.login, function (apierror, bot) {
                 }
             }
         });
+
 
         commands.push({
             names: ['!reconnect'],
@@ -1686,13 +1724,14 @@ new DubAPI(config.login, function (apierror, bot) {
             globalcmdtimeout: true,
             handler: function (data) {
                 var split = data.message.trim().split(' ');
-                var usr;
-                if (split.length > 1) usr = bot.getUserByName(split[1].trim());
-                else usr = data.user;
-
-                if (usr === undefined) bot.sendChat(langfile.error.argument);
-                else {
-                    User.find({where: {userid: usr.id}}).then(function (user) {
+                if (split.length === 1) {
+                    User.find({where: {userid: data.user.id}}).then(function (user) {
+                        if (user !== undefined && user !== null) {
+                            bot.sendChat(S(langfile.userinfo.default).replaceAll('&{username}', user.username).replaceAll('&{userid}', user.userid).replaceAll('&{dubs}', user.dubs)).replaceAll('&{points}', user.points).replaceAll('&{points_name}', config.points.name).replaceAll('&{last_seen}', moment().diff(moment(user.last_active), 'minutes').s);
+                        } else bot.sendChat(langfile.error.argument);
+                    });
+                } else {
+                    User.find({where: {username: {$like: split[1]}}}).then(function (user) {
                         if (user !== undefined && user !== null) {
                             bot.sendChat(S(langfile.userinfo.default).replaceAll('&{username}', user.username).replaceAll('&{userid}', user.userid).replaceAll('&{dubs}', user.dubs)).replaceAll('&{points}', user.points).replaceAll('&{points_name}', config.points.name).replaceAll('&{last_seen}', moment().diff(moment(user.last_active), 'minutes').s);
                         } else bot.sendChat(langfile.error.argument);
@@ -1703,17 +1742,19 @@ new DubAPI(config.login, function (apierror, bot) {
     }
 
     function timings() {
-        afkcheck();
-        checkactivemods();
-        if (config.afkremoval.enabled && toggle.afkremoval) {
-            if (config.afkremoval.kick) kickforafk();
-            warnafk();
-            removeafk();
-        }
-        if (config.options.random_messages) {
-            RandomMessage.findAll({where: {status: true}}).then(function (rows) {
-                if (rows.length !== 0) bot.sendChat(rows[_.random(0, rows.length - 1)].message);
-            });
+        if (bot.getUsers().length > 1) {
+            afkcheck();
+            checkactivemods();
+            if (config.afkremoval.enabled && toggle.afkremoval) {
+                if (config.afkremoval.kick) kickforafk();
+                warnafk();
+                removeafk();
+            }
+            if (config.options.random_messages) {
+                RandomMessage.findAll({where: {status: true}}).then(function (rows) {
+                    if (rows.length !== 0) bot.sendChat(rows[_.random(0, rows.length - 1)].message);
+                });
+            }
         }
         var minutes = _.random(2, 10);
         autotimer = setTimeout(function () {

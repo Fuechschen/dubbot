@@ -18,7 +18,7 @@
 |!sudo||various|Manager|Let the bot send your arguments in chat|
 |!reload||[config/lang]|Manager|Reloads config/langfile|
 |!restart||[time]|Manager|Restarts the bot (requires pm2)|
-|!addcustomtext|!addct|Manager|trigger message|Adds a custom chat command which is triggers when .trigger is send in chat|
+|!customtext|!ct|delete trigger/enable trigger/disable trigger/add trigger msg/update trigger msg/append trigger msg|Manager|Edits a custom text|
 |!randommessage|!rndmsg|list/add/del/disable/enable|Manager|Edits random messages sent all 2-10 Minutes|
 |!resetplay| |id|Mod|Resets the last play for the given song|
 |!findtrack| |name|VIP|Searches the databse for the given songname|
@@ -39,6 +39,7 @@
 |!commands| |[command]|User|Lists unhidden commands and provides their description when used with argument|
 |!afkmsg| |enable/clear/set (msg)|User|Enables/edits the afk-message|
 |!points| |[gift user amount/add user amount/remove user amount]|User/Mod|Prints your current balance/gifts points to an user/gives points to an user/takes points from an user|
+|!info| |[username]|User|Returns some information about the given user|
 
 
 [  ] = optional argument
