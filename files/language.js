@@ -263,7 +263,8 @@ module.exports = {
         blacklist_reason: "Blocked in one of the following countries: &{countries}"
     },
     userinfo: {
-        default: "&{username} | &{userid} | &{dubs} | &{points} &{points_name} | &{last_seen}"
+        default: "&{username} | &{userid} | &{dubs} | &{points} &{points_name} | &{last_seen}",
+        its_me: "Oh, you want to know something about me? What will you give me for that?"
     },
     event: {
         no_event: "There is currently no event.",

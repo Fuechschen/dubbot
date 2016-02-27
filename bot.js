@@ -1774,12 +1774,13 @@ new DubAPI(config.login, function (apierror, bot) {
                     User.find({where: {userid: data.user.id}}).then(function (user) {
                         if (user !== undefined && user !== null) {
                             bot.sendChat(S(langfile.userinfo.default).replaceAll('&{username}', user.username).replaceAll('&{userid}', user.userid).replaceAll('&{dubs}', user.dubs)).replaceAll('&{points}', user.points).replaceAll('&{points_name}', config.points.name).replaceAll('&{last_seen}', moment().diff(moment(user.last_active), 'minutes').s);
-                        } else bot.sendChat(langfile.error.argument);
+                        } else bot.sendChat(langfile.error.default);
                     });
                 } else {
                     User.find({where: {username: {$like: split[1]}}}).then(function (user) {
                         if (user !== undefined && user !== null) {
-                            bot.sendChat(S(langfile.userinfo.default).replaceAll('&{username}', user.username).replaceAll('&{userid}', user.userid).replaceAll('&{dubs}', user.dubs)).replaceAll('&{points}', user.points).replaceAll('&{points_name}', config.points.name).replaceAll('&{last_seen}', moment().diff(moment(user.last_active), 'minutes').s);
+                            if(bot.getSelf().id === user.userid) bot.sendChat(langfile.userinfo.its_me);
+                            else bot.sendChat(S(langfile.userinfo.default).replaceAll('&{username}', user.username).replaceAll('&{userid}', user.userid).replaceAll('&{dubs}', user.dubs)).replaceAll('&{points}', user.points).replaceAll('&{points_name}', config.points.name).replaceAll('&{last_seen}', moment().diff(moment(user.last_active), 'minutes').s);
                         } else bot.sendChat(langfile.error.argument);
                     });
                 }
@@ -1796,7 +1797,7 @@ new DubAPI(config.login, function (apierror, bot) {
             handler: function () {
                 bot.sendChat(S(langfile.uptime.default).replaceAll('&{time}', moment(starttime).fromNow(true)).s);
             }
-        })
+        });
     }
 
     function timings() {
