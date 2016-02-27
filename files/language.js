@@ -273,5 +273,8 @@ module.exports = {
             default: "Upcoming events:",
             event: "[&{#}] &{eventname} - &{eventdesc}"
         }
+    },
+    uptime: {
+        default: "Bot running for &{time}"
     }
 };
